@@ -12,7 +12,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
         let pixel_coordinates = get_pixel_coordinates(ray);
         let valid = (pixel_coordinates.valid || path_length != 2) && intersection.valid && approx_eq_vec3f(intersection.point, destination_point);
-        queue_id = choose_u32(valid, UPDATE_MARKOV_CHAIN_QUEUE_ID, queue_id);
+        queue_id = choose_u32(valid, CONTRIBUTE_QUEUE_ID, queue_id);
     }
     enqueue(global_invocation_id, lid, queue_id);
 }

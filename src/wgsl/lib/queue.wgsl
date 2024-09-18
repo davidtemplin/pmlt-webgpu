@@ -1,3 +1,4 @@
+// TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
 fn enqueue(global_invocation_id: u32, local_invocation_id: u32, queue_id: u32) {
     workgroup_queue_ballot[local_invocation_id] = queue_id;
 

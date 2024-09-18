@@ -16,7 +16,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let camera_technique: u32 = 0;//path_state.camera_technique[global_path_index]; TODO
         queue_id = choose_u32(vertex_index + 1 < camera_technique || vertex_index + 1 < light_technique, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, UPDATE_MARKOV_CHAIN_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == camera_technique - 1, SAMPLE_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
     }

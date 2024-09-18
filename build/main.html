@@ -136,7 +136,7 @@ const constants = {
     intersectQueueId: 2,
     sampleMaterialQueueId: 3,
     connectQueueId: 4,
-    updateMarkovChainQueueId: 5,
+    contributeQueueId: 5,
 };
 
 const wgslLib = `
@@ -158,13 +158,14 @@ const SAMPLE_LIGHT_QUEUE_ID: u32 = ${constants.sampleLightQueueId};
 const INTERSECT_QUEUE_ID: u32 = ${constants.intersectQueueId};
 const SAMPLE_MATERIAL_QUEUE_ID: u32 = ${constants.sampleMaterialQueueId};
 const CONNECT_QUEUE_ID: u32 = ${constants.connectQueueId};
-const UPDATE_MARKOV_CHAIN_QUEUE_ID: u32 = ${constants.updateMarkovChainQueueId};
+const CONTRIBUTE_QUEUE_ID: u32 = ${constants.contributeQueueId};
 
 const LIGHT_SPHERE_ID: u32 = ${constants.lightSphereId};
 
 const PATH_COUNT: u32 = ${constants.pathCount};
 const SPHERE_COUNT: u32 = ${constants.sphereCount};
 
+const LARGE_STEP_PROBABILITY = 0.3;
 const SMALL_STEP: u32 = 0;
 const LARGE_STEP: u32 = 1;
 const CHAIN_COUNT: u32 = MAX_PATH_LENGTH - MIN_PATH_LENGTH + 1;
@@ -624,6 +625,7 @@ fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
     return abs(dot(normalize(n), normalize(v)));
 }
 
+// TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
 fn enqueue(global_invocation_id: u32, local_invocation_id: u32, queue_id: u32) {
     workgroup_queue_ballot[local_invocation_id] = queue_id;
 
@@ -813,7 +815,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let camera_technique: u32 = 0;//path_state.camera_technique[global_path_index]; TODO
         queue_id = choose_u32(vertex_index + 1 < camera_technique || vertex_index + 1 < light_technique, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, UPDATE_MARKOV_CHAIN_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == camera_technique - 1, SAMPLE_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
     }
