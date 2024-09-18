@@ -24,10 +24,13 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let p = vec3f(path_state.previous_point_x[global_path_index], path_state.previous_point_y[global_path_index], path_state.previous_point_z[global_path_index]);
         let direction = intersection.point - p;
         let g = geometry_term(direction, normal1, intersection.normal);
+        let a = direction_to_area(direction, intersection.normal);
 
-        path_state.contribution_r[global_path_index] *= g;
-        path_state.contribution_g[global_path_index] *= g;
-        path_state.contribution_b[global_path_index] *= g;
+        let c = g / a;
+
+        path_state.contribution_r[global_path_index] *= c;
+        path_state.contribution_g[global_path_index] *= c;
+        path_state.contribution_b[global_path_index] *= c;
     }
 
     enqueue(global_invocation_index, lid, queue_id);

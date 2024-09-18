@@ -153,6 +153,10 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
     return approx_eq_f32(a.x, b.x, tolerance) && approx_eq_f32(a.y, b.y, tolerance) && approx_eq_f32(a.z, b.z, tolerance);
 }
 
+fn same_hemisphere(n: vec3f, v1: vec3f, v2: vec3f) -> bool {
+    sign(dot(v1, n)) == sign(dot(v2, n))
+}
+
 fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
     let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
     let pdf = abs_cos_theta(normal, wi) / PI;
@@ -163,6 +167,11 @@ fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
     return 1.0 / PI;
 }
 
+fn matte_material_directional_pdf(&self, wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    let h = f32(same_hemisphere(self.normal, wo, wi)) ;
+    return h * abs_cos_theta(n, wi) / PI;
+}
+
 fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
     return abs(dot(normalize(n), normalize(v)));
 }
@@ -171,4 +180,14 @@ fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
     let d2 = dot(direction, direction);
     let x = (dot(normal1, direction) * dot(normal2, direction)) / (d2 * d2);
     return abs(x);
+}
+
+fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
+    let d2 = dot(direction, direction);
+    let x = dot(normal, direction) / sqrt(d2 * d2);
+    return abs(x);
+}
+
+fn light_positional_pdf(radius: f32) -> f32 {
+    return 1.0 / (4.0 * PI * r * r);
 }

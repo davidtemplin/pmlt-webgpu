@@ -23,8 +23,10 @@ fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoc
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
 
+        let directional_pdf = camera_directional_pdf(direction);
+
         let importance = camera_importance(direction);
-        let c = choose_f32(path_length == 2, 0.0, importance);
+        let c = choose_f32(path_length == 2, 0.0, importance / directional_pdf);
         path_state.contribution_r[global_path_index] = c;
         path_state.contribution_g[global_path_index] = c;
         path_state.contribution_b[global_path_index] = c;

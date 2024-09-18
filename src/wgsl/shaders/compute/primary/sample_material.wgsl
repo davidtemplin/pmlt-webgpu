@@ -17,9 +17,12 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
         let n = vec3f(path_state.previous_normal_x[global_path_index], path_state.previous_normal_y[global_path_index], path_state.previous_normal_z[global_path_index])
         let reflectance = matte_material_reflectance(wo, n, wi);
 
-        path_state.contribution_r[global_path_index] *= reflectance;
-        path_state.contribution_g[global_path_index] *= reflectance;
-        path_state.contribution_b[global_path_index] *= reflectance;
+        let directional_pdf = matte_material_directional_pdf(wo, n, wi);
+        let c = reflectance / directional_pdf;
+
+        path_state.contribution_r[global_path_index] *= c;
+        path_state.contribution_g[global_path_index] *= c;
+        path_state.contribution_b[global_path_index] *= c;
     }
     enqueue(global_invocation_id, lid, queue_id);
 }

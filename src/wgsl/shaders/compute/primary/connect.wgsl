@@ -24,9 +24,11 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let reflectance = matte_material_reflectance(wo, normal1, wi);
         let g = geometry_term(direction, normal1, normal2);
         let throughput = choose_f32(path_length == 2, importance, reflectance) * g * color;
-        path_state.contribution_r[global_path_index] *= throughput.x;
-        path_state.contribution_g[global_path_index] *= throughput.y;
-        path_state.contribution_b[global_path_index] *= throughput.z;
+        let area_pdf = matte_material_directional_pdf(wo, normal1, wi) * direction_to_area(wi, normal2);
+        let c = throughput / area_pdf;
+        path_state.contribution_r[global_path_index] *= c.r;
+        path_state.contribution_g[global_path_index] *= c.g;
+        path_state.contribution_b[global_path_index] *= c.b;
     }
     enqueue(global_invocation_id, lid, queue_id);
 }

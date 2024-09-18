@@ -25,3 +25,11 @@ fn camera_importance(direction: vec3f) -> f32 {
     let d2 = camera.distance * camera.distance;
     return d2 / (a * c4);
 }
+
+fn camera_directional_pdf(direction: vec3f) -> f32 {
+    let c = dot(normalize(direction), camera.w);
+    let d = camera.distance / c;
+    let d2 = d * d;
+    let a = f32(PIXEL_WIDTH) * f32(PIXEL_HEIGHT);
+    return d2 / (a * c);
+}
