@@ -622,6 +622,10 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
     return approx_eq_f32(a.x, b.x, tolerance) && approx_eq_f32(a.y, b.y, tolerance) && approx_eq_f32(a.z, b.z, tolerance);
 }
 
+fn same_hemisphere(n: vec3f, v1: vec3f, v2: vec3f) -> bool {
+    return sign(dot(v1, n)) == sign(dot(v2, n));
+}
+
 fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
     let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
     let pdf = abs_cos_theta(normal, wi) / PI;
@@ -632,6 +636,11 @@ fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
     return 1.0 / PI;
 }
 
+fn matte_material_directional_pdf(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    let h = f32(same_hemisphere(n, wo, wi)) ;
+    return h * abs_cos_theta(n, wi) / PI;
+}
+
 fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
     return abs(dot(normalize(n), normalize(v)));
 }
@@ -640,6 +649,16 @@ fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
     let d2 = dot(direction, direction);
     let x = (dot(normal1, direction) * dot(normal2, direction)) / (d2 * d2);
     return abs(x);
+}
+
+fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
+    let d2 = dot(direction, direction);
+    let x = dot(normal, direction) / sqrt(d2 * d2);
+    return abs(x);
+}
+
+fn light_positional_pdf(radius: f32) -> f32 {
+    return 1.0 / (4.0 * PI * radius * radius);
 }
 
 fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
@@ -668,6 +687,14 @@ fn camera_importance(direction: vec3f) -> f32 {
     let c4 = c * c * c * c;
     let d2 = camera.distance * camera.distance;
     return d2 / (a * c4);
+}
+
+fn camera_directional_pdf(direction: vec3f) -> f32 {
+    let c = dot(normalize(direction), camera.w);
+    let d = camera.distance / c;
+    let d2 = d * d;
+    let a = f32(PIXEL_WIDTH) * f32(PIXEL_HEIGHT);
+    return d2 / (a * c);
 }
 
 // TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
@@ -775,8 +802,10 @@ fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoc
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
 
+        let directional_pdf = camera_directional_pdf(direction);
+
         let importance = camera_importance(direction);
-        let c = choose_f32(path_length == 2, 0.0, importance);
+        let c = choose_f32(path_length == 2, 0.0, importance / directional_pdf);
         path_state.contribution_r[global_path_index] = c;
         path_state.contribution_g[global_path_index] = c;
         path_state.contribution_b[global_path_index] = c;
@@ -822,9 +851,11 @@ fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoca
         path_state.ray_direction_z[global_path_index] = direction.z;
 
         let emission = vec3f(sphere.color_r[LIGHT_SPHERE_ID], sphere.color_g[LIGHT_SPHERE_ID], sphere.color_b[LIGHT_SPHERE_ID]);
-        path_state.contribution_r[global_path_index] *= emission.r;
-        path_state.contribution_r[global_path_index] *= emission.g;
-        path_state.contribution_r[global_path_index] *= emission.b;
+        let positional_pdf = light_positional_pdf(sphere.radius[LIGHT_SPHERE_ID]);
+        let c = emission / positional_pdf;
+        path_state.contribution_r[global_path_index] *= c.r;
+        path_state.contribution_r[global_path_index] *= c.g;
+        path_state.contribution_r[global_path_index] *= c.b;
     }
     
     enqueue(global_invocation_index, lid, queue_id);
@@ -886,10 +917,13 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let p = vec3f(path_state.previous_point_x[global_path_index], path_state.previous_point_y[global_path_index], path_state.previous_point_z[global_path_index]);
         let direction = intersection.point - p;
         let g = geometry_term(direction, normal1, intersection.normal);
+        let a = direction_to_area(direction, intersection.normal);
 
-        path_state.contribution_r[global_path_index] *= g;
-        path_state.contribution_g[global_path_index] *= g;
-        path_state.contribution_b[global_path_index] *= g;
+        let c = g / a;
+
+        path_state.contribution_r[global_path_index] *= c;
+        path_state.contribution_g[global_path_index] *= c;
+        path_state.contribution_b[global_path_index] *= c;
     }
 
     enqueue(global_invocation_index, lid, queue_id);

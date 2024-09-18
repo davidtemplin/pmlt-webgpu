@@ -154,7 +154,7 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
 }
 
 fn same_hemisphere(n: vec3f, v1: vec3f, v2: vec3f) -> bool {
-    sign(dot(v1, n)) == sign(dot(v2, n))
+    return sign(dot(v1, n)) == sign(dot(v2, n));
 }
 
 fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
@@ -167,8 +167,8 @@ fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
     return 1.0 / PI;
 }
 
-fn matte_material_directional_pdf(&self, wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
-    let h = f32(same_hemisphere(self.normal, wo, wi)) ;
+fn matte_material_directional_pdf(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    let h = f32(same_hemisphere(n, wo, wi)) ;
     return h * abs_cos_theta(n, wi) / PI;
 }
 
@@ -189,5 +189,5 @@ fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
 }
 
 fn light_positional_pdf(radius: f32) -> f32 {
-    return 1.0 / (4.0 * PI * r * r);
+    return 1.0 / (4.0 * PI * radius * radius);
 }
