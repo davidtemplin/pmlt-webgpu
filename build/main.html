@@ -124,7 +124,7 @@ const constants = {
     uniformsBinding: 0,
     workgroupSize: 64,
     maxPathLength: 5,
-    pathCount: 1_000_000,
+    pathCount: 524_288,
     lightSphereId: 0,
     sphereCount: 10,
     pixelWidth: 640,
@@ -227,6 +227,29 @@ struct PathState {
     ray_direction_y: array<f32, PATH_COUNT>,
     ray_direction_z: array<f32, PATH_COUNT>,
     scalar_contribution: array<f32, PATH_COUNT>,
+    previous_point_x: array<f32, PATH_COUNT>,
+    previous_point_y: array<f32, PATH_COUNT>,
+    previous_point_z: array<f32, PATH_COUNT>,
+    previous_normal_x: array<f32, PATH_COUNT>,
+    previous_normal_y: array<f32, PATH_COUNT>,
+    previous_normal_z: array<f32, PATH_COUNT>,
+    previous_shape_id: array<u32, PATH_COUNT>,
+    final_camera_point_x: array<f32, PATH_COUNT>,
+    final_camera_point_y: array<f32, PATH_COUNT>,
+    final_camera_point_z: array<f32, PATH_COUNT>,
+    final_camera_normal_x: array<f32, PATH_COUNT>,
+    final_camera_normal_y: array<f32, PATH_COUNT>,
+    final_camera_normal_z: array<f32, PATH_COUNT>,
+    final_camera_shape_id: array<f32, PATH_COUNT>,
+    contribution_r: array<f32, PATH_COUNT>,
+    contribution_g: array<f32, PATH_COUNT>,
+    contribution_b: array<f32, PATH_COUNT>,
+    previous_camera_wo_x: array<f32, PATH_COUNT>,
+    previous_camera_wo_y: array<f32, PATH_COUNT>,
+    previous_camera_wo_z: array<f32, PATH_COUNT>,
+    final_camera_wo_x: array<f32, PATH_COUNT>,
+    final_camera_wo_y: array<f32, PATH_COUNT>,
+    final_camera_wo_z: array<f32, PATH_COUNT>,
 };
 
 struct U64 {
@@ -549,6 +572,10 @@ fn choose_u32(b: bool, u1: u32, u2: u32) -> u32 {
     return u32(b) * u1 + u32(!b) * u2;
 }
 
+fn choose_f32(b: bool, u1: f32, u2: f32) -> f32 {
+    return f32(b) * u1 + f32(!b) * u2;
+}
+
 fn intersect_sphere(center: vec3f, radius: f32, ray: Ray) -> f32 {
     let c = center - ray.origin;
     let b = dot(c, ray.direction);
@@ -595,6 +622,26 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
     return approx_eq_f32(a.x, b.x, tolerance) && approx_eq_f32(a.y, b.y, tolerance) && approx_eq_f32(a.z, b.z, tolerance);
 }
 
+fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
+    let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
+    let pdf = abs_cos_theta(normal, wi) / PI;
+    return MaterialSample(wi, pdf, true);
+}
+
+fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    return 1.0 / PI;
+}
+
+fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
+    return abs(dot(normalize(n), normalize(v)));
+}
+
+fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
+    let d2 = dot(direction, direction);
+    let x = (dot(normal1, direction) * dot(normal2, direction)) / (d2 * d2);
+    return abs(x);
+}
+
 fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
     let d = normalize(ray.origin - camera.origin);
     let screen_center = camera.w * camera.distance;
@@ -615,14 +662,12 @@ fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
     return PixelCoordinates(0, 0, false);
 }
 
-fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
-    let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
-    let pdf = abs_cos_theta(normal, wi) / PI;
-    return MaterialSample(wi, pdf, true);
-}
-
-fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
-    return abs(dot(normalize(n), normalize(v)));
+fn camera_importance(direction: vec3f) -> f32 {
+    let c = dot(normalize(direction), camera.w);
+    let a = f32(PIXEL_WIDTH) * f32(PIXEL_HEIGHT);
+    let c4 = c * c * c * c;
+    let d2 = camera.distance * camera.distance;
+    return d2 / (a * c4);
 }
 
 // TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
@@ -729,6 +774,19 @@ fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoc
         path_state.ray_direction_x[global_path_index] = direction.x;
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
+
+        let importance = camera_importance(direction);
+        let c = choose_f32(path_length == 2, 0.0, importance);
+        path_state.contribution_r[global_path_index] = c;
+        path_state.contribution_g[global_path_index] = c;
+        path_state.contribution_b[global_path_index] = c;
+
+        path_state.final_camera_point_x[global_path_index] = camera.origin.x;
+        path_state.final_camera_point_y[global_path_index] = camera.origin.y;
+        path_state.final_camera_point_z[global_path_index] = camera.origin.z;
+        path_state.final_camera_normal_x[global_path_index] = camera.w.x;
+        path_state.final_camera_normal_y[global_path_index] = camera.w.y;
+        path_state.final_camera_normal_z[global_path_index] = camera.w.z;
     }
     
     enqueue(global_invocation_index, lid, queue_id);
@@ -762,6 +820,11 @@ fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoca
         path_state.ray_direction_x[global_path_index] = direction.x;
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
+
+        let emission = vec3f(sphere.color_r[LIGHT_SPHERE_ID], sphere.color_g[LIGHT_SPHERE_ID], sphere.color_b[LIGHT_SPHERE_ID]);
+        path_state.contribution_r[global_path_index] *= emission.r;
+        path_state.contribution_r[global_path_index] *= emission.g;
+        path_state.contribution_r[global_path_index] *= emission.b;
     }
     
     enqueue(global_invocation_index, lid, queue_id);
@@ -818,6 +881,15 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == camera_technique - 1, SAMPLE_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+
+        let normal1 = vec3f(path_state.previous_normal_x[global_path_index], path_state.previous_normal_y[global_path_index], path_state.previous_normal_z[global_path_index]);
+        let p = vec3f(path_state.previous_point_x[global_path_index], path_state.previous_point_y[global_path_index], path_state.previous_point_z[global_path_index]);
+        let direction = intersection.point - p;
+        let g = geometry_term(direction, normal1, intersection.normal);
+
+        path_state.contribution_r[global_path_index] *= g;
+        path_state.contribution_g[global_path_index] *= g;
+        path_state.contribution_b[global_path_index] *= g;
     }
 
     enqueue(global_invocation_index, lid, queue_id);
@@ -1012,6 +1084,29 @@ function getPathStateArrayViews(pathStateArray) {
         ray_direction_y: new Float32Array(pathStateArray, 32 * constants.pathCount, constants.pathCount),
         ray_direction_z: new Float32Array(pathStateArray, 36 * constants.pathCount, constants.pathCount),
         scalar_contribution: new Float32Array(pathStateArray, 40 * constants.pathCount, constants.pathCount),
+        previous_point_x: new Float32Array(pathStateArray, 44 * constants.pathCount, constants.pathCount),
+        previous_point_y: new Float32Array(pathStateArray, 48 * constants.pathCount, constants.pathCount),
+        previous_point_z: new Float32Array(pathStateArray, 52 * constants.pathCount, constants.pathCount),
+        previous_normal_x: new Float32Array(pathStateArray, 56 * constants.pathCount, constants.pathCount),
+        previous_normal_y: new Float32Array(pathStateArray, 60 * constants.pathCount, constants.pathCount),
+        previous_normal_z: new Float32Array(pathStateArray, 64 * constants.pathCount, constants.pathCount),
+        previous_shape_id: new Uint32Array(pathStateArray, 68 * constants.pathCount, constants.pathCount),
+        final_camera_point_x: new Float32Array(pathStateArray, 72 * constants.pathCount, constants.pathCount),
+        final_camera_point_y: new Float32Array(pathStateArray, 76 * constants.pathCount, constants.pathCount),
+        final_camera_point_z: new Float32Array(pathStateArray, 80 * constants.pathCount, constants.pathCount),
+        final_camera_normal_x: new Float32Array(pathStateArray, 84 * constants.pathCount, constants.pathCount),
+        final_camera_normal_y: new Float32Array(pathStateArray, 88 * constants.pathCount, constants.pathCount),
+        final_camera_normal_z: new Float32Array(pathStateArray, 92 * constants.pathCount, constants.pathCount),
+        final_camera_shape_id: new Uint32Array(pathStateArray, 96 * constants.pathCount, constants.pathCount),
+        contribution_r: new Float32Array(pathStateArray, 100 * constants.pathCount, constants.pathCount),
+        contribution_g: new Float32Array(pathStateArray, 104 * constants.pathCount, constants.pathCount),
+        contribution_b: new Float32Array(pathStateArray, 108 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_x: new Float32Array(pathStateArray, 112 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_y: new Float32Array(pathStateArray, 116 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_z: new Float32Array(pathStateArray, 120 * constants.pathCount, constants.pathCount),
+        final_camera_wo_x: new Float32Array(pathStateArray, 124 * constants.pathCount, constants.pathCount),
+        final_camera_wo_y: new Float32Array(pathStateArray, 128 * constants.pathCount, constants.pathCount),
+        final_camera_wo_z: new Float32Array(pathStateArray, 132 * constants.pathCount, constants.pathCount),
     };
 }
 
@@ -1349,7 +1444,7 @@ async function main() {
 
     const pathStateBuffer = device.createBuffer({
         label: 'path state buffer',
-        size: 44 * constants.pathCount,
+        size: 136 * constants.pathCount,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
     });
 

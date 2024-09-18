@@ -9,6 +9,8 @@ cat src/wgsl/lib/random.wgsl;
 echo "\n";
 cat src/wgsl/lib/util.wgsl;
 echo "\n";
+cat src/wgsl/lib/camera.wgsl;
+echo "\n";
 cat src/wgsl/lib/queue.wgsl;
 echo "\n";
 cat src/wgsl/lib/image.wgsl;

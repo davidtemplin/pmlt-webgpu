@@ -122,7 +122,7 @@ const constants = {
     uniformsBinding: 0,
     workgroupSize: 64,
     maxPathLength: 5,
-    pathCount: 1_000_000,
+    pathCount: 524_288,
     lightSphereId: 0,
     sphereCount: 10,
     pixelWidth: 640,
@@ -321,6 +321,29 @@ function getPathStateArrayViews(pathStateArray) {
         ray_direction_y: new Float32Array(pathStateArray, 32 * constants.pathCount, constants.pathCount),
         ray_direction_z: new Float32Array(pathStateArray, 36 * constants.pathCount, constants.pathCount),
         scalar_contribution: new Float32Array(pathStateArray, 40 * constants.pathCount, constants.pathCount),
+        previous_point_x: new Float32Array(pathStateArray, 44 * constants.pathCount, constants.pathCount),
+        previous_point_y: new Float32Array(pathStateArray, 48 * constants.pathCount, constants.pathCount),
+        previous_point_z: new Float32Array(pathStateArray, 52 * constants.pathCount, constants.pathCount),
+        previous_normal_x: new Float32Array(pathStateArray, 56 * constants.pathCount, constants.pathCount),
+        previous_normal_y: new Float32Array(pathStateArray, 60 * constants.pathCount, constants.pathCount),
+        previous_normal_z: new Float32Array(pathStateArray, 64 * constants.pathCount, constants.pathCount),
+        previous_shape_id: new Uint32Array(pathStateArray, 68 * constants.pathCount, constants.pathCount),
+        final_camera_point_x: new Float32Array(pathStateArray, 72 * constants.pathCount, constants.pathCount),
+        final_camera_point_y: new Float32Array(pathStateArray, 76 * constants.pathCount, constants.pathCount),
+        final_camera_point_z: new Float32Array(pathStateArray, 80 * constants.pathCount, constants.pathCount),
+        final_camera_normal_x: new Float32Array(pathStateArray, 84 * constants.pathCount, constants.pathCount),
+        final_camera_normal_y: new Float32Array(pathStateArray, 88 * constants.pathCount, constants.pathCount),
+        final_camera_normal_z: new Float32Array(pathStateArray, 92 * constants.pathCount, constants.pathCount),
+        final_camera_shape_id: new Uint32Array(pathStateArray, 96 * constants.pathCount, constants.pathCount),
+        contribution_r: new Float32Array(pathStateArray, 100 * constants.pathCount, constants.pathCount),
+        contribution_g: new Float32Array(pathStateArray, 104 * constants.pathCount, constants.pathCount),
+        contribution_b: new Float32Array(pathStateArray, 108 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_x: new Float32Array(pathStateArray, 112 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_y: new Float32Array(pathStateArray, 116 * constants.pathCount, constants.pathCount),
+        previous_camera_wo_z: new Float32Array(pathStateArray, 120 * constants.pathCount, constants.pathCount),
+        final_camera_wo_x: new Float32Array(pathStateArray, 124 * constants.pathCount, constants.pathCount),
+        final_camera_wo_y: new Float32Array(pathStateArray, 128 * constants.pathCount, constants.pathCount),
+        final_camera_wo_z: new Float32Array(pathStateArray, 132 * constants.pathCount, constants.pathCount),
     };
 }
 
@@ -658,7 +681,7 @@ async function main() {
 
     const pathStateBuffer = device.createBuffer({
         label: 'path state buffer',
-        size: 44 * constants.pathCount,
+        size: 136 * constants.pathCount,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
     });
 

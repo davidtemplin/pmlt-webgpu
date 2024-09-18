@@ -22,6 +22,19 @@ fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoc
         path_state.ray_direction_x[global_path_index] = direction.x;
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
+
+        let importance = camera_importance(direction);
+        let c = choose_f32(path_length == 2, 0.0, importance);
+        path_state.contribution_r[global_path_index] = c;
+        path_state.contribution_g[global_path_index] = c;
+        path_state.contribution_b[global_path_index] = c;
+
+        path_state.final_camera_point_x[global_path_index] = camera.origin.x;
+        path_state.final_camera_point_y[global_path_index] = camera.origin.y;
+        path_state.final_camera_point_z[global_path_index] = camera.origin.z;
+        path_state.final_camera_normal_x[global_path_index] = camera.w.x;
+        path_state.final_camera_normal_y[global_path_index] = camera.w.y;
+        path_state.final_camera_normal_z[global_path_index] = camera.w.z;
     }
     
     enqueue(global_invocation_index, lid, queue_id);

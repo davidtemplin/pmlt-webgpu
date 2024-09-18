@@ -103,6 +103,10 @@ fn choose_u32(b: bool, u1: u32, u2: u32) -> u32 {
     return u32(b) * u1 + u32(!b) * u2;
 }
 
+fn choose_f32(b: bool, u1: f32, u2: f32) -> f32 {
+    return f32(b) * u1 + f32(!b) * u2;
+}
+
 fn intersect_sphere(center: vec3f, radius: f32, ray: Ray) -> f32 {
     let c = center - ray.origin;
     let b = dot(c, ray.direction);
@@ -149,32 +153,22 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
     return approx_eq_f32(a.x, b.x, tolerance) && approx_eq_f32(a.y, b.y, tolerance) && approx_eq_f32(a.z, b.z, tolerance);
 }
 
-fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
-    let d = normalize(ray.origin - camera.origin);
-    let screen_center = camera.w * camera.distance;
-    let wd = dot(camera.w, d);
-    if wd == 0.0 {
-        return PixelCoordinates(0, 0, false);
-    }
-    let t = dot(camera.w, screen_center) / wd;
-    if t <= 0.0 {
-        return PixelCoordinates(0, 0, false);
-    }
-    let p = t * d - screen_center;
-    let px = u32(dot(camera.u, p) + f32(PIXEL_WIDTH) * 0.5);
-    let py = u32(-dot(camera.v, p) + f32(PIXEL_HEIGHT) * 0.5);
-    if 0 <= px && px < PIXEL_WIDTH && 0 <= py && py < PIXEL_HEIGHT {
-        return PixelCoordinates(px, py, true);
-    }
-    return PixelCoordinates(0, 0, false);
-}
-
 fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
     let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
     let pdf = abs_cos_theta(normal, wi) / PI;
     return MaterialSample(wi, pdf, true);
 }
 
+fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    return 1.0 / PI;
+}
+
 fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
     return abs(dot(normalize(n), normalize(v)));
+}
+
+fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
+    let d2 = dot(direction, direction);
+    let x = (dot(normal1, direction) * dot(normal2, direction)) / (d2 * d2);
+    return abs(x);
 }

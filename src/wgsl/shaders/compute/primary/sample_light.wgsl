@@ -22,6 +22,11 @@ fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoca
         path_state.ray_direction_x[global_path_index] = direction.x;
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
+
+        let emission = vec3f(sphere.color_r[LIGHT_SPHERE_ID], sphere.color_g[LIGHT_SPHERE_ID], sphere.color_b[LIGHT_SPHERE_ID]);
+        path_state.contribution_r[global_path_index] *= emission.r;
+        path_state.contribution_r[global_path_index] *= emission.g;
+        path_state.contribution_r[global_path_index] *= emission.b;
     }
     
     enqueue(global_invocation_index, lid, queue_id);

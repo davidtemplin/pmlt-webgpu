@@ -19,6 +19,15 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == camera_technique - 1, SAMPLE_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+
+        let normal1 = vec3f(path_state.previous_normal_x[global_path_index], path_state.previous_normal_y[global_path_index], path_state.previous_normal_z[global_path_index]);
+        let p = vec3f(path_state.previous_point_x[global_path_index], path_state.previous_point_y[global_path_index], path_state.previous_point_z[global_path_index]);
+        let direction = intersection.point - p;
+        let g = geometry_term(direction, normal1, intersection.normal);
+
+        path_state.contribution_r[global_path_index] *= g;
+        path_state.contribution_g[global_path_index] *= g;
+        path_state.contribution_b[global_path_index] *= g;
     }
 
     enqueue(global_invocation_index, lid, queue_id);
