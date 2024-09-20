@@ -17,40 +17,44 @@ struct Sphere {
 };
 
 struct PathState {
+    /* path context */
     step_type: array<u32, PATH_COUNT>,
     local_path_index: array<u32, PATH_COUNT>,
     path_length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
+    technique_light: array<u32, PATH_COUNT>,
+    technique_camera: array<u32, PATH_COUNT>,
+
+    /* ray */
     ray_origin_x: array<f32, PATH_COUNT>,
     ray_origin_y: array<f32, PATH_COUNT>,
     ray_origin_z: array<f32, PATH_COUNT>,
     ray_direction_x: array<f32, PATH_COUNT>,
     ray_direction_y: array<f32, PATH_COUNT>,
     ray_direction_z: array<f32, PATH_COUNT>,
-    scalar_contribution: array<f32, PATH_COUNT>,
-    previous_point_x: array<f32, PATH_COUNT>,
-    previous_point_y: array<f32, PATH_COUNT>,
-    previous_point_z: array<f32, PATH_COUNT>,
-    previous_normal_x: array<f32, PATH_COUNT>,
-    previous_normal_y: array<f32, PATH_COUNT>,
-    previous_normal_z: array<f32, PATH_COUNT>,
-    previous_shape_id: array<u32, PATH_COUNT>,
-    final_camera_point_x: array<f32, PATH_COUNT>,
-    final_camera_point_y: array<f32, PATH_COUNT>,
-    final_camera_point_z: array<f32, PATH_COUNT>,
-    final_camera_normal_x: array<f32, PATH_COUNT>,
-    final_camera_normal_y: array<f32, PATH_COUNT>,
-    final_camera_normal_z: array<f32, PATH_COUNT>,
-    final_camera_shape_id: array<f32, PATH_COUNT>,
+
+    /* contribution */
     contribution_r: array<f32, PATH_COUNT>,
     contribution_g: array<f32, PATH_COUNT>,
     contribution_b: array<f32, PATH_COUNT>,
-    previous_camera_wo_x: array<f32, PATH_COUNT>,
-    previous_camera_wo_y: array<f32, PATH_COUNT>,
-    previous_camera_wo_z: array<f32, PATH_COUNT>,
-    final_camera_wo_x: array<f32, PATH_COUNT>,
-    final_camera_wo_y: array<f32, PATH_COUNT>,
-    final_camera_wo_z: array<f32, PATH_COUNT>,
+    scalar_contribution: array<f32, PATH_COUNT>,
+
+    /* geometry */
+    point_x: array<array<f32, PATH_COUNT>, 2>,
+    point_y: array<array<f32, PATH_COUNT>, 2>,
+    point_z: array<array<f32, PATH_COUNT>, 2>,
+    normal_x: array<array<f32, PATH_COUNT>, 2>,
+    normal_y: array<array<f32, PATH_COUNT>, 2>,
+    normal_z: array<array<f32, PATH_COUNT>, 2>,
+    wo_x: array<array<f32, PATH_COUNT>, 2>,
+    wo_y: array<array<f32, PATH_COUNT>, 2>,
+    wo_z: array<array<f32, PATH_COUNT>, 2>,
+    sphere_id: array<array<f32, PATH_COUNT>, 2>,
+
+    /* MIS */
+    pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
+    sum_inv_ri: array<array<f32, PATH_COUNT>, 2>,
+    prod_ri: array<array<f32, PATH_COUNT>, 2>,
 };
 
 struct U64 {

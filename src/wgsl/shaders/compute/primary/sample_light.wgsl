@@ -22,13 +22,6 @@ fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invoca
         path_state.ray_direction_x[global_path_index] = direction.x;
         path_state.ray_direction_y[global_path_index] = direction.y;
         path_state.ray_direction_z[global_path_index] = direction.z;
-
-        let emission = vec3f(sphere.color_r[LIGHT_SPHERE_ID], sphere.color_g[LIGHT_SPHERE_ID], sphere.color_b[LIGHT_SPHERE_ID]);
-        let positional_pdf = light_positional_pdf(sphere.radius[LIGHT_SPHERE_ID]);
-        let c = emission / positional_pdf;
-        path_state.contribution_r[global_path_index] *= c.r;
-        path_state.contribution_r[global_path_index] *= c.g;
-        path_state.contribution_r[global_path_index] *= c.b;
     }
     
     enqueue(global_invocation_index, lid, queue_id);
