@@ -22,8 +22,8 @@ struct PathState {
     local_path_index: array<u32, PATH_COUNT>,
     path_length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
-    technique_light: array<u32, PATH_COUNT>,
-    technique_camera: array<u32, PATH_COUNT>,
+    light_technique: array<u32, PATH_COUNT>,
+    camera_technique: array<u32, PATH_COUNT>,
 
     /* ray */
     ray_origin_x: array<f32, PATH_COUNT>,
@@ -46,7 +46,7 @@ struct PathState {
     normal_x: array<array<f32, PATH_COUNT>, 2>,
     normal_y: array<array<f32, PATH_COUNT>, 2>,
     normal_z: array<array<f32, PATH_COUNT>, 2>,
-    wo_x: array<array<f32, PATH_COUNT>, 2>,
+    wo_x: array<array<f32, PATH_COUNT>, 2>, // TODOL: remove wo; add extra point and normal (for point/normal before previous point); add directional_pdf (most recent directional PDF)
     wo_y: array<array<f32, PATH_COUNT>, 2>,
     wo_z: array<array<f32, PATH_COUNT>, 2>,
     sphere_id: array<array<f32, PATH_COUNT>, 2>,

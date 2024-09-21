@@ -124,7 +124,7 @@ const constants = {
     uniformsBinding: 0,
     workgroupSize: 64,
     maxPathLength: 5,
-    pathCount: 524_288,
+    pathCount: 1_000_000,
     lightSphereId: 0,
     sphereCount: 10,
     pixelWidth: 640,
@@ -221,8 +221,8 @@ struct PathState {
     local_path_index: array<u32, PATH_COUNT>,
     path_length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
-    technique_light: array<u32, PATH_COUNT>,
-    technique_camera: array<u32, PATH_COUNT>,
+    light_technique: array<u32, PATH_COUNT>,
+    camera_technique: array<u32, PATH_COUNT>,
 
     /* ray */
     ray_origin_x: array<f32, PATH_COUNT>,
@@ -245,7 +245,7 @@ struct PathState {
     normal_x: array<array<f32, PATH_COUNT>, 2>,
     normal_y: array<array<f32, PATH_COUNT>, 2>,
     normal_z: array<array<f32, PATH_COUNT>, 2>,
-    wo_x: array<array<f32, PATH_COUNT>, 2>,
+    wo_x: array<array<f32, PATH_COUNT>, 2>, // TODOL: remove wo; add extra point and normal (for point/normal before previous point); add directional_pdf (most recent directional PDF)
     wo_y: array<array<f32, PATH_COUNT>, 2>,
     wo_z: array<array<f32, PATH_COUNT>, 2>,
     sphere_id: array<array<f32, PATH_COUNT>, 2>,
@@ -887,8 +887,8 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let intersection = intersect(ray);
         let path_length = path_state.path_length[global_path_index];
         let vertex_index = path_state.vertex_index[global_path_index];
-        let light_technique: u32 = 0;//path_state.light_technique[global_path_index]; TODO
-        let camera_technique: u32 = 0;//path_state.camera_technique[global_path_index]; TODO
+        let light_technique = path_state.light_technique[global_path_index];
+        let camera_technique = path_state.camera_technique[global_path_index];
         queue_id = choose_u32(vertex_index + 1 < camera_technique || vertex_index + 1 < light_technique, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
@@ -1081,8 +1081,8 @@ function getPathStateArrayViews(pathStateArray) {
         local_path_index: new Uint32Array(pathStateArray, 4 * constants.pathCount, constants.pathCount),
         path_length: new Uint32Array(pathStateArray, 8 * constants.pathCount, constants.pathCount),
         vertex_index: new Uint32Array(pathStateArray, 12 * constants.pathCount, constants.pathCount),
-        technique_light: new Uint32Array(pathStateArray, 16 * constants.pathCount, constants.pathCount),
-        technique_camera: new Uint32Array(pathStateArray, 20 * constants.pathCount, constants.pathCount),
+        light_technique: new Uint32Array(pathStateArray, 16 * constants.pathCount, constants.pathCount),
+        camera_technique: new Uint32Array(pathStateArray, 20 * constants.pathCount, constants.pathCount),
         ray_origin_x: new Float32Array(pathStateArray, 24 * constants.pathCount, constants.pathCount),
         ray_origin_y: new Float32Array(pathStateArray, 28 * constants.pathCount, constants.pathCount),
         ray_origin_z: new Float32Array(pathStateArray, 32 * constants.pathCount, constants.pathCount),
@@ -1307,12 +1307,17 @@ async function timestamp(t) {
 }
 
 async function main() {
+    const memoryLimit = 2_147_483_644;
     const adapter = await navigator.gpu?.requestAdapter({
         powerPreference: 'high-performance',
     });
 
     const device = await adapter?.requestDevice({
         requiredFeatures: ['timestamp-query'],
+        requiredLimits: {
+            maxStorageBufferBindingSize: memoryLimit,
+            maxBufferSize: memoryLimit,
+        },
     });
 
     if (!device) {
@@ -1940,13 +1945,13 @@ async function main() {
 
     pass.end();
 
-    const d = prepareDebug(device, pathStateBuffer, encoder, getPathStateArrayViews, 'path state');
+    //const d = prepareDebug(device, pathStateBuffer, encoder, getPathStateArrayViews, 'path state');
     const t = prepareTimestamp(device, querySet, encoder);
 
     commandBuffer = encoder.finish();
     device.queue.submit([commandBuffer]);
 
-    await debug(d);
+    //await debug(d);
     await timestamp(t);
 }
 

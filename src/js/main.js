@@ -122,7 +122,7 @@ const constants = {
     uniformsBinding: 0,
     workgroupSize: 64,
     maxPathLength: 5,
-    pathCount: 524_288,
+    pathCount: 1_000_000,
     lightSphereId: 0,
     sphereCount: 10,
     pixelWidth: 640,
@@ -314,8 +314,8 @@ function getPathStateArrayViews(pathStateArray) {
         local_path_index: new Uint32Array(pathStateArray, 4 * constants.pathCount, constants.pathCount),
         path_length: new Uint32Array(pathStateArray, 8 * constants.pathCount, constants.pathCount),
         vertex_index: new Uint32Array(pathStateArray, 12 * constants.pathCount, constants.pathCount),
-        technique_light: new Uint32Array(pathStateArray, 16 * constants.pathCount, constants.pathCount),
-        technique_camera: new Uint32Array(pathStateArray, 20 * constants.pathCount, constants.pathCount),
+        light_technique: new Uint32Array(pathStateArray, 16 * constants.pathCount, constants.pathCount),
+        camera_technique: new Uint32Array(pathStateArray, 20 * constants.pathCount, constants.pathCount),
         ray_origin_x: new Float32Array(pathStateArray, 24 * constants.pathCount, constants.pathCount),
         ray_origin_y: new Float32Array(pathStateArray, 28 * constants.pathCount, constants.pathCount),
         ray_origin_z: new Float32Array(pathStateArray, 32 * constants.pathCount, constants.pathCount),
@@ -540,12 +540,17 @@ async function timestamp(t) {
 }
 
 async function main() {
+    const memoryLimit = 2_147_483_644;
     const adapter = await navigator.gpu?.requestAdapter({
         powerPreference: 'high-performance',
     });
 
     const device = await adapter?.requestDevice({
         requiredFeatures: ['timestamp-query'],
+        requiredLimits: {
+            maxStorageBufferBindingSize: memoryLimit,
+            maxBufferSize: memoryLimit,
+        },
     });
 
     if (!device) {
@@ -1173,13 +1178,13 @@ async function main() {
 
     pass.end();
 
-    const d = prepareDebug(device, pathStateBuffer, encoder, getPathStateArrayViews, 'path state');
+    //const d = prepareDebug(device, pathStateBuffer, encoder, getPathStateArrayViews, 'path state');
     const t = prepareTimestamp(device, querySet, encoder);
 
     commandBuffer = encoder.finish();
     device.queue.submit([commandBuffer]);
 
-    await debug(d);
+    //await debug(d);
     await timestamp(t);
 }
 
