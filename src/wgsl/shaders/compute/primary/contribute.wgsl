@@ -1,6 +1,7 @@
 @compute
 @workgroup_size(WORKGROUP_SIZE)
 fn contribute_main(@builtin(global_invocation_id) id: vec3u) {
+    // TODO: also calculate final MIS weight and scalar contribution (via luminance)
     let global_invocation_index = id.x;
     if global_invocation_index < atomicLoad(&queue_counts[CONTRIBUTE_QUEUE_ID]) {
         let global_path_index = queues[CONTRIBUTE_QUEUE_ID][global_invocation_index];

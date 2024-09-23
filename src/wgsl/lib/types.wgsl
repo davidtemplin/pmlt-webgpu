@@ -149,3 +149,10 @@ struct LightSample {
     positional_pdf: f32,
     directional_pdf: f32,
 };
+
+struct MaterialEvaluation {
+    pdf_fwd: f32,
+    pdf_rev: f32,
+    throughput: f32,
+    valid: bool,
+};

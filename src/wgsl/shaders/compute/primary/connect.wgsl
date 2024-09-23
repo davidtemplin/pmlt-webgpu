@@ -28,7 +28,9 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         path.scalar_contribution[i] = choose_f32(valid, path.scalar_contribution[i], 0.0);
 
         // Determine queue
-        queue_id = choose_u32(path_length == 2, POST_CONNECT_DIRECT_QUEUE_ID, POST_CONNECT_CAMERA_QUEUE_ID);
+        queue_id = choose_u32(path_length == 2, POST_CONNECT_DIRECT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(technique.camera > 1, POST_CONNECT_CAMERA_QUEUE_ID, queue_id);
+        queue_id = choose_u32(technique.camera < 2, POST_CONNECT_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
     }
 

@@ -176,3 +176,7 @@ fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
 fn light_positional_pdf(radius: f32) -> f32 {
     return 1.0 / (4.0 * PI * radius * radius);
 }
+
+fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
+    return abs_cos_theta(d, n) / PI;
+}
