@@ -157,21 +157,6 @@ fn same_hemisphere(n: vec3f, v1: vec3f, v2: vec3f) -> bool {
     return sign(dot(v1, n)) == sign(dot(v2, n));
 }
 
-fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
-    let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
-    let pdf = abs_cos_theta(normal, wi) / PI;
-    return MaterialSample(wi, pdf, true);
-}
-
-fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
-    return 1.0 / PI;
-}
-
-fn matte_material_directional_pdf(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
-    let h = f32(same_hemisphere(n, wo, wi)) ;
-    return h * abs_cos_theta(n, wi) / PI;
-}
-
 fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
     return abs(dot(normalize(n), normalize(v)));
 }

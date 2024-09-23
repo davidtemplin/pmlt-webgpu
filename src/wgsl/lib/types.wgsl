@@ -128,7 +128,9 @@ struct PixelCoordinates {
 
 struct MaterialSample {
     wi: vec3f,
-    pdf: f32,
+    pdf_fwd: f32,
+    pdf_rev: f32,
+    throughput: vec3f,
     valid: bool,
 };
 
