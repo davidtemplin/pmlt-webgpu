@@ -30,7 +30,8 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
 
         // Beta
         let importance = camera_importance(sample.direction);
-        path.beta *= importance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+        let beta = importance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+        update_beta(i, beta);
 
         // Geometry
         set_point(CAMERA, ULTIMATE, i, sample.point);

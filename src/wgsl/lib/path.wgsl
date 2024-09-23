@@ -54,3 +54,9 @@ fn get_technique(i: u32) -> Technique {
 fn shift_pdf_fwd(path_type: u32, i: u32) {
     path.pdf_fwd[path_type][PENULTIMATE][i] = path.pdf_fwd[path_type][ULTIMATE][i];
 }
+
+fn update_beta(i: u32, beta: vec3f) {
+    path.beta[0][i] *= beta.r;
+    path.beta[1][i] *= beta.g;
+    path.beta[2][i] *= beta.b;
+}

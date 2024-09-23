@@ -26,7 +26,8 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         path.pdf_fwd[path_type][ULTIMATE][i] = path.directional_pdf[path_type][i] * direction_to_area(direction, intersection.normal);
 
         // Beta
-        path.beta *= geometry_term(direction, path.normal[path_type][ULTIMATE][i], intersection.normal);
+        let beta = geometry_term(direction, path.normal[path_type][ULTIMATE][i], intersection.normal);
+        update_beta(i, beta);
 
         // Scalar contribution
         path.scalar_contribution[i] = choose_f32(intersection.valid, path.scalar_contribution[i], 0.0);

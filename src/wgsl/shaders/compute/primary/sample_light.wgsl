@@ -25,7 +25,8 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
 
         // Beta
         let radiance = get_sphere_color(LIGHT_SPHERE_ID);
-        path.beta *= radiance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+        let beta = radiance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+        update_beta(i, beta);
 
         // Geometry
         set_point(LIGHT, ULTIMATE, i, sample.point);
