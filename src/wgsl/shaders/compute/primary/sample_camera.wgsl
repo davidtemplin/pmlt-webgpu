@@ -1,28 +1,45 @@
 @compute 
 @workgroup_size(WORKGROUP_SIZE)
-fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine global path index (i)
     let global_invocation_index = gid.x;
+    let i = queues[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
 
+    // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
-    if global_invocation_index < atomicLoad(&queue_counts[SAMPLE_CAMERA_QUEUE_ID]) {
-        let global_path_index = queues[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
-        let tr = rand_1(global_path_index, TECHNIQUE_STREAM_INDEX);
-        let path_length = path_state.path_length[global_path_index];
-        let technique = sample_technique(path_length, tr);
+    // Check bounds
+    if i < atomicLoad(&queue_counts[SAMPLE_CAMERA_QUEUE_ID]) {
+        // Determine technique
+        let path_length = path.length[i];
+        let technique = sample_technique(path_length, rand_1(i, TECHNIQUE_STREAM_INDEX));
+        set_technique(i, technique);
+
+        // Sample
+        let sample = sample_camera(rand_2(i, CAMERA_STREAM_INDEX));
+
+        // Set initial ray
+        set_ray_origin(sample.point);
+        set_ray_direction(sample.direction);
+
+        // MIS
+        path.pdf_fwd[CAMERA][ULTIMATE][i] = sample.positional_pdf;
+
+        // PDF
+        path.directional_pdf[CAMERA][i] = sample.directional_pdf;
+
+        // Beta
+        let importance = camera_importance(sample.direction);
+        path.beta *= importance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+
+        // Geometry
+        set_point(CAMERA, ULTIMATE, i, sample.point);
+        set_normal(CAMERA, ULTIMATE, i, sample.normal);
+
+        // Determine queue
         queue_id = choose_u32(path_length == 2, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
-        let cr = rand_2(global_path_index, CAMERA_STREAM_INDEX);
-        let u = camera.u * (cr[0] - f32(PIXEL_WIDTH) / 2.0);
-        let v = -camera.v * (cr[1] - f32(PIXEL_HEIGHT) / 2.0);
-        let w = camera.w * camera.distance;
-        let direction = normalize(u + v + w);
-        path_state.ray_origin_x[global_path_index] = camera.origin.x;
-        path_state.ray_origin_y[global_path_index] = camera.origin.y;
-        path_state.ray_origin_z[global_path_index] = camera.origin.z;
-        path_state.ray_direction_x[global_path_index] = direction.x;
-        path_state.ray_direction_y[global_path_index] = direction.y;
-        path_state.ray_direction_z[global_path_index] = direction.z;
     }
     
-    enqueue(global_invocation_index, lid, queue_id);
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }

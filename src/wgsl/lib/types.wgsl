@@ -20,36 +20,26 @@ struct PathState {
     /* path context */
     step_type: array<u32, PATH_COUNT>,
     local_path_index: array<u32, PATH_COUNT>,
-    path_length: array<u32, PATH_COUNT>,
+    length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
-    light_technique: array<u32, PATH_COUNT>,
-    camera_technique: array<u32, PATH_COUNT>,
+    technique: array<array<u32, PATH_COUNT>, 2>,
 
     /* ray */
-    ray_origin_x: array<f32, PATH_COUNT>,
-    ray_origin_y: array<f32, PATH_COUNT>,
-    ray_origin_z: array<f32, PATH_COUNT>,
-    ray_direction_x: array<f32, PATH_COUNT>,
-    ray_direction_y: array<f32, PATH_COUNT>,
-    ray_direction_z: array<f32, PATH_COUNT>,
+    ray_origin: array<array<f32, PATH_COUNT>, 3>,
+    ray_direction: array<array<f32, PATH_COUNT>, 3>,
 
-    /* contribution */
-    contribution_r: array<f32, PATH_COUNT>,
-    contribution_g: array<f32, PATH_COUNT>,
-    contribution_b: array<f32, PATH_COUNT>,
+    /* beta */
+    beta: array<array<f32, PATH_COUNT>, 3>,
+
+    /* scalar contribution */
     scalar_contribution: array<f32, PATH_COUNT>,
 
     /* geometry */
-    point_x: array<array<f32, PATH_COUNT>, 2>,
-    point_y: array<array<f32, PATH_COUNT>, 2>,
-    point_z: array<array<f32, PATH_COUNT>, 2>,
-    normal_x: array<array<f32, PATH_COUNT>, 2>,
-    normal_y: array<array<f32, PATH_COUNT>, 2>,
-    normal_z: array<array<f32, PATH_COUNT>, 2>,
-    wo_x: array<array<f32, PATH_COUNT>, 2>, // TODOL: remove wo; add extra point and normal (for point/normal before previous point); add directional_pdf (most recent directional PDF)
-    wo_y: array<array<f32, PATH_COUNT>, 2>,
-    wo_z: array<array<f32, PATH_COUNT>, 2>,
-    sphere_id: array<array<f32, PATH_COUNT>, 2>,
+    point: array<array<array<f32, PATH_COUNT>, 3>, 2>,
+    normal: array<array<array<f32, PATH_COUNT>, 3>, 2>,
+
+    /* material */
+    material_id: array<array<f32, PATH_COUNT>, 2>,
 
     /* MIS */
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
@@ -140,4 +130,20 @@ struct MaterialSample {
     wi: vec3f,
     pdf: f32,
     valid: bool,
+};
+
+struct CameraSample {
+    point: vec3f,
+    direction: vec3f,
+    normal: vec3f,
+    positional_pdf: f32,
+    directional_pdf: f32,
+};
+
+struct LightSample {
+    point: vec3f,
+    direction: vec3f,
+    normal: vec3f,
+    positional_pdf: f32,
+    directional_pdf: f32,
 };

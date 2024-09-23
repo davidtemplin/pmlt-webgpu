@@ -184,7 +184,7 @@ fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
 
 fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
     let d2 = dot(direction, direction);
-    let x = dot(normal, direction) / sqrt(d2 * d2);
+    let x = dot(normal, direction) / (d2 * sqrt(d2));
     return abs(x);
 }
 

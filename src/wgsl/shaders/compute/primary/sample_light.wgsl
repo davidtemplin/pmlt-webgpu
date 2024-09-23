@@ -1,28 +1,40 @@
 @compute 
 @workgroup_size(WORKGROUP_SIZE)
-fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine global path index (i)
     let global_invocation_index = gid.x;
+    let i = queues[SAMPLE_LIGHT_QUEUE_ID][global_invocation_index];
 
+    // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
-    if global_invocation_index < atomicLoad(&queue_counts[SAMPLE_LIGHT_QUEUE_ID]) {
-        let global_path_index = queues[SAMPLE_LIGHT_QUEUE_ID][global_invocation_index];
-        let tr = rand_1(global_path_index, TECHNIQUE_STREAM_INDEX);
-        let path_length = path_state.path_length[global_path_index];
-        let technique = sample_technique(path_length, tr);
-        queue_id = choose_u32(path_length == 2, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
-        let cr = rand_4(global_path_index, LIGHT_STREAM_INDEX);
-        let point = uniform_sample_sphere(cr[0], cr[1]) * sphere.radius[LIGHT_SPHERE_ID];
-        let center = vec3f(sphere.center_x[LIGHT_SPHERE_ID], sphere.center_y[LIGHT_SPHERE_ID], sphere.center_z[LIGHT_SPHERE_ID]);
-        let normal = point - center;
-        let direction = cosine_sample_hemisphere(normal, cr[2], cr[3]);
-        path_state.ray_origin_x[global_path_index] = point.x;
-        path_state.ray_origin_y[global_path_index] = point.y;
-        path_state.ray_origin_z[global_path_index] = point.z;
-        path_state.ray_direction_x[global_path_index] = direction.x;
-        path_state.ray_direction_y[global_path_index] = direction.y;
-        path_state.ray_direction_z[global_path_index] = direction.z;
+    // Check bounds
+    if i < atomicLoad(&queue_counts[SAMPLE_LIGHT_QUEUE_ID]) {
+        // Sample        
+        let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
+
+        // Set initial ray
+        set_ray_origin(sample.point);
+        set_ray_direction(sample.direction);
+
+        // MIS
+        path.pdf_fwd[LIGHT][ULTIMATE][i] = sample.positional_pdf;
+
+        // PDF
+        path.directional_pdf[LIGHT][i] = sample.directional_pdf;
+
+        // Beta
+        let radiance = get_sphere_color(LIGHT_SPHERE_ID);
+        path.beta *= radiance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+
+        // Geometry
+        set_point(LIGHT, ULTIMATE, i, sample.point);
+        set_normal(LIGHT, ULTIMATE, i, sample.normal);
+
+        // Determine queue
+        queue_id = choose_u32(path.length[i] == 2, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
+    // Enqueue
     enqueue(global_invocation_index, lid, queue_id);
 }
