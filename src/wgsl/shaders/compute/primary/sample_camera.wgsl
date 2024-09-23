@@ -3,13 +3,13 @@
 fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine global path index (i)
     let global_invocation_index = gid.x;
-    let i = queues[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
+    let i = queue.index[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue_counts[SAMPLE_CAMERA_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
         // Determine technique
         let path_length = path.length[i];
         let technique = sample_technique(path_length, rand_1(i, TECHNIQUE_STREAM_INDEX));

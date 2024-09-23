@@ -1,18 +1,37 @@
 @compute
 @workgroup_size(WORKGROUP_SIZE)
 fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid) {
+    // Determine the global path index (i)
     let global_invocation_index = id.x;
+    let i = queue.index[CONNECT_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
     let queue_id: u32 = NULL_QUEUE_ID;
-    if global_invocation_index < atomicLoad(&queue_counts[CONNECT_QUEUE_ID]) {
-        let global_path_index = queues[CONNECT_QUEUE_ID][global_invocation_index];
-        let source_point = vec3f(path_state.final_camera_point_x[global_path_index], path_state.final_camera_point_y[global_path_index], path_state.final_camera_point_z[global_path_index]);
-        let destination_point = vec3f(path_state.previous_point_x[global_path_index], path_state.previous_point_y[global_path_index], path_state.previous_point_z[global_path_index]);
-        let direction = normalize(destination_point - source_point);
-        let ray = Ray(source_point, direction);
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
+        // Context
+        let path_length = path.length[i];
+
+        // Intersect
+        let source = get_point(CAMERA, ULTIMATE, i);
+        let destination = get_point(LIGHT, ULTIMATE, i);
+        let direction = normalize(destination - source);
+        let ray = Ray(source, direction);
         let intersection = intersect(ray);
+
+        // Compute pixel coordinates; TODO: update pixel coordinates in path state
         let pixel_coordinates = get_pixel_coordinates(ray);
-        let valid = (pixel_coordinates.valid || path_length != 2) && intersection.valid && approx_eq_vec3f(intersection.point, destination_point);
-        queue_id = choose_u32(valid, CONTRIBUTE_QUEUE_ID, queue_id);
+        let valid = (pixel_coordinates.valid || path_length != 2) && intersection.valid && approx_eq_vec3f(intersection.point, destination);
+
+        // Scalar contribution
+        path.scalar_contribution[i] = choose_f32(valid, path.scalar_contribution[i], 0.0);
+
+        // Determine queue
+        queue_id = choose_u32(path_length == 2, POST_CONNECT_DIRECT_QUEUE_ID, POST_CONNECT_CAMERA_QUEUE_ID);
+        queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
     }
-    enqueue(global_invocation_id, lid, queue_id);
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }

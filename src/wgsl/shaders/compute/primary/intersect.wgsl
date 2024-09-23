@@ -3,13 +3,13 @@
 fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
     let global_invocation_index: u32 = id.x;
-    let i = queues[INTERSECT_QUEUE_ID][global_invocation_index];
+    let i = queue.index[INTERSECT_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue_counts[INTERSECT_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
         // Intersect
         let ray = get_ray(i);
         let intersection = intersect(ray);
@@ -50,5 +50,5 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
     }
 
     // Enqueue
-    enqueue(global_invocation_index, lid, queue_id);
+    enqueue(i, lid, queue_id);
 }

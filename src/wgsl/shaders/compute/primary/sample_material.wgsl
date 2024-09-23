@@ -3,13 +3,13 @@
 fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid) {
     // Determine the global path index (i)
     let global_invocation_index = id.x;
-    let i = sample_material_queue[global_invocation_index];
+    let i = queue.index[SAMPLE_MATERIAL_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
     let queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue_counts[SAMPLE_MATERIAL_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[SAMPLE_MATERIAL_QUEUE_ID]) {
         // Context
         let vertex_index = path.vertex_index[i];
         let technique = get_technique(i);
@@ -37,5 +37,5 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
     }
 
     // Enqueue
-    enqueue(global_invocation_id, lid, queue_id);
+    enqueue(i, lid, queue_id);
 }

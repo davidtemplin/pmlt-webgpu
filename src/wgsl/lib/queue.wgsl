@@ -19,14 +19,14 @@ fn enqueue(global_invocation_id: u32, local_invocation_id: u32, queue_id: u32) {
         return;
     }
 
-    var index = atomicAdd(&queue_counts[local_invocation_id], tally);
+    var index = atomicAdd(&queue.count[local_invocation_id], tally);
     let last_index = index + tally - 1;
 
     for (var i: u32 = 0; i < WORKGROUP_SIZE; i++) {
         let queue_index = workgroup_queue_ballot[i];
         let id = global_invocation_id - local_invocation_id + i;
         let index_match = queue_index == local_invocation_id;
-        queues[queue_index][index] = choose_u32(index_match, id, queues[queue_index][index]);
+        queue.index[queue_index][index] = choose_u32(index_match, id, queue.index[queue_index][index]);
         index = index + u32(index_match && index < last_index);
     }
 }
