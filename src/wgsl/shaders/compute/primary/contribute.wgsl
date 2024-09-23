@@ -21,7 +21,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         let pixel_coordinates = get_pixel_coordinates(i);
 
         // Compute the final contribution
-        let c = path.beta[i] * mis_weight;
+        let c = get_beta(i) * mis_weight;
         let sc = luminance(c);
         path.scalar_contribution[i] = sc;
 
