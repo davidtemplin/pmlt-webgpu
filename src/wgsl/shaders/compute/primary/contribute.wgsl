@@ -1,23 +1,36 @@
 @compute
 @workgroup_size(WORKGROUP_SIZE)
-fn contribute_main(@builtin(global_invocation_id) id: vec3u) {
-    // TODO: also calculate final MIS weight and scalar contribution (via luminance)
+fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
+    // Determine the global path index (i)
     let global_invocation_index = id.x;
-    if global_invocation_index < atomicLoad(&queue_counts[CONTRIBUTE_QUEUE_ID]) {
-        let global_path_index = queues[CONTRIBUTE_QUEUE_ID][global_invocation_index];
-        let path_length = path_state.path_length[global_path_index];
+    let i = queue.index[CONTRIBUTE_QUEUE_ID][global_invocation_index];
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
+        // Compute the final MIS weight
+        let mis_weight = path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
+          + path.sum_inv_ri[LIGHT][i] * path.prod_ri[LIGHT][i] + path.prod_ri[LIGHT][i] - 1.0;
+
+        // Context
+        let path_length = path.length[i];
         let chain_id = path_length - MIN_PATH_LENGTH;
         let path_length_pdf = chain.path_length_pdf[chain_id];
-        let step_type = path_state.step_type[global_path_index];
+        let step_type = path.step_type[i];
         let step_term = f32(step_type == LARGE_STEP);
-        let sc = path_state.scalar_contribution[global_path_index];
         let path_count = chain.path_count[chain_id];
+        let pixel_coordinates = get_pixel_coordinates(i);
+
+        // Compute the final contribution
+        let c = path.beta[i] * mis_weight;
+        let sc = luminance(c);
+        path.scalar_contribution[i] = sc;
+
+        // Compute the weight
         let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / path_count;
         let b = chain.b[chain_id];
         let weight = ((f32(path_length) / path_length_pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
-        let c = path_state.contribution[global_path_index];
-        let x = path_state.pixel_coordinates_x[global_path_index];
-        let y = path_state.pixel_coordinates_y[global_path_index];
-        contribute(c * weight, x, y);
+
+        // Contribute
+        contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
     }
 }
