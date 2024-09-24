@@ -79,3 +79,26 @@ fn get_mis_weight(i: u32) -> f32 {
 fn get_path_contribution(i: u32) -> vec3f {
     return get_beta(m) * get_mis_weight(m);
 }
+
+fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, target: f32) -> u32 {
+    var l: u32 = min_path_index;
+    var r: u32 = max_path_index;
+    var m: u32 = 0;
+
+    while l <= r {
+        m = (l + r) / 2;
+        let vr = path.cdf[m] / sum;
+        if target <= vr {
+            let vl = path.cdf[m - 1] / sum;
+            if target > vl {
+                break;
+            } else {
+                r = m - 1;
+            }
+        } else {
+            l = m + 1;
+        }
+    }
+
+    return m;
+}

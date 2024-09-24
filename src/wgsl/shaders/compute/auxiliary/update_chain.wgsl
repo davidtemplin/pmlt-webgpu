@@ -17,29 +17,13 @@ fn update_chain() {
     let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
     contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
 
-    // Binary search parameters
-    var l: u32 = min_path_index;
-    var r: u32 = max_path_index;
-    var m: u32 = 0;
+    // Compute normalization factor
     let sum = path.cdf[r] + chain.scalar_contribution[chain_id];
 
     // Accept or reject
     if uniforms.random <= path_state.cdf[r] / sum {
         // Binary search
-        while l <= r {
-            m = (l + r) / 2;
-            let vr = path.cdf[m] / sum;
-            if uniforms.random <= vr {
-                let vl = path.cdf[m - 1] / sum;
-                if uniforms.random > vl {
-                    break;
-                } else {
-                    r = m - 1;
-                }
-            } else {
-                l = m + 1;
-            }
-        }
+        let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
 
         // Update the current contribution
         chain.scalar_contribution[chain_id] = path.scalar_contribution[m];

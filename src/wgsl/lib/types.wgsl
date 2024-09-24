@@ -34,9 +34,12 @@ struct PathState {
     /* scalar contribution */
     scalar_contribution: array<f32, PATH_COUNT>,
 
+    /* CDF */
+    cdf: array<f32, PATH_COUNT>,
+
     /* geometry */
-    point: array<array<array<f32, PATH_COUNT>, 3>, 2>,
-    normal: array<array<array<f32, PATH_COUNT>, 3>, 2>,
+    point: array<array<array<array<f32, PATH_COUNT>, 3>, 3>, 2>,
+    normal: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
 
     /* material */
     material_id: array<array<f32, PATH_COUNT>, 2>,
