@@ -30,6 +30,9 @@ struct PathState {
     /* scalar contribution */
     scalar_contribution: array<f32, PATH_COUNT>,
 
+    /* pixel */
+    pixel: array<array<u32, PATH_COUNT>, 2>,
+
     /* CDF */
     cdf: array<f32, PATH_COUNT>,
 
