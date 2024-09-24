@@ -5,15 +5,13 @@ fn update_chain() {
     let c = get_chain_contribution(chain_id);
     let path_length = uniforms.chain_id + MIN_PATH_LENGTH;
     let pdf = chain.pdf[uniforms.chain_id];
-    let step_type = chain.step_type[uniforms.chain_id];
-    let step_term = f32(step_type == LARGE_STEP);
     let sc = chain.scalar_contribution[uniforms.chain_id];
     let min_path_index = chain.min_path_index[uniforms.chain_id];
     let path_count = chain.path_count[uniforms.chain_id];
     let max_path_index = chain.max_path_index[uniforms.chain_id];
     let a = 1.0 - path_state.scalar_contribution[max_path_index];
     let b = chain.b[chain_id];
-    let weight = ((f32(path_length) / pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
+    let weight = ((f32(path_length) / pdf) * a) / ((sc / b) + LARGE_STEP_PROBABILITY);
     let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
     contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
 
