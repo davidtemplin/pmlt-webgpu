@@ -24,6 +24,7 @@ const PATH_COUNT: u32 = ${constants.pathCount};
 const SPHERE_COUNT: u32 = ${constants.sphereCount};
 
 const LARGE_STEP_PROBABILITY = 0.3;
+const SMALL_STEP_PROBABILITY = 1.0 - LARGE_STEP_PROBABILITY;
 const SMALL_STEP: u32 = 0;
 const LARGE_STEP: u32 = 1;
 const CHAIN_COUNT: u32 = MAX_PATH_LENGTH - MIN_PATH_LENGTH + 1;
@@ -63,3 +64,6 @@ const PENULTIMATE = 1;
 
 const HI = 0;
 const LO = 1;
+
+const PROPOSAL = 0;
+const CURRENT = 1;

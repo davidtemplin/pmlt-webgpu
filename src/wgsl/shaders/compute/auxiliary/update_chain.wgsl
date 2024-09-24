@@ -1,17 +1,14 @@
+@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: UpdateChainUniforms;
+
 @compute
 @workgroup_size(1)
 fn update_chain() {
     // Add the current contribution
-    let c = get_chain_contribution(chain_id);
-    let path_length = uniforms.chain_id + MIN_PATH_LENGTH;
-    let pdf = chain.pdf[uniforms.chain_id];
-    let sc = chain.scalar_contribution[uniforms.chain_id];
-    let min_path_index = chain.min_path_index[uniforms.chain_id];
-    let path_count = chain.path_count[uniforms.chain_id];
+    let c = get_chain_contribution(uniforms.chain_id);
     let max_path_index = chain.max_path_index[uniforms.chain_id];
-    let a = 1.0 - path_state.scalar_contribution[max_path_index];
-    let b = chain.b[chain_id];
-    let weight = ((f32(path_length) / pdf) * a) / ((sc / b) + LARGE_STEP_PROBABILITY);
+    let a = 1.0 - path.scalar_contribution[max_path_index];
+    let step_type = chain.step_type[uniforms.chain_id];
+    let weight = get_contribution_weight(chain_id, a, CURRENT, step_type);
     let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
     contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
 
@@ -21,6 +18,7 @@ fn update_chain() {
     // Accept or reject
     if uniforms.random <= path_state.cdf[r] / sum {
         // Binary search
+        let min_path_index = chain.min_path_index[uniforms.chain_id];
         let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
 
         // Update the current contribution

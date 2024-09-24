@@ -18,7 +18,10 @@ fn build_pdf() {
         let max_path_index = u32(round(sum * f32(PATH_COUNT)));
         chain.min_path_index[i] = min_path_index;
         chain.max_path_index[i] = max_path_index;
-        chain.path_count[i] = max_path_index - min_path_index + 1;
+        let path_count = max_path_index - min_path_index + 1
+        chain.path_count[i] = path_count;
+        chain.min_small_step_index[i] = min_path_index;
+        chain.max_small_step_index[i] = min_path_index + u32(round(SMALL_STEP_PROBABILITY * f32(path_count)));
         min_path_index += max_path_index;
     }
 }

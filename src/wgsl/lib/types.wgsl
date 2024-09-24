@@ -77,6 +77,8 @@ struct MarkovChain {
     small_step_count: array<u32, CHAIN_COUNT>,
     b: array<f32, CHAIN_COUNT>,
     pdf: array<f32, CHAIN_COUNT>,
+    min_small_step_index: array<u32, CHAIN_COUNT>,
+    max_small_step_index: array<u32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -109,6 +111,16 @@ struct BuildCdfUniforms {
     min_path_index: u32,
     path_count: u32,
     iteration: u32,
+};
+
+struct StartChainUniforms {
+    chain_id: u32,
+    random: f32,
+};
+
+struct UpdateChainUniforms {
+    chain_id: u32,
+    random: f32,
 };
 
 struct Intersection {
