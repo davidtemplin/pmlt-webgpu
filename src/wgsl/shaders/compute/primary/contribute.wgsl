@@ -8,8 +8,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
     // Check bounds
     if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
         // Compute the final MIS weight
-        let mis_weight = path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
-          + path.sum_inv_ri[LIGHT][i] * path.prod_ri[LIGHT][i] + path.prod_ri[LIGHT][i] - 1.0;
+        let mis_weight = get_mis_weight(i);
 
         // Context
         let path_length = path.length[i];

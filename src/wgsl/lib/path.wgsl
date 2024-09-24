@@ -60,3 +60,22 @@ fn update_beta(i: u32, beta: vec3f) {
     path.beta[1][i] *= beta.g;
     path.beta[2][i] *= beta.b;
 }
+
+fn set_beta(i: u32, beta: vec3f) {
+    path.beta[0][i] = beta.r;
+    path.beta[1][i] = beta.g;
+    path.beta[2][i] = beta.b;
+}
+
+fn get_beta(i: u32) -> vec3f {
+    return vec3f(path.beta[0][i], path.beta[1][i], path.beta[2][i]);
+}
+
+fn get_mis_weight(i: u32) -> f32 {
+    return path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
+        + path.sum_inv_ri[LIGHT][i] * path.prod_ri[LIGHT][i] + path.prod_ri[LIGHT][i] - 1.0;
+}
+
+fn get_path_contribution(i: u32) -> vec3f {
+    return get_beta(m) * get_mis_weight(m);
+}

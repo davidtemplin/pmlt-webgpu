@@ -60,3 +60,6 @@ const LIGHT = 1;
 
 const ULTIMATE = 0
 const PENULTIMATE = 1;
+
+const HI = 0;
+const LO = 1;

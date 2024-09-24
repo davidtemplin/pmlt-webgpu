@@ -3,7 +3,7 @@
 fn start_chain() {
     var l: u32 = 0;
     var r: u32 = PATH_COUNT - 1;
-    let sum = path_state.scalar_contribution[r];
+    let sum = path.scalar_contribution[r];
     var m: u32 = 0;
     while l <= r {
         m = (l + r) / 2;

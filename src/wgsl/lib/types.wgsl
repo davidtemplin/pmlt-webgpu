@@ -73,6 +73,8 @@ struct MarkovChain {
     large_step_index_hi: array<u32, CHAIN_COUNT>,
     large_step_index_lo: array<u32, CHAIN_COUNT>,
     small_step_count: array<u32, CHAIN_COUNT>,
+    b: array<f32, CHAIN_COUNT>,
+    pdf: array<f32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {

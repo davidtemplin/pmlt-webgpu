@@ -3,5 +3,5 @@
 @compute
 @workgroup_size(1)
 fn clear_queue() {
-    atomicStore(&queue_counts[uniforms.queue_id], 0);
+    atomicStore(&queue.count[uniforms.queue_id], 0);
 }
