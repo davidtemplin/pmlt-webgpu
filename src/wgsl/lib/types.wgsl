@@ -91,9 +91,7 @@ struct RandomParameters {
 };
 
 struct Image {
-    r: array<atomic<u32>, PIXEL_COUNT>,
-    g: array<atomic<u32>, PIXEL_COUNT>,
-    b: array<atomic<u32>, PIXEL_COUNT>,
+    pixels: array<array<array<atomic<u32>, PIXEL_WIDTH>, PIXEL_HEIGHT>, 3>,
 };
 
 struct InitializeUniforms {
