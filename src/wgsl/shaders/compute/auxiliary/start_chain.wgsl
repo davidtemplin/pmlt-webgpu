@@ -3,7 +3,7 @@
 @compute
 @workgroup_size(1)
 fn start_chain() {
-    let sum = path.scalar_contribution[PATH_COUNT - 1];
+    let sum = path.cdf[PATH_COUNT - 1];
     let m = binary_search(0, PATH_COUNT - 1, sum, uniforms.random);
     let large_step_index = m * numbers_per_path;
     chain.large_step_index_hi[uniforms.chain_id] = 0;

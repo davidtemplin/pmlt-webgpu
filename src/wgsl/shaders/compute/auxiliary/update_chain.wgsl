@@ -6,7 +6,7 @@ fn update_chain() {
     // Add the current contribution
     let c = get_chain_contribution(uniforms.chain_id);
     let max_path_index = chain.max_path_index[uniforms.chain_id];
-    let a = 1.0 - path.scalar_contribution[max_path_index];
+    let a = 1.0 - path.cdf[max_path_index];
     let step_type = chain.step_type[uniforms.chain_id];
     let weight = get_contribution_weight(chain_id, a, CURRENT, step_type);
     let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
