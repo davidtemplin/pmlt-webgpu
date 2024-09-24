@@ -56,14 +56,16 @@ const PIXEL_COUNT: u32 = PIXEL_WIDTH * PIXEL_HEIGHT;
 const SIGMA: f32 = 0.01;
 const MAX_F32: f32 = 3.40282346638528859812e+38f;
 
-const CAMERA = 0;
-const LIGHT = 1;
+const CAMERA: u32 = 0;
+const LIGHT: u32 = 1;
 
-const ULTIMATE = 0
-const PENULTIMATE = 1;
+const ULTIMATE: u32 = 0
+const PENULTIMATE: u32 = 1;
 
-const HI = 0;
-const LO = 1;
+const HI: u32 = 0;
+const LO: u32 = 1;
 
-const PROPOSAL = 0;
-const CURRENT = 1;
+const PROPOSAL: u32 = 0;
+const CURRENT: u32 = 1;
+
+const FIXED_POINT_SCALE: f32 = 1048576.0;
