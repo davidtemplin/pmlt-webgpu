@@ -8,12 +8,8 @@ struct Camera {
 
 struct Sphere {
     radius: array<f32, SPHERE_COUNT>,
-    center_x: array<f32, SPHERE_COUNT>,
-    center_y: array<f32, SPHERE_COUNT>,
-    center_z: array<f32, SPHERE_COUNT>,
-    color_r: array<f32, SPHERE_COUNT>,
-    color_g: array<f32, SPHERE_COUNT>,
-    color_b: array<f32, SPHERE_COUNT>,
+    center: array<array<f32, SPHERE_COUNT>, 3>,
+    color: array<array<f32, SPHERE_COUNT>, 3>,
 };
 
 struct PathState {
