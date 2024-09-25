@@ -17,7 +17,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         let d1 = p2 - p1;
 
         // Beta
-        let beta = geometry_term(d1, n1, n2);
+        let beta = choose_f32(technique.light > 1, geometry_term(d1, n1, n2), 1.0);
         update_beta(i, beta);
 
         // MIS
