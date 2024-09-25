@@ -33,7 +33,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         set_normal(LIGHT, ULTIMATE, i, sample.normal);
 
         // Determine queue
-        queue_id = choose_u32(path.length[i] == 2, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
+        queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
     // Enqueue

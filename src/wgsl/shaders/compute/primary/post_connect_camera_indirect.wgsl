@@ -27,7 +27,7 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         let evaluation = evaluate_material(material_id, wo, n2, wi);
 
         // Beta
-        let beta = evaluation.throughput * abs_cos_theta(d2, n2) / evaluation.pdf_fwd;
+        let beta = evaluation.throughput;
         update_beta(i, beta);
 
         // MIS

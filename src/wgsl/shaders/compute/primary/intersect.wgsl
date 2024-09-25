@@ -28,7 +28,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
 
         // Beta
         let emission = choose_vec3f(intersection.sphere_id == LIGHT_SPHERE_ID, get_sphere_color(LIGHT_SPHERE_ID), vec3f(1.0, 1.0, 1.0));
-        let beta = emission * abs_cos_theta(direction, path.normal[CAMERA][ULTIMATE][i]) / directional_pdf;
+        let beta = emission * abs_cos_theta(direction, path.normal[path_type][ULTIMATE][i]) / directional_pdf;
         update_beta(i, beta);
 
         // Scalar contribution

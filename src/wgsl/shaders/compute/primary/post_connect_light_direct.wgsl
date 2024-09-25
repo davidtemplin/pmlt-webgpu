@@ -18,6 +18,10 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         let d1 = p2 - p1;
         let d2 = p1 - p2;
 
+        // Beta
+        let beta = geometry_term(d1, n1, n2);
+        update_beta(i, beta);
+
         // MIS
         let ri = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri;
