@@ -18,6 +18,9 @@ fn connect(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_
         let d1 = p2 - p1;
         let d2 = p1 = p2;
 
+        let beta = geometry_term(d1, n1, n2);
+        update_beta(i, beta);
+
         let ri1 = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
         path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
