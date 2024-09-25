@@ -29,7 +29,7 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
         path.directional_pdf[path_type][i] = sample.pdf_fwd;
 
         // Beta
-        let beta = sample.throughput / sample.pdf_fwd;
+        let beta = sample.throughput;
         update_beta(i, beta);
 
         // Determine queue
