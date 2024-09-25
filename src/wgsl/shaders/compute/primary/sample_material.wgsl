@@ -21,7 +21,7 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
         let sample = sample_matte_material(normal, rand_2(i, stream_index));
 
         // MIS
-        let ri = sample.pdf_rev / path.pdf_fwd[path_type][ULTIMATE][i];
+        let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
         path.prod_ri[path_type][i] *= ri;
         path.sum_inv_ri[path_type][i] += 1.0 / ri;
 
