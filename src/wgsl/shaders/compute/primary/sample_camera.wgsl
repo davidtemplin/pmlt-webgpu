@@ -30,7 +30,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
 
         // Beta
         let importance = camera_importance(sample.direction);
-        let beta = importance * abs_cos_theta(sample.normal, sample.direction) / sample.positional_pdf;
+        let beta = importance / sample.positional_pdf;
         update_beta(i, beta);
 
         // Geometry
@@ -38,7 +38,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         set_normal(CAMERA, ULTIMATE, i, sample.normal);
 
         // Determine queue
-        queue_id = choose_u32(path_length == 2, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
+        queue_id = choose_u32(technique.light >= 1, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
     // Enqueue
