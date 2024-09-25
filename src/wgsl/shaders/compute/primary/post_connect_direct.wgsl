@@ -1,6 +1,6 @@
 @compute
 @workgroup_size(WORKGROUP_SIZE)
-fn connect(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+fn post_connect_direct_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
     let global_invocation_index = gid.x;
     let i = queue.index[POST_CONNECT_DIRECT_QUEUE_ID][global_invocation_index];
