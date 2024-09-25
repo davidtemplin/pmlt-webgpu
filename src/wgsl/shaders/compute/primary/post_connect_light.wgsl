@@ -26,6 +26,10 @@ fn post_connect_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(l
         // Evaluate material
         let evaluation = evaluate_material(material_id, wo, n2, wi);
 
+        // Beta
+        let beta = evaluation.throughput / evaluation.pdf_rev;
+        update_beta(i, beta);
+
         // MIS
         let ri1 = evaluation.pdf_fwd * direction_to_area(wi, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
