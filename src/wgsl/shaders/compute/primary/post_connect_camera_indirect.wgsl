@@ -40,7 +40,7 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
 
         // Choose next queue
-        queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_QUEUE_ID, CONTRIBUTE_QUEUE_ID);
+        queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID, POST_CONNECT_LIGHT_DIRECT_QUEUE_ID);
     }
 
     // Enqueue
