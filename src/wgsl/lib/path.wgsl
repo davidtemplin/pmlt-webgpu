@@ -72,8 +72,9 @@ fn get_beta(i: u32) -> vec3f {
 }
 
 fn get_mis_weight(i: u32) -> f32 {
-    return path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
+    let sum_ri = path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
         + path.sum_inv_ri[LIGHT][i] * path.prod_ri[LIGHT][i] + path.prod_ri[LIGHT][i] - 1.0;
+    return 1.0 / (1.0 + sum_ri);
 }
 
 fn get_path_contribution(i: u32) -> vec3f {
