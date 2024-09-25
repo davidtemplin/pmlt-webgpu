@@ -27,7 +27,7 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
         let evaluation = evaluate_material(material_id, wo, n2, wi);
 
         // Beta
-        let beta = evaluation.throughput;
+        let beta = evaluation.throughput * geometry_term(-wo, n2, n3);
         update_beta(i, beta);
 
         // MIS
