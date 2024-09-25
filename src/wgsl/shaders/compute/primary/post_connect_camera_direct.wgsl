@@ -10,18 +10,20 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
 
     // Check bounds
     if i < atomicLoad(&queue.count[POST_CONNECT_DIRECT_QUEUE_ID]) {
-        // MIS
+        // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
         let n2 = get_normal(LIGHT, ULTIMATE, i);
         let d1 = p2 - p1;
 
+        // Beta
         let beta = geometry_term(d1, n1, n2);
         update_beta(i, beta);
 
-        let ri2 = camera_directional_pdf(d1) * direction_to_area(d1, n2) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= ri2;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
+        // MIS
+        let ri = camera_directional_pdf(d1) * direction_to_area(d1, n2) / path.pdf_fwd[LIGHT][ULTIMATE][i];
+        path.prod_ri[LIGHT][i] *= ri;
+        path.sum_inv_ri[LIGHT][i] += 1.0 / ri;
 
         // Next queue
         queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID, POST_CONNECT_LIGHT_DIRECT_QUEUE_ID);
