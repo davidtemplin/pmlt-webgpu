@@ -20,4 +20,5 @@ fn distribute(@builtin(global_invocation_id) id: vec3u) {
     path.step_type[i] = choose_u32(i >= chain.min_small_step_index && i <= chain.max_small_step_index, SMALL_STEP, LARGE_STEP);
     path.index[i] = i - chain.min_path_index[chain_id];
     path.length[i] = chain_id + MIN_PATH_LENGTH;
+    path.vertex_index[i] = 0;
 }

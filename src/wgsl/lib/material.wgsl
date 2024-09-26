@@ -1,4 +1,4 @@
-fn sample_material(material_id: u32, wo: vec3f, n: vec3f, u: vec2f) -> MaterialSample {
+fn sample_material(material_id: u32, p: vec3f, wo: vec3f, n: vec3f, u: vec2f) -> MaterialSample {
     return sample_matte_material(material_id, wo, n, u);
 }
 

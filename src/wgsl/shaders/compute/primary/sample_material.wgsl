@@ -18,7 +18,14 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
 
         // Sample
         let normal = get_normal(path_type, ULTIMATE, i);
-        let sample = sample_matte_material(normal, rand_2(i, stream_index));
+        let p1 = get_point(path_type, PENULTIMATE, i);
+        let p2 = get_point(path_type, ULTIMATE, i);
+        let wo = p1 - p2;
+        let sample = sample_material(path.material_id[i], p2, wo, normal, rand_2(i, stream_index));
+
+        // Update ray
+        set_ray_origin(point);
+        set_ray_direction(sample.wi);
 
         // MIS
         let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
