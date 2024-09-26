@@ -22,7 +22,7 @@ fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomPar
   let path_length = path.length[global_path_index];
   let chain_index = path_length - MIN_PATH_LENGTH;
   let step_type = path.step_type[global_path_index];
-  let local_path_index = path.local_path_index[global_path_index];
+  let local_path_index = path.index[global_path_index];
   let vertex_index = path.vertex_index[global_path_index];
   return RandomParameters(
     step_type, 

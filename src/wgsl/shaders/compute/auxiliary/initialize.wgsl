@@ -13,7 +13,7 @@ fn initialize(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
     if i < PATH_COUNT {
         // Set the context
         path.step_type[i] = LARGE_STEP;
-        path.local_path_index[i] = i;
+        path.index[i] = i;
         path.length[i] = uniforms.path_length;
         path.vertex_index[i] = 0;
 

@@ -15,7 +15,7 @@ struct Sphere {
 struct Path {
     /* path context */
     step_type: array<u32, PATH_COUNT>,
-    local_path_index: array<u32, PATH_COUNT>,
+    index: array<u32, PATH_COUNT>,
     length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
     technique: array<array<u32, PATH_COUNT>, 2>,

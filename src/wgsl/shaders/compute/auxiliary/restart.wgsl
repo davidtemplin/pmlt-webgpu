@@ -1,6 +1,6 @@
 @compute
 @workgroup_size(WORKGROUP_SIZE)
-fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_path_index) lid: u32) {
+fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
     let global_invocation_index = id.x;
     let i = chain.min_path_index[uniforms.chain_id] + global_invocation_index;
