@@ -22,6 +22,9 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         set_ray_origin(sample.point);
         set_ray_direction(sample.direction);
 
+        // Set pixel coordinates
+        set_pixel(i, sample.x, sample.y);
+
         // MIS
         path.pdf_fwd[CAMERA][ULTIMATE][i] = sample.positional_pdf;
 
@@ -31,7 +34,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         // Beta
         let importance = camera_importance(sample.direction);
         let beta = importance / sample.positional_pdf;
-        update_beta(i, beta);
+        set_beta(i, beta);
 
         // Geometry
         set_point(CAMERA, ULTIMATE, i, sample.point);

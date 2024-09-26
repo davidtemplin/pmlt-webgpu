@@ -149,6 +149,8 @@ struct CameraSample {
     normal: vec3f,
     positional_pdf: f32,
     directional_pdf: f32,
+    x: u32,
+    y: u32,
 };
 
 struct LightSample {

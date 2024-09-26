@@ -25,8 +25,17 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         path.prod_ri[LIGHT][i] *= ri;
         path.sum_inv_ri[LIGHT][i] += 1.0 / ri;
 
+        // Pixel coordinates
+        let p1 = get_point(CAMERA, ULTIMATE, i);
+        let p2 = get_point(LIGHT, ULTIMATE, i);
+        let d = p1 - p2;
+        let ray = Ray(p2, d);
+        let pixel = get_pixel_coordinates(ray);
+        set_pixel(i, pixel.x, pixel.y);
+
         // Next queue
         queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID, POST_CONNECT_LIGHT_DIRECT_QUEUE_ID);
+        queue_id = choose_u32(pixel.valid, queue_id, NULL_QUEUE_ID);
     }
 
     // Enqueue

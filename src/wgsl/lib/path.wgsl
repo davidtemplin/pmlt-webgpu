@@ -103,3 +103,12 @@ fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, target: f32
 
     return m;
 }
+
+fn set_pixel(i: u32, x: u32, y: u32) {
+    path.pixel[0][i] = x;
+    path.pixel[1][i] = y;
+}
+
+fn get_pixel(i: u32) -> vec2u {
+    return vec2u(path.pixel[0][i], path.pixel[1][i]);
+}

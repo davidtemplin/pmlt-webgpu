@@ -9,7 +9,8 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
     if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
         // Context
         let chain_id = path.length[i] - MIN_PATH_LENGTH;
-        let pixel_coordinates = get_pixel_coordinates(i);
+
+        let pixel = get_pixel(i);
 
         // Compute the final contribution
         let c = get_path_contribution(i);
@@ -21,6 +22,6 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         let weight = get_contribution_weight(chain_id, a, PROPOSAL, path.step_type[i]);
 
         // Contribute
-        contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
+        contribute(c * weight, pixel.x, pixel.y);
     }
 }

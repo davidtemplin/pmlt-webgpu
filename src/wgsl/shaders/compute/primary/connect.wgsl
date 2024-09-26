@@ -20,9 +20,8 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let ray = Ray(source, direction);
         let intersection = intersect(ray);
 
-        // Compute pixel coordinates; TODO: update pixel coordinates in path state
-        let pixel_coordinates = get_pixel_coordinates(ray);
-        let valid = (pixel_coordinates.valid || path_length != 2) && intersection.valid && approx_eq_vec3f(intersection.point, destination);
+        // Validate
+        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination);
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
