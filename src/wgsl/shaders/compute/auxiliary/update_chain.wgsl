@@ -22,8 +22,9 @@ fn update_chain() {
         let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
 
         // Update the current contribution
-        chain.scalar_contribution[chain_id] = path.scalar_contribution[m];
-        set_chain_contribution(get_path_contribution(i));
+        let contribution = get_path_contribution(m);
+        chain.scalar_contribution[chain_id] = luminance(contribution);
+        set_chain_contribution(contribution);
 
         // Update the sample space parameters
         if step_type == LARGE_STEP {

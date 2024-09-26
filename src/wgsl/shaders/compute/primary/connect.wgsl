@@ -24,9 +24,6 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let pixel_coordinates = get_pixel_coordinates(ray);
         let valid = (pixel_coordinates.valid || path_length != 2) && intersection.valid && approx_eq_vec3f(intersection.point, destination);
 
-        // Scalar contribution
-        path.scalar_contribution[i] = choose_f32(valid, path.scalar_contribution[i], 0.0);
-
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(technique.camera > 1, POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID, queue_id);

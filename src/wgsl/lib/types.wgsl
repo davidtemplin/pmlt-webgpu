@@ -27,9 +27,6 @@ struct Path {
     /* beta */
     beta: array<array<f32, PATH_COUNT>, 3>,
 
-    /* scalar contribution */
-    scalar_contribution: array<f32, PATH_COUNT>,
-
     /* pixel */
     pixel: array<array<u32, PATH_COUNT>, 2>,
 

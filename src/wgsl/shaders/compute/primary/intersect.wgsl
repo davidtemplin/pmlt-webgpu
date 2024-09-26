@@ -31,9 +31,6 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let beta = emission * abs_cos_theta(direction, path.normal[path_type][ULTIMATE][i]) / directional_pdf;
         update_beta(i, beta);
 
-        // Scalar contribution
-        path.scalar_contribution[i] = choose_f32(intersection.valid, path.scalar_contribution[i], 0.0);
-
         // Material
         path.material_id[path_type][i] = intersection.material_id;
 

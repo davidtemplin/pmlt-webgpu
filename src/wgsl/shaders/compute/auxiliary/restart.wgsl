@@ -11,7 +11,7 @@ fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_path_index) 
     // Check bounds
     if global_invocation_index < chain.path_count[uniforms.chain_id] {
         path.vertex_index[i] = 0;
-        path.scalar_contribution[i] = 0;
+        path.cdf[i] = 0;
         path.prod_ri[CAMERA][i] = 1.0;
         path.prod_ri[LIGHT][i] = 1.0;
         path.sum_inv_ri[CAMERA][i] = 0.0;
