@@ -34,7 +34,7 @@ struct Path {
     cdf: array<f32, PATH_COUNT>,
 
     /* geometry */
-    point: array<array<array<array<f32, PATH_COUNT>, 3>, 3>, 2>,
+    point: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
     normal: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
 
     /* material */

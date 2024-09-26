@@ -16,6 +16,7 @@ fn initialize(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
         path.index[i] = i;
         path.length[i] = uniforms.path_length;
         path.vertex_index[i] = 0;
+        path.cdf[i] = 0;
 
         // Set the queue
         queue_id = SAMPLE_CAMERA_QUEUE_ID;

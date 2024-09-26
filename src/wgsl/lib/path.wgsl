@@ -21,6 +21,14 @@ fn set_point(a: u32, b: u32, i: u32, p: vec3f) {
     path.point[a][b][2][i] = p.z;
 }
 
+fn get_point(t: u32, o: u32, i: u32) {
+    return vec3f(path.point[t][o][0][i], path.point[t][o][1][i], path.point[t][o][2][i]);
+}
+
+fn get_normal(t: u32, o: u32, i: u32) {
+    return vec3f(path.normal[t][o][0][i], path.normal[t][o][1][i], path.normal[t][o][2][i]);
+}
+
 fn set_normal(a: u32, b: u32, i: u32, p: vec3f) {
     path.normal[a][b][0][i] = p.x;
     path.normal[a][b][1][i] = p.y;
