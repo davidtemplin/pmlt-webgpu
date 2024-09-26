@@ -12,7 +12,7 @@ struct Sphere {
     color: array<array<f32, SPHERE_COUNT>, 3>,
 };
 
-struct PathState {
+struct Path {
     /* path context */
     step_type: array<u32, PATH_COUNT>,
     local_path_index: array<u32, PATH_COUNT>,
@@ -65,7 +65,7 @@ struct Basis {
     w: vec3f,
 };
 
-struct MarkovChain {
+struct Chain {
     key_hi: array<u32, CHAIN_COUNT>,
     key_lo: array<u32, CHAIN_COUNT>,
     iteration: array<u32, CHAIN_COUNT>,

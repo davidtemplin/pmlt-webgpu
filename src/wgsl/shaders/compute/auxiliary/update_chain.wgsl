@@ -16,7 +16,7 @@ fn update_chain() {
     let sum = path.cdf[r] + chain.scalar_contribution[chain_id];
 
     // Accept or reject
-    if uniforms.random <= path_state.cdf[r] / sum {
+    if uniforms.random <= path.cdf[r] / sum {
         // Binary search
         let min_path_index = chain.min_path_index[uniforms.chain_id];
         let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);

@@ -19,11 +19,11 @@ fn rand(p: RandomParameters, number_index: u32) -> f32 {
 }
 
 fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomParameters {
-  let path_length = path_state.path_length[global_path_index];
+  let path_length = path.length[global_path_index];
   let chain_index = path_length - MIN_PATH_LENGTH;
-  let step_type = path_state.step_type[global_path_index];
-  let local_path_index = path_state.local_path_index[global_path_index];
-  let vertex_index = path_state.vertex_index[global_path_index];
+  let step_type = path.step_type[global_path_index];
+  let local_path_index = path.local_path_index[global_path_index];
+  let vertex_index = path.vertex_index[global_path_index];
   return RandomParameters(
     step_type, 
     local_path_index, 
