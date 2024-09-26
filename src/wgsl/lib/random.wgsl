@@ -33,8 +33,8 @@ fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomPar
     vertex_index, 
     chain.iteration[chain_index], 
     chain.numbers_per_iteration[chain_index], 
-    U64(chain.large_step_index_hi[chain_index], chain.large_step_index_lo[chain_index]), 
-    U64(chain.key_hi[chain_index], chain.key_lo[chain_index]),
+    U64(chain.large_step_index[HI][chain_index], chain.large_step_index[LO][chain_index]),
+    U64(chain.key[HI][chain_index], chain.key[LO][chain_index]),
     chain.small_step_count[chain_index]
   );
 }

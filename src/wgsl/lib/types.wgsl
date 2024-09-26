@@ -63,14 +63,12 @@ struct Basis {
 };
 
 struct Chain {
-    key_hi: array<u32, CHAIN_COUNT>,
-    key_lo: array<u32, CHAIN_COUNT>,
+    key: array<array<u32, CHAIN_COUNT>, 2>,
     iteration: array<u32, CHAIN_COUNT>,
     numbers_per_iteration: array<u32, CHAIN_COUNT>,
     numbers_per_path: array<u32, CHAIN_COUNT>,
     numbers_per_stream: array<u32, CHAIN_COUNT>,
-    large_step_index_hi: array<u32, CHAIN_COUNT>,
-    large_step_index_lo: array<u32, CHAIN_COUNT>,
+    large_step_index: array<array<u32, CHAIN_COUNT>, 2>,
     small_step_count: array<u32, CHAIN_COUNT>,
     b: array<f32, CHAIN_COUNT>,
     pdf: array<f32, CHAIN_COUNT>,

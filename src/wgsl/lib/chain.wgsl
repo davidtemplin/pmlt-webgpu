@@ -9,8 +9,8 @@ fn set_chain_contribution(chain_id: u32, c: vec3f) {
 }
 
 fn set_chain_large_step_index(chain_id: u32, i: U64) {
-    chain.large_step_index_hi[chain_id] = index.hi;
-    chain.large_step_index_lo[chain_id] = index.lo;
+    chain.large_step_index[HI][chain_id] = index.hi;
+    chain.large_step_index[LO][chain_id] = index.lo;
 }
 
 fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
