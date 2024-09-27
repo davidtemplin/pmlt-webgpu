@@ -1,4 +1,4 @@
-@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: ClearQueueUniforms;
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: ClearQueueUniforms;
 
 @compute
 @workgroup_size(1)

@@ -8,7 +8,7 @@ fn set_chain_contribution(chain_id: u32, c: vec3f) {
     chain.contribution[2][chain_id] = c.b;
 }
 
-fn set_chain_large_step_index(chain_id: u32, i: U64) {
+fn set_chain_large_step_index(chain_id: u32, index: U64) {
     chain.large_step_index[HI][chain_id] = index.hi;
     chain.large_step_index[LO][chain_id] = index.lo;
 }
@@ -26,5 +26,5 @@ fn get_contribution_weight(chain_id: u32, a: f32, contribution_type: u32, step_t
     let sc = chain.scalar_contribution[chain_id];
     let b = chain.b[chain_id];
     let step_term = f32(contribution_type == PROPOSAL && step_type == LARGE_STEP);
-    let weight = ((f32(path_length) / pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
+    return ((f32(path_length) / pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
 }

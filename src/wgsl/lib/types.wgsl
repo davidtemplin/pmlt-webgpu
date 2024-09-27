@@ -74,6 +74,8 @@ struct Chain {
     pdf: array<f32, CHAIN_COUNT>,
     min_small_step_index: array<u32, CHAIN_COUNT>,
     max_small_step_index: array<u32, CHAIN_COUNT>,
+    contribution: array<array<f32, CHAIN_COUNT>, 3>,
+    scalar_contribution: array<f32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -92,6 +94,11 @@ struct RandomParameters {
 
 struct Image {
     pixels: array<array<array<atomic<u32>, PIXEL_WIDTH>, PIXEL_HEIGHT>, 3>,
+};
+
+struct Queue {
+    index: array<array<u32, PATH_COUNT>, QUEUE_COUNT>,
+    count: array<atomic<u32>, QUEUE_COUNT>,
 };
 
 struct InitializeUniforms {

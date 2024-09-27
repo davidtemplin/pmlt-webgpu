@@ -1,13 +1,13 @@
 fn set_ray_origin(i: u32, o: vec3f) {
-    path.ray_origin_x[i] = o.x;
-    path.ray_origin_y[i] = o.y;
-    path.ray_origin_z[i] = o.z;
+    path.ray_origin[0][i] = o.x;
+    path.ray_origin[1][i] = o.y;
+    path.ray_origin[2][i] = o.z;
 }
 
 fn set_ray_direction(i: u32, d: vec3f) {
-    path.ray_direction_x[i] = d.x;
-    path.ray_direction_y[i] = d.y;
-    path.ray_direction_z[i] = d.z;
+    path.ray_direction[0][i] = d.x;
+    path.ray_direction[1][i] = d.y;
+    path.ray_direction[2][i] = d.z;
 }
 
 fn set_technique(i: u32, t: Technique) {
@@ -21,11 +21,11 @@ fn set_point(a: u32, b: u32, i: u32, p: vec3f) {
     path.point[a][b][2][i] = p.z;
 }
 
-fn get_point(t: u32, o: u32, i: u32) {
+fn get_point(t: u32, o: u32, i: u32) -> vec3f {
     return vec3f(path.point[t][o][0][i], path.point[t][o][1][i], path.point[t][o][2][i]);
 }
 
-fn get_normal(t: u32, o: u32, i: u32) {
+fn get_normal(t: u32, o: u32, i: u32) -> vec3f {
     return vec3f(path.normal[t][o][0][i], path.normal[t][o][1][i], path.normal[t][o][2][i]);
 }
 
@@ -86,10 +86,10 @@ fn get_mis_weight(i: u32) -> f32 {
 }
 
 fn get_path_contribution(i: u32) -> vec3f {
-    return get_beta(m) * get_mis_weight(m);
+    return get_beta(i) * get_mis_weight(i);
 }
 
-fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, target: f32) -> u32 {
+fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, goal: f32) -> u32 {
     var l: u32 = min_path_index;
     var r: u32 = max_path_index;
     var m: u32 = 0;
@@ -97,9 +97,9 @@ fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, target: f32
     while l <= r {
         m = (l + r) / 2;
         let vr = path.cdf[m] / sum;
-        if target <= vr {
+        if goal <= vr {
             let vl = path.cdf[m - 1] / sum;
-            if target > vl {
+            if goal > vl {
                 break;
             } else {
                 r = m - 1;

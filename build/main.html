@@ -1,201 +1,279 @@
 <html>
     <script type="module">
-        const keys = [
-'0xc8e4fd154ce32f6d',
-'0xfcbd6e154bf53ed9',
-'0xea6342c76bf95d47',
-'0xfb9e125878fa6cb3',
-'0xa1ed294ba7fe8b31',
-'0xcf29ba8dc5f1a98d',
-'0x815a7d4ed4e3b7f9',
-'0x163acbf213f5d867',
-'0x674e2d1542f9e6d3',
-'0xebc9672872ecf651',
-'0xec13a6976ecf14ad',
-'0x42c86e3a9de3542b',
-'0x5489de2cbce65297',
-'0x49bc37fdcad971f3',
-'0xd5b4213fe7db8f61',
-'0xbf785e3215ac7ebd',
-'0x46be329546e1ad3b',
-'0x8b7ef19654e3dca7',
-'0x1d7683c983d7eb15',
-'0x3724b1c872d9fa81',
-'0x2af73db87fab18ed',
-'0xa185f4cbadcf285b',
-'0x53d684c1fbd246c7',
-'0x35fda1821cd68735',
-'0xfd3791543bd985a1',
-'0x7f59c4b657cb941f',
-'0x19f3e5b765cea27b',
-'0xf6235eca95b2c1e7',
-'0x9d827c5ba2b3df45',
-'0x8a149e2dc2a6feb1',
-'0xa9234cbdcea91d2f',
-'0xab134cd21f9c2d8b',
-'0x65c48e132c9e3bf7',
-'0x7e943bd54dc26b75',
-'0x4b3a29d76ab579d1',
-'0xfa2871eba6b7984f',
-'0x4bd2596ed48c96ab',
-'0xa9463c1ed4aec629',
-'0x39a5fc81f3b1e495',
-'0x72f9c8a323a5e4f1',
-'0xb7cf8a2652b8136f',
-'0xb372ac465f8932db',
-'0x16dab9f87ead5149',
-'0xaf9ed4c87b8e4fa5',
-'0xbcae598dcba48e13',
-'0xd3bc94fed6948c7f',
-'0xbacd24f1f4768aeb',
-'0xfeca9382147acb59',
-'0xf4a18b53237ed9c5',
-'0xfa96251875a1f943',
-'0xb247ef5982a4179f',
-'0x695781dbaf98371d',
-'0x782ae64dce8b3579',
-'0xad5b918edb8c64e5',
-'0x4e98ac3feb9f8463',
-'0xd1bc48f21a7382bf',
-'0xa763b9e54986a13d',
-'0x9d3fe5643456bf89',
-'0x7acf9b287369bdf5',
-'0x7f4823ba926ced73',
-'0x5acef64ba3721bcf',
-'0x8af4673dcf752b4d',
-'0x2bc59ae1fe563ab9',
-'0xb639dc821e6b5a27',
-'0x71d692e32c5d6893',
-'0x8ec7d3f4394d76ef',
-'0x6cf18d298972a56d',
-'0xa1c698dba765b4d9',
-'0x527f618dc569d347',
-'0x167d892ed46ae2b3',
-'0x63547dbfe47df231',
-'0xf84de9565472318d',
-'0xa8e4dc232d543fe9',
-'0x89f56da76d384e57',
-'0x42ea36b87b496dc3',
-'0x17fd98ba9a5d8c41',
-'0x763f529cb63f7a9d',
-'0xe8794dcfe753c91b',
-'0xd7e4f9c1f534d987',
-'0x5fa74d621548d7e3',
-'0x783c12e6534bf761',
-'0xe7c435b8724e15bd',
-'0xc1258b6a9f61453b',
-'0xae842f6cbe2453a7',
-'0x176f8e4dcd498315',
-'0xc48512bfec4b9281',
-'0x8bd269cfe62a7fcd',
-'0x7fbe5932172f9e4b',
-'0x34fa7d954632cdb7',
-'0xad1b36598736ec25',
-'0xc471f3598437fb91',
-'0xfec831d9823a19fd',
-'0x58f9746baf1e296b',
-'0xeb6a512dce2148d7',
-'0x635c9b81fd137845',
-'0xe32f6dc43d2786b1',
-'0x924ec7a54b1a952f',
-'0x74af9cd6571da38b',
-'0x3bc5d689861eb2f7',
-'0xfb6da23cb823e175',
+        const KEYS = [
+    '0xc8e4fd154ce32f6d',
+    '0xfcbd6e154bf53ed9',
+    '0xea6342c76bf95d47',
+    '0xfb9e125878fa6cb3',
+    '0xa1ed294ba7fe8b31',
+    '0xcf29ba8dc5f1a98d',
+    '0x815a7d4ed4e3b7f9',
+    '0x163acbf213f5d867',
+    '0x674e2d1542f9e6d3',
+    '0xebc9672872ecf651',
+    '0xec13a6976ecf14ad',
+    '0x42c86e3a9de3542b',
+    '0x5489de2cbce65297',
+    '0x49bc37fdcad971f3',
+    '0xd5b4213fe7db8f61',
+    '0xbf785e3215ac7ebd',
+    '0x46be329546e1ad3b',
+    '0x8b7ef19654e3dca7',
+    '0x1d7683c983d7eb15',
+    '0x3724b1c872d9fa81',
+    '0x2af73db87fab18ed',
+    '0xa185f4cbadcf285b',
+    '0x53d684c1fbd246c7',
+    '0x35fda1821cd68735',
+    '0xfd3791543bd985a1',
+    '0x7f59c4b657cb941f',
+    '0x19f3e5b765cea27b',
+    '0xf6235eca95b2c1e7',
+    '0x9d827c5ba2b3df45',
+    '0x8a149e2dc2a6feb1',
+    '0xa9234cbdcea91d2f',
+    '0xab134cd21f9c2d8b',
+    '0x65c48e132c9e3bf7',
+    '0x7e943bd54dc26b75',
+    '0x4b3a29d76ab579d1',
+    '0xfa2871eba6b7984f',
+    '0x4bd2596ed48c96ab',
+    '0xa9463c1ed4aec629',
+    '0x39a5fc81f3b1e495',
+    '0x72f9c8a323a5e4f1',
+    '0xb7cf8a2652b8136f',
+    '0xb372ac465f8932db',
+    '0x16dab9f87ead5149',
+    '0xaf9ed4c87b8e4fa5',
+    '0xbcae598dcba48e13',
+    '0xd3bc94fed6948c7f',
+    '0xbacd24f1f4768aeb',
+    '0xfeca9382147acb59',
+    '0xf4a18b53237ed9c5',
+    '0xfa96251875a1f943',
+    '0xb247ef5982a4179f',
+    '0x695781dbaf98371d',
+    '0x782ae64dce8b3579',
+    '0xad5b918edb8c64e5',
+    '0x4e98ac3feb9f8463',
+    '0xd1bc48f21a7382bf',
+    '0xa763b9e54986a13d',
+    '0x9d3fe5643456bf89',
+    '0x7acf9b287369bdf5',
+    '0x7f4823ba926ced73',
+    '0x5acef64ba3721bcf',
+    '0x8af4673dcf752b4d',
+    '0x2bc59ae1fe563ab9',
+    '0xb639dc821e6b5a27',
+    '0x71d692e32c5d6893',
+    '0x8ec7d3f4394d76ef',
+    '0x6cf18d298972a56d',
+    '0xa1c698dba765b4d9',
+    '0x527f618dc569d347',
+    '0x167d892ed46ae2b3',
+    '0x63547dbfe47df231',
+    '0xf84de9565472318d',
+    '0xa8e4dc232d543fe9',
+    '0x89f56da76d384e57',
+    '0x42ea36b87b496dc3',
+    '0x17fd98ba9a5d8c41',
+    '0x763f529cb63f7a9d',
+    '0xe8794dcfe753c91b',
+    '0xd7e4f9c1f534d987',
+    '0x5fa74d621548d7e3',
+    '0x783c12e6534bf761',
+    '0xe7c435b8724e15bd',
+    '0xc1258b6a9f61453b',
+    '0xae842f6cbe2453a7',
+    '0x176f8e4dcd498315',
+    '0xc48512bfec4b9281',
+    '0x8bd269cfe62a7fcd',
+    '0x7fbe5932172f9e4b',
+    '0x34fa7d954632cdb7',
+    '0xad1b36598736ec25',
+    '0xc471f3598437fb91',
+    '0xfec831d9823a19fd',
+    '0x58f9746baf1e296b',
+    '0xeb6a512dce2148d7',
+    '0x635c9b81fd137845',
+    '0xe32f6dc43d2786b1',
+    '0x924ec7a54b1a952f',
+    '0x74af9cd6571da38b',
+    '0x3bc5d689861eb2f7',
+    '0xfb6da23cb823e175',
 ];
 
-const constants = {
-    cameraGroup: 0,
-    cameraBinding: 0,
-    sphereGroup: 0,
-    sphereBinding: 1,
-    chainGroup: 0,
-    chainBinding: 2,
-    pathStateGroup: 0,
-    pathStateBinding: 3,
-    imageGroup: 0,
-    imageBinding: 4,
-    queuesGroup: 0,
-    queuesBinding: 5,
-    queueCountsGroup: 0,
-    queueCountsBinding: 6,
-    dispatchIndirectParametersGroup: 1,
-    dispatchIndirectParametersBinding: 0,
-    uniformsGroup: 2,
-    uniformsBinding: 0,
-    workgroupSize: 64,
-    maxPathLength: 5,
-    pathCount: 1_000_000,
-    lightSphereId: 0,
-    sphereCount: 10,
-    pixelWidth: 640,
-    pixelHeight: 480,
-    numbersPerVertex: 4,
-    queueCount: 6,
-    sampleCameraQueueId: 0,
-    sampleLightQueueId: 1,
-    intersectQueueId: 2,
-    sampleMaterialQueueId: 3,
-    connectQueueId: 4,
-    contributeQueueId: 5,
-};
+class KeyUtil {
+    static parse(key) {
+        const hi = parseInt(key.substring(2, 10), 16);
+        const lo = parseInt(key.substring(10), 16);
+        return { hi, lo };
+    }
+}
 
-const wgslLib = `
+class Config {
+    bindGroup = {
+        primary: {
+            index: 0,
+            binding: {
+                camera: 0,
+                sphere: 1,
+                chain: 2,
+                path: 3,
+                image: 4,
+                queue: 5,
+            },
+        },
+        auxiliary: {
+            index: 1,
+            binding: {
+                dispatchIndirectParameters: 0,
+            },
+        },
+        uniform: {
+            index: 2,
+            binding: {
+                parameters: 0,
+            },
+        },
+    };
+
+    random = {
+        counts: {
+            vertex: 4,
+        },
+    };
+
+    path = {
+        count: 1_000_000,
+        length: {
+            max: 6,
+        },
+    };
+
+    queue = {
+        count: 11,
+        index: {
+            sample: {
+                camera: 0,
+                light: 1,
+                material: 2,
+            },
+            intersect: 3,
+            connect: 4,
+            postConnect: {
+                camera: {
+                    direct: 5,
+                    indirect: 6,
+                },
+                light: {
+                    direct: 7,
+                    indirect: 8,
+                },
+                null: 9,
+            },
+            contribute: 10,
+        },
+    };
+
+    sphere = {
+        count: 10,
+        id: {
+            light: 0,
+        },
+    };
+
+    workgroup = {
+        size: 64,
+    };
+
+    image = {
+        width: 640,
+        height: 480,
+    };
+    
+    memory = {
+        limit: 2_147_483_644,
+    };
+}
+
+const config = new Config();
+
+const WGSL_LIB_CODE = `
 const CAMERA_STREAM_INDEX: u32 = 0;
 const LIGHT_STREAM_INDEX: u32 = 1;
 const TECHNIQUE_STREAM_INDEX: u32 = 2;
 
 const PI: f32 = 3.14159265358979323846264338327950288;
 
-const NUMBERS_PER_VERTEX: u32 = ${constants.numbersPerVertex};
+const NUMBERS_PER_VERTEX: u32 = ${config.random.counts.vertex};
 const MIN_PATH_LENGTH: u32 = 2;
-const MAX_PATH_LENGTH: u32 = ${constants.maxPathLength};
+const MAX_PATH_LENGTH: u32 = ${config.path.length.max};
 
-const QUEUE_COUNT: u32 = ${constants.queueCount};
+const QUEUE_COUNT: u32 = ${config.queue.count};
 
 const NULL_QUEUE_ID: u32 = 1000;
-const SAMPLE_CAMERA_QUEUE_ID: u32 = ${constants.sampleCameraQueueId};
-const SAMPLE_LIGHT_QUEUE_ID: u32 = ${constants.sampleLightQueueId};
-const INTERSECT_QUEUE_ID: u32 = ${constants.intersectQueueId};
-const SAMPLE_MATERIAL_QUEUE_ID: u32 = ${constants.sampleMaterialQueueId};
-const CONNECT_QUEUE_ID: u32 = ${constants.connectQueueId};
-const CONTRIBUTE_QUEUE_ID: u32 = ${constants.contributeQueueId};
+const SAMPLE_CAMERA_QUEUE_ID: u32 = ${config.queue.index.sample.camera};
+const SAMPLE_LIGHT_QUEUE_ID: u32 = ${config.queue.index.sample.light};
+const INTERSECT_QUEUE_ID: u32 = ${config.queue.index.intersect};
+const SAMPLE_MATERIAL_QUEUE_ID: u32 = ${config.queue.index.sample.material};
+const CONNECT_QUEUE_ID: u32 = ${config.queue.index.connect};
+const POST_CONNECT_CAMERA_DIRECT_QUEUE_ID: u32 = ${config.queue.index.postConnect.camera.direct};
+const POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID: u32 = ${config.queue.index.postConnect.camera.indirect};
+const POST_CONNECT_LIGHT_DIRECT_QUEUE_ID: u32 = ${config.queue.index.postConnect.light.direct};
+const POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID: u32 = ${config.queue.index.postConnect.light.indirect};
+const POST_CONNECT_NULL_QUEUE_ID: u32 = ${config.queue.index.postConnect.null};
+const CONTRIBUTE_QUEUE_ID: u32 = ${config.queue.index.contribute};
 
-const LIGHT_SPHERE_ID: u32 = ${constants.lightSphereId};
+const LIGHT_SPHERE_ID: u32 = ${config.sphere.id.light};
 
-const PATH_COUNT: u32 = ${constants.pathCount};
-const SPHERE_COUNT: u32 = ${constants.sphereCount};
+const PATH_COUNT: u32 = ${config.path.count};
+const SPHERE_COUNT: u32 = ${config.sphere.count};
 
 const LARGE_STEP_PROBABILITY = 0.3;
+const SMALL_STEP_PROBABILITY = 1.0 - LARGE_STEP_PROBABILITY;
 const SMALL_STEP: u32 = 0;
 const LARGE_STEP: u32 = 1;
 const CHAIN_COUNT: u32 = MAX_PATH_LENGTH - MIN_PATH_LENGTH + 1;
-const WORKGROUP_SIZE: u32 = ${constants.workgroupSize};
+const WORKGROUP_SIZE: u32 = ${config.workgroup.size};
 
-const CAMERA_GROUP: u32 = ${constants.cameraGroup}; 
-const CAMERA_BINDING: u32 = ${constants.cameraBinding};
-const SPHERE_GROUP: u32 = ${constants.sphereGroup};
-const SPHERE_BINDING: u32 = ${constants.sphereBinding};
-const CHAIN_GROUP: u32 = ${constants.chainGroup};
-const CHAIN_BINDING: u32 = ${constants.chainBinding};
-const PATH_STATE_GROUP: u32 = ${constants.pathStateGroup};
-const PATH_STATE_BINDING: u32 = ${constants.pathStateBinding};
-const IMAGE_GROUP: u32 = ${constants.imageGroup};
-const IMAGE_BINDING: u32 = ${constants.imageBinding};
-const QUEUES_GROUP: u32 = ${constants.queuesGroup};
-const QUEUES_BINDING: u32 = ${constants.queuesBinding}; 
-const QUEUE_COUNTS_GROUP: u32 = ${constants.queueCountsGroup};
-const QUEUE_COUNTS_BINDING: u32 = ${constants.queueCountsBinding}; 
-const DISPATCH_INDIRECT_PARAMETERS_GROUP: u32 = ${constants.dispatchIndirectParametersGroup}; 
-const DISPATCH_INDIRECT_PARAMETERS_BINDING: u32 = ${constants.dispatchIndirectParametersBinding};
-const UNIFORMS_GROUP: u32 = ${constants.uniformsGroup};
-const UNIFORMS_BINDING: u32 = ${constants.uniformsBinding};
+const CAMERA_GROUP: u32 = ${config.bindGroup.primary.index}; 
+const CAMERA_BINDING: u32 = ${config.bindGroup.primary.binding.camera};
+const SPHERE_GROUP: u32 = ${config.bindGroup.primary.index};
+const SPHERE_BINDING: u32 = ${config.bindGroup.primary.binding.sphere};
+const CHAIN_GROUP: u32 = ${config.bindGroup.primary.index};
+const CHAIN_BINDING: u32 = ${config.bindGroup.primary.binding.chain};
+const PATH_GROUP: u32 = ${config.bindGroup.primary.index};
+const PATH_BINDING: u32 = ${config.bindGroup.primary.binding.path};
+const IMAGE_GROUP: u32 = ${config.bindGroup.primary.index};
+const IMAGE_BINDING: u32 = ${config.bindGroup.primary.binding.image};
+const QUEUE_GROUP: u32 = ${config.bindGroup.primary.index};
+const QUEUE_BINDING: u32 = ${config.bindGroup.primary.binding.queue}; 
+const DISPATCH_INDIRECT_PARAMETERS_GROUP: u32 = ${config.bindGroup.auxiliary.index}; 
+const DISPATCH_INDIRECT_PARAMETERS_BINDING: u32 = ${config.bindGroup.auxiliary.binding.dispatchIndirectParameters};
+const UNIFORM_GROUP: u32 = ${config.bindGroup.uniform.index};
+const UNIFORM_BINDING: u32 = ${config.bindGroup.uniform.binding.parameters};
 
-const PIXEL_WIDTH: u32 = ${constants.pixelWidth};
-const PIXEL_HEIGHT: u32 = ${constants.pixelHeight};
+const PIXEL_WIDTH: u32 = ${config.image.width};
+const PIXEL_HEIGHT: u32 = ${config.image.height};
 const PIXEL_COUNT: u32 = PIXEL_WIDTH * PIXEL_HEIGHT;
 
 const SIGMA: f32 = 0.01;
 const MAX_F32: f32 = 3.40282346638528859812e+38f;
+
+const CAMERA: u32 = 0;
+const LIGHT: u32 = 1;
+
+const ULTIMATE: u32 = 0;
+const PENULTIMATE: u32 = 1;
+
+const HI: u32 = 0;
+const LO: u32 = 1;
+
+const PROPOSAL: u32 = 0;
+const CURRENT: u32 = 1;
+
+const FIXED_POINT_SCALE: f32 = 1048576.0;
 
 struct Camera {
     u: vec3f,
@@ -207,48 +285,37 @@ struct Camera {
 
 struct Sphere {
     radius: array<f32, SPHERE_COUNT>,
-    center_x: array<f32, SPHERE_COUNT>,
-    center_y: array<f32, SPHERE_COUNT>,
-    center_z: array<f32, SPHERE_COUNT>,
-    color_r: array<f32, SPHERE_COUNT>,
-    color_g: array<f32, SPHERE_COUNT>,
-    color_b: array<f32, SPHERE_COUNT>,
+    center: array<array<f32, SPHERE_COUNT>, 3>,
+    color: array<array<f32, SPHERE_COUNT>, 3>,
 };
 
-struct PathState {
+struct Path {
     /* path context */
     step_type: array<u32, PATH_COUNT>,
-    local_path_index: array<u32, PATH_COUNT>,
-    path_length: array<u32, PATH_COUNT>,
+    index: array<u32, PATH_COUNT>,
+    length: array<u32, PATH_COUNT>,
     vertex_index: array<u32, PATH_COUNT>,
-    light_technique: array<u32, PATH_COUNT>,
-    camera_technique: array<u32, PATH_COUNT>,
+    technique: array<array<u32, PATH_COUNT>, 2>,
 
     /* ray */
-    ray_origin_x: array<f32, PATH_COUNT>,
-    ray_origin_y: array<f32, PATH_COUNT>,
-    ray_origin_z: array<f32, PATH_COUNT>,
-    ray_direction_x: array<f32, PATH_COUNT>,
-    ray_direction_y: array<f32, PATH_COUNT>,
-    ray_direction_z: array<f32, PATH_COUNT>,
+    ray_origin: array<array<f32, PATH_COUNT>, 3>,
+    ray_direction: array<array<f32, PATH_COUNT>, 3>,
 
-    /* contribution */
-    contribution_r: array<f32, PATH_COUNT>,
-    contribution_g: array<f32, PATH_COUNT>,
-    contribution_b: array<f32, PATH_COUNT>,
-    scalar_contribution: array<f32, PATH_COUNT>,
+    /* beta */
+    beta: array<array<f32, PATH_COUNT>, 3>,
+
+    /* pixel */
+    pixel: array<array<u32, PATH_COUNT>, 2>,
+
+    /* CDF */
+    cdf: array<f32, PATH_COUNT>,
 
     /* geometry */
-    point_x: array<array<f32, PATH_COUNT>, 2>,
-    point_y: array<array<f32, PATH_COUNT>, 2>,
-    point_z: array<array<f32, PATH_COUNT>, 2>,
-    normal_x: array<array<f32, PATH_COUNT>, 2>,
-    normal_y: array<array<f32, PATH_COUNT>, 2>,
-    normal_z: array<array<f32, PATH_COUNT>, 2>,
-    wo_x: array<array<f32, PATH_COUNT>, 2>, // TODOL: remove wo; add extra point and normal (for point/normal before previous point); add directional_pdf (most recent directional PDF)
-    wo_y: array<array<f32, PATH_COUNT>, 2>,
-    wo_z: array<array<f32, PATH_COUNT>, 2>,
-    sphere_id: array<array<f32, PATH_COUNT>, 2>,
+    point: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
+    normal: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
+
+    /* material */
+    material_id: array<array<f32, PATH_COUNT>, 2>,
 
     /* MIS */
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
@@ -272,16 +339,20 @@ struct Basis {
     w: vec3f,
 };
 
-struct MarkovChain {
-    key_hi: array<u32, CHAIN_COUNT>,
-    key_lo: array<u32, CHAIN_COUNT>,
+struct Chain {
+    key: array<array<u32, CHAIN_COUNT>, 2>,
     iteration: array<u32, CHAIN_COUNT>,
     numbers_per_iteration: array<u32, CHAIN_COUNT>,
     numbers_per_path: array<u32, CHAIN_COUNT>,
     numbers_per_stream: array<u32, CHAIN_COUNT>,
-    large_step_index_hi: array<u32, CHAIN_COUNT>,
-    large_step_index_lo: array<u32, CHAIN_COUNT>,
+    large_step_index: array<array<u32, CHAIN_COUNT>, 2>,
     small_step_count: array<u32, CHAIN_COUNT>,
+    b: array<f32, CHAIN_COUNT>,
+    pdf: array<f32, CHAIN_COUNT>,
+    min_small_step_index: array<u32, CHAIN_COUNT>,
+    max_small_step_index: array<u32, CHAIN_COUNT>,
+    contribution: array<array<f32, CHAIN_COUNT>, 3>,
+    scalar_contribution: array<f32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -299,9 +370,12 @@ struct RandomParameters {
 };
 
 struct Image {
-    r: array<atomic<u32>, PIXEL_COUNT>,
-    g: array<atomic<u32>, PIXEL_COUNT>,
-    b: array<atomic<u32>, PIXEL_COUNT>,
+    pixels: array<array<array<atomic<u32>, PIXEL_WIDTH>, PIXEL_HEIGHT>, 3>,
+};
+
+struct Queue {
+    index: array<array<u32, PATH_COUNT>, QUEUE_COUNT>,
+    count: array<atomic<u32>, QUEUE_COUNT>,
 };
 
 struct InitializeUniforms {
@@ -316,6 +390,16 @@ struct BuildCdfUniforms {
     min_path_index: u32,
     path_count: u32,
     iteration: u32,
+};
+
+struct StartChainUniforms {
+    chain_id: u32,
+    random: f32,
+};
+
+struct UpdateChainUniforms {
+    chain_id: u32,
+    random: f32,
 };
 
 struct Intersection {
@@ -337,17 +421,43 @@ struct PixelCoordinates {
 
 struct MaterialSample {
     wi: vec3f,
-    pdf: f32,
+    pdf_fwd: f32,
+    pdf_rev: f32,
+    throughput: vec3f,
+    valid: bool,
+};
+
+struct CameraSample {
+    point: vec3f,
+    direction: vec3f,
+    normal: vec3f,
+    positional_pdf: f32,
+    directional_pdf: f32,
+    x: u32,
+    y: u32,
+};
+
+struct LightSample {
+    point: vec3f,
+    direction: vec3f,
+    normal: vec3f,
+    positional_pdf: f32,
+    directional_pdf: f32,
+};
+
+struct MaterialEvaluation {
+    pdf_fwd: f32,
+    pdf_rev: f32,
+    throughput: f32,
     valid: bool,
 };
 
 @group(CAMERA_GROUP) @binding(CAMERA_BINDING) var<storage, read> camera: Camera;
 @group(SPHERE_GROUP) @binding(SPHERE_BINDING) var<storage, read> sphere: Sphere;
-@group(CHAIN_GROUP) @binding(CHAIN_BINDING) var<storage, read_write> chain: MarkovChain;
-@group(PATH_STATE_GROUP) @binding(PATH_STATE_BINDING) var<storage, read_write> path_state: PathState;
+@group(CHAIN_GROUP) @binding(CHAIN_BINDING) var<storage, read_write> chain: Chain;
+@group(PATH_GROUP) @binding(PATH_BINDING) var<storage, read_write> path: Path;
 @group(IMAGE_GROUP) @binding(IMAGE_BINDING) var<storage, read_write> image: Image;
-@group(QUEUES_GROUP) @binding(QUEUES_BINDING) var<storage, read_write> queues: array<array<u32, PATH_COUNT>, QUEUE_COUNT>;
-@group(QUEUE_COUNTS_GROUP) @binding(QUEUE_COUNTS_BINDING) var<storage, read_write> queue_counts: array<atomic<u32>, QUEUE_COUNT>;
+@group(QUEUE_GROUP) @binding(QUEUE_BINDING) var<storage, read_write> queue: Queue;
 @group(DISPATCH_INDIRECT_PARAMETERS_GROUP) @binding(DISPATCH_INDIRECT_PARAMETERS_BINDING) var<storage, read_write> dispatch_indirect_parameters: array<vec3u, QUEUE_COUNT>;
 
 var<workgroup> workgroup_queue_ballot: array<u32, WORKGROUP_SIZE>;
@@ -373,11 +483,11 @@ fn rand(p: RandomParameters, number_index: u32) -> f32 {
 }
 
 fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomParameters {
-  let path_length = path_state.path_length[global_path_index];
+  let path_length = path.length[global_path_index];
   let chain_index = path_length - MIN_PATH_LENGTH;
-  let step_type = path_state.step_type[global_path_index];
-  let local_path_index = path_state.local_path_index[global_path_index];
-  let vertex_index = path_state.vertex_index[global_path_index];
+  let step_type = path.step_type[global_path_index];
+  let local_path_index = path.index[global_path_index];
+  let vertex_index = path.vertex_index[global_path_index];
   return RandomParameters(
     step_type, 
     local_path_index, 
@@ -387,8 +497,8 @@ fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomPar
     vertex_index, 
     chain.iteration[chain_index], 
     chain.numbers_per_iteration[chain_index], 
-    U64(chain.large_step_index_hi[chain_index], chain.large_step_index_lo[chain_index]), 
-    U64(chain.key_hi[chain_index], chain.key_lo[chain_index]),
+    U64(chain.large_step_index[HI][chain_index], chain.large_step_index[LO][chain_index]),
+    U64(chain.key[HI][chain_index], chain.key[LO][chain_index]),
     chain.small_step_count[chain_index]
   );
 }
@@ -580,44 +690,6 @@ fn choose_f32(b: bool, u1: f32, u2: f32) -> f32 {
     return f32(b) * u1 + f32(!b) * u2;
 }
 
-fn intersect_sphere(center: vec3f, radius: f32, ray: Ray) -> f32 {
-    let c = center - ray.origin;
-    let b = dot(c, ray.direction);
-    var det = b * b - dot(c, c) + radius * radius;
-    if det < 0.0 {
-        return MAX_F32;
-    }
-    det = sqrt(det);
-    let threshold = 1e-4;
-    var t = b - det;
-    if t <= threshold {
-        t = b + det;
-        if t <= threshold {
-            return MAX_F32;
-        }
-    }
-    return t;
-}
-
-fn intersect(ray: Ray) -> Intersection {
-    var best_t: f32 = MAX_F32;
-    var best_sphere_id: u32 = 0;
-
-    for (var i: u32 = 0; i < SPHERE_COUNT; i++) {
-        let center = vec3f(sphere.center_x[i], sphere.center_y[i], sphere.center_z[i]);
-        let radius = sphere.radius[i];
-        let t = intersect_sphere(center, radius, ray);
-        best_sphere_id = choose_u32(t < best_t, i, best_sphere_id);
-        best_t = min(t, best_t);
-    }
-
-    let point = ray.origin + ray.direction * best_t;
-    let center = vec3f(sphere.center_x[best_sphere_id], sphere.center_y[best_sphere_id], sphere.center_z[best_sphere_id]);
-    let normal = normalize(point - center);
-
-    return Intersection(point, normal, best_t < MAX_F32);
-}
-
 fn approx_eq_f32(a: f32, b: f32, tolerance: f32) -> bool {
     return abs(a - b) < tolerance;
 }
@@ -628,21 +700,6 @@ fn approx_eq_vec3f(a: vec3f, b: vec3f, tolerance: f32) -> bool {
 
 fn same_hemisphere(n: vec3f, v1: vec3f, v2: vec3f) -> bool {
     return sign(dot(v1, n)) == sign(dot(v2, n));
-}
-
-fn sample_matte_material(normal: vec3f, u: vec2f) -> MaterialSample {
-    let wi = cosine_sample_hemisphere(normal, u[0], u[1]);
-    let pdf = abs_cos_theta(normal, wi) / PI;
-    return MaterialSample(wi, pdf, true);
-}
-
-fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
-    return 1.0 / PI;
-}
-
-fn matte_material_directional_pdf(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
-    let h = f32(same_hemisphere(n, wo, wi)) ;
-    return h * abs_cos_theta(n, wi) / PI;
 }
 
 fn abs_cos_theta(n: vec3f, v: vec3f) -> f32 {
@@ -657,12 +714,16 @@ fn geometry_term(direction: vec3f, normal1: vec3f, normal2: vec3f) -> f32 {
 
 fn direction_to_area(direction: vec3f, normal: vec3f) -> f32 {
     let d2 = dot(direction, direction);
-    let x = dot(normal, direction) / sqrt(d2 * d2);
+    let x = dot(normal, direction) / (d2 * sqrt(d2));
     return abs(x);
 }
 
 fn light_positional_pdf(radius: f32) -> f32 {
     return 1.0 / (4.0 * PI * radius * radius);
+}
+
+fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
+    return abs_cos_theta(d, n) / PI;
 }
 
 fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
@@ -693,12 +754,28 @@ fn camera_importance(direction: vec3f) -> f32 {
     return d2 / (a * c4);
 }
 
+fn camera_positional_pdf(p: vec3f) -> f32 {
+    return 1.0;
+}
+
 fn camera_directional_pdf(direction: vec3f) -> f32 {
     let c = dot(normalize(direction), camera.w);
     let d = camera.distance / c;
     let d2 = d * d;
     let a = f32(PIXEL_WIDTH) * f32(PIXEL_HEIGHT);
     return d2 / (a * c);
+}
+
+fn sample_camera(r: vec2f) -> CameraSample {
+    let x = r[0] * f32(PIXEL_WIDTH);
+    let y = r[1] * f32(PIXEL_HEIGHT);
+    let u = camera.u * (x - f32(PIXEL_WIDTH) / 2.0);
+    let v = -camera.v * (y - f32(PIXEL_HEIGHT) / 2.0);
+    let w = camera.w * camera.distance;
+    let direction = normalize(u + v + w);
+    let positional_pdf = camera_positional_pdf(camera.origin);
+    let directional_pdf = camera_directional_pdf(direction);
+    return CameraSample(camera.origin, direction, camera.w, positional_pdf, directional_pdf, u32(x), u32(y));
 }
 
 // TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
@@ -722,211 +799,1214 @@ fn enqueue(global_invocation_id: u32, local_invocation_id: u32, queue_id: u32) {
         return;
     }
 
-    var index = atomicAdd(&queue_counts[local_invocation_id], tally);
+    var index = atomicAdd(&queue.count[local_invocation_id], tally);
     let last_index = index + tally - 1;
 
     for (var i: u32 = 0; i < WORKGROUP_SIZE; i++) {
         let queue_index = workgroup_queue_ballot[i];
         let id = global_invocation_id - local_invocation_id + i;
         let index_match = queue_index == local_invocation_id;
-        queues[queue_index][index] = choose_u32(index_match, id, queues[queue_index][index]);
+        queue.index[queue_index][index] = choose_u32(index_match, id, queue.index[queue_index][index]);
         index = index + u32(index_match && index < last_index);
     }
 }
 
 fn contribute(contribution: vec3f, x: u32, y: u32) {
-    let scale = 1024.0 * 1024.0 * 1024.0;
-    let r = u32(contribution.x * scale);
-    let g = u32(contribution.y * scale);
-    let b = u32(contribution.z * scale);
-    let i = y * PIXEL_WIDTH + x;
-    atomicAdd(&image.r[i], r);
-    atomicAdd(&image.g[i], g);
-    atomicAdd(&image.b[i], b);
+    atomicAdd(&image.pixels[y][x][0], u32(contribution.r * FIXED_POINT_SCALE));
+    atomicAdd(&image.pixels[y][x][1], u32(contribution.g * FIXED_POINT_SCALE));
+    atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
 }
 
 fn read_image(x: u32, y: u32) -> vec3f {
-    let scale = 1024.0 * 1024.0 * 1024.0;
-    let i = y * PIXEL_WIDTH + x;
-    let r = f32(atomicLoad(&image.r[i])) / scale;
-    let g = f32(atomicLoad(&image.r[i])) / scale;
-    let b = f32(atomicLoad(&image.r[i])) / scale;
-    // TODO: tone-map, gamma-correct
-    return vec3f(r, g, b);
+    let r = atomicLoad(&image.pixels[y][x][0]);
+    let g = atomicLoad(&image.pixels[y][x][1]);
+    let b = atomicLoad(&image.pixels[y][x][2]);
+    return vec3f(f32(r) / FIXED_POINT_SCALE, f32(g) / FIXED_POINT_SCALE, f32(b) / FIXED_POINT_SCALE);
+}
+
+fn get_chain_contribution(chain_id: u32) -> vec3f {
+    return vec3f(chain.contribution[0][chain_id], chain.contribution[1][chain_id], chain.contribution[2][chain_id]);
+}
+
+fn set_chain_contribution(chain_id: u32, c: vec3f) {
+    chain.contribution[0][chain_id] = c.r;
+    chain.contribution[1][chain_id] = c.g;
+    chain.contribution[2][chain_id] = c.b;
+}
+
+fn set_chain_large_step_index(chain_id: u32, index: U64) {
+    chain.large_step_index[HI][chain_id] = index.hi;
+    chain.large_step_index[LO][chain_id] = index.lo;
+}
+
+fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
+    let iteration = chain.iteration[chain_id];
+    let numbers_per_iteration = chain.numbers_per_iteration[chain_id];
+    let path_offset = i * chain.numbers_per_path[chain_id];
+    return u64_add(u64_mul(u64_from(iteration), u64_from(numbers_per_iteration)), u64_from(path_offset));
+}
+
+fn get_contribution_weight(chain_id: u32, a: f32, contribution_type: u32, step_type: u32) -> f32 {
+    let path_length = chain_id + MIN_PATH_LENGTH;
+    let pdf = chain.pdf[chain_id];
+    let sc = chain.scalar_contribution[chain_id];
+    let b = chain.b[chain_id];
+    let step_term = f32(contribution_type == PROPOSAL && step_type == LARGE_STEP);
+    return ((f32(path_length) / pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
+}
+
+fn intersect_sphere(center: vec3f, radius: f32, ray: Ray) -> f32 {
+    let c = center - ray.origin;
+    let b = dot(c, ray.direction);
+    var det = b * b - dot(c, c) + radius * radius;
+    if det < 0.0 {
+        return MAX_F32;
+    }
+    det = sqrt(det);
+    let threshold = 1e-4;
+    var t = b - det;
+    if t <= threshold {
+        t = b + det;
+        if t <= threshold {
+            return MAX_F32;
+        }
+    }
+    return t;
+}
+
+fn intersect(ray: Ray) -> Intersection {
+    var best_t: f32 = MAX_F32;
+    var best_sphere_id: u32 = 0;
+
+    for (var i: u32 = 0; i < SPHERE_COUNT; i++) {
+        let center = get_sphere_center(i);
+        let radius = sphere.radius[i];
+        let t = intersect_sphere(center, radius, ray);
+        best_sphere_id = choose_u32(t < best_t, i, best_sphere_id);
+        best_t = min(t, best_t);
+    }
+
+    let point = ray.origin + ray.direction * best_t;
+    let center = get_sphere_center(best_sphere_id);
+    let normal = normalize(point - center);
+
+    return Intersection(point, normal, best_t < MAX_F32);
+}
+
+fn get_sphere_center(id: u32) -> vec3f {
+    return vec3f(sphere.center[0][id], sphere.center[1][id], sphere.center[2][id]);
+}
+
+fn get_sphere_color(id: u32) -> vec3f {
+    return vec3f(sphere.color[0][id], sphere.color[1][id], sphere.color[2][id]);
+}
+
+fn get_sphere_area(id: u32) -> f32 {
+    let r = sphere.radius[id];
+    return 4.0 * PI * r * r;
+}
+
+fn sample_light(r: vec4f) -> LightSample {
+    let point = uniform_sample_sphere(r[0], r[1]) * sphere.radius[LIGHT_SPHERE_ID];
+    let center = get_sphere_center(LIGHT_SPHERE_ID);
+    let normal = point - center;
+    let direction = cosine_sample_hemisphere(normal, r[2], r[3]);
+    let positional_pdf = 1.0 / get_sphere_area(LIGHT_SPHERE_ID);
+    let directional_pdf = abs(dot(normalize(direction), normal)) / PI;
+    return LightSample(point, direction, normal, positional_pdf, directional_pdf);
+}
+
+fn sample_material(material_id: u32, p: vec3f, wo: vec3f, n: vec3f, u: vec2f) -> MaterialSample {
+    return sample_matte_material(material_id, wo, n, u);
+}
+
+fn sample_matte_material(material_id: u32, _wo: vec3f, n: vec3f, u: vec2f) -> MaterialSample {
+    let wi = cosine_sample_hemisphere(n, u[0], u[1]);
+    let pdf = abs_cos_theta(n, wi) / PI;
+    let throughput = get_sphere_color(material_id);
+    return MaterialSample(wi, pdf, pdf, throughput / PI, true);
+}
+
+fn matte_material_reflectance(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    return 1.0 / PI;
+}
+
+fn matte_material_directional_pdf(wo: vec3f, n: vec3f, wi: vec3f) -> f32 {
+    let h = f32(same_hemisphere(n, wo, wi)) ;
+    return h * abs_cos_theta(n, wi) / PI;
+}
+
+fn set_ray_origin(i: u32, o: vec3f) {
+    path.ray_origin[0][i] = o.x;
+    path.ray_origin[1][i] = o.y;
+    path.ray_origin[2][i] = o.z;
+}
+
+fn set_ray_direction(i: u32, d: vec3f) {
+    path.ray_direction[0][i] = d.x;
+    path.ray_direction[1][i] = d.y;
+    path.ray_direction[2][i] = d.z;
+}
+
+fn set_technique(i: u32, t: Technique) {
+    path.technique[CAMERA][i] = t.camera;
+    path.technique[LIGHT][i] = t.light;
+}
+
+fn set_point(a: u32, b: u32, i: u32, p: vec3f) {
+    path.point[a][b][0][i] = p.x;
+    path.point[a][b][1][i] = p.y;
+    path.point[a][b][2][i] = p.z;
+}
+
+fn get_point(t: u32, o: u32, i: u32) -> vec3f {
+    return vec3f(path.point[t][o][0][i], path.point[t][o][1][i], path.point[t][o][2][i]);
+}
+
+fn get_normal(t: u32, o: u32, i: u32) -> vec3f {
+    return vec3f(path.normal[t][o][0][i], path.normal[t][o][1][i], path.normal[t][o][2][i]);
+}
+
+fn set_normal(a: u32, b: u32, i: u32, p: vec3f) {
+    path.normal[a][b][0][i] = p.x;
+    path.normal[a][b][1][i] = p.y;
+    path.normal[a][b][2][i] = p.z;
+}
+
+fn shift_point(path_type: u32, i: u32) {
+    set_point(path_type, PENULTIMATE, i, get_point(path_type, ULTIMATE, i));
+}
+
+fn shift_normal(path_type: u32, i: u32) {
+    set_normal(path_type, PENULTIMATE, i, get_normal(path_type, ULTIMATE, i));
+}
+
+fn get_ray_origin(i: u32) -> vec3f {
+    return vec3f(path.ray_origin[0][i], path.ray_origin[1][i], path.ray_origin[2][i]);
+}
+
+fn get_ray_direction(i: u32) -> vec3f {
+    return vec3f(path.ray_direction[0][i], path.ray_direction[1][i], path.ray_direction[2][i]);
+}
+
+fn get_ray(i: u32) -> Ray {
+    return Ray(get_ray_origin(i), get_ray_direction(i));
+}
+
+fn get_technique(i: u32) -> Technique {
+    return Technique(path.technique[CAMERA][i], path.technique[LIGHT][i]);
+}
+
+fn shift_pdf_fwd(path_type: u32, i: u32) {
+    path.pdf_fwd[path_type][PENULTIMATE][i] = path.pdf_fwd[path_type][ULTIMATE][i];
+}
+
+fn update_beta(i: u32, beta: vec3f) {
+    path.beta[0][i] *= beta.r;
+    path.beta[1][i] *= beta.g;
+    path.beta[2][i] *= beta.b;
+}
+
+fn set_beta(i: u32, beta: vec3f) {
+    path.beta[0][i] = beta.r;
+    path.beta[1][i] = beta.g;
+    path.beta[2][i] = beta.b;
+}
+
+fn get_beta(i: u32) -> vec3f {
+    return vec3f(path.beta[0][i], path.beta[1][i], path.beta[2][i]);
+}
+
+fn get_mis_weight(i: u32) -> f32 {
+    let sum_ri = path.sum_inv_ri[CAMERA][i] * path.prod_ri[CAMERA][i] + path.prod_ri[CAMERA][i] - 1.0 
+        + path.sum_inv_ri[LIGHT][i] * path.prod_ri[LIGHT][i] + path.prod_ri[LIGHT][i] - 1.0;
+    return 1.0 / (1.0 + sum_ri);
+}
+
+fn get_path_contribution(i: u32) -> vec3f {
+    return get_beta(i) * get_mis_weight(i);
+}
+
+fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, goal: f32) -> u32 {
+    var l: u32 = min_path_index;
+    var r: u32 = max_path_index;
+    var m: u32 = 0;
+
+    while l <= r {
+        m = (l + r) / 2;
+        let vr = path.cdf[m] / sum;
+        if goal <= vr {
+            let vl = path.cdf[m - 1] / sum;
+            if goal > vl {
+                break;
+            } else {
+                r = m - 1;
+            }
+        } else {
+            l = m + 1;
+        }
+    }
+
+    return m;
+}
+
+fn set_pixel(i: u32, x: u32, y: u32) {
+    path.pixel[0][i] = x;
+    path.pixel[1][i] = y;
+}
+
+fn get_pixel(i: u32) -> vec2u {
+    return vec2u(path.pixel[0][i], path.pixel[1][i]);
 }
 `;
 
-const initializeModuleCode = `
-${wgslLib}
+const INITIALIZE_CODE = `
+${WGSL_LIB_CODE}
 
-@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: InitializeUniforms;
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: InitializeUniforms;
 
 @compute
 @workgroup_size(WORKGROUP_SIZE)
 fn initialize(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
-    let global_path_index = id.x;
-    var queue_id: u32 = NULL_QUEUE_ID;    
-    if global_path_index < PATH_COUNT {
-        path_state.step_type[global_path_index] = LARGE_STEP;
-        path_state.local_path_index[global_path_index] = global_path_index;
-        path_state.path_length[global_path_index] = uniforms.path_length;
-        path_state.vertex_index[global_path_index] = 0;
-        path_state.scalar_contribution[global_path_index] = 1.0; // TODO fix; temporary for testing
+    // Determine the global path index (i)
+    let i = id.x;
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < PATH_COUNT {
+        // Set the context
+        path.step_type[i] = LARGE_STEP;
+        path.index[i] = i;
+        path.length[i] = uniforms.path_length;
+        path.vertex_index[i] = 0;
+        path.cdf[i] = 0;
+
+        // Set the queue
         queue_id = SAMPLE_CAMERA_QUEUE_ID;
     }
-    enqueue(global_path_index, lid, queue_id);
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }
 `;
-
-const sampleCameraModuleCode = `
-${wgslLib}
+const SAMPLE_CAMERA_CODE = `
+${WGSL_LIB_CODE}
 
 @compute 
 @workgroup_size(WORKGROUP_SIZE)
-fn sample_camera(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine global path index (i)
     let global_invocation_index = gid.x;
+    let i = queue.index[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
 
+    // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
-    if global_invocation_index < atomicLoad(&queue_counts[SAMPLE_CAMERA_QUEUE_ID]) {
-        let global_path_index = queues[SAMPLE_CAMERA_QUEUE_ID][global_invocation_index];
-        let tr = rand_1(global_path_index, TECHNIQUE_STREAM_INDEX);
-        let path_length = path_state.path_length[global_path_index];
-        let technique = sample_technique(path_length, tr);
-        queue_id = choose_u32(path_length == 2, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
-        let cr = rand_2(global_path_index, CAMERA_STREAM_INDEX);
-        let u = camera.u * (cr[0] - f32(PIXEL_WIDTH) / 2.0);
-        let v = -camera.v * (cr[1] - f32(PIXEL_HEIGHT) / 2.0);
-        let w = camera.w * camera.distance;
-        let direction = normalize(u + v + w);
-        path_state.ray_origin_x[global_path_index] = camera.origin.x;
-        path_state.ray_origin_y[global_path_index] = camera.origin.y;
-        path_state.ray_origin_z[global_path_index] = camera.origin.z;
-        path_state.ray_direction_x[global_path_index] = direction.x;
-        path_state.ray_direction_y[global_path_index] = direction.y;
-        path_state.ray_direction_z[global_path_index] = direction.z;
+    // Check bounds
+    if i < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
+        // Determine technique
+        let path_length = path.length[i];
+        let technique = sample_technique(path_length, rand_1(i, TECHNIQUE_STREAM_INDEX));
+        set_technique(i, technique);
+
+        // Sample
+        let sample = sample_camera(rand_2(i, CAMERA_STREAM_INDEX));
+
+        // Set initial ray
+        set_ray_origin(sample.point);
+        set_ray_direction(sample.direction);
+
+        // Set pixel coordinates
+        set_pixel(i, sample.x, sample.y);
+
+        // MIS
+        path.pdf_fwd[CAMERA][ULTIMATE][i] = sample.positional_pdf;
+
+        // PDF
+        path.directional_pdf[CAMERA][i] = sample.directional_pdf;
+
+        // Beta
+        let importance = camera_importance(sample.direction);
+        let beta = importance / sample.positional_pdf;
+        set_beta(i, beta);
+
+        // Geometry
+        set_point(CAMERA, ULTIMATE, i, sample.point);
+        set_normal(CAMERA, ULTIMATE, i, sample.normal);
+
+        // Determine queue
+        queue_id = choose_u32(technique.light >= 1, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
-    enqueue(global_invocation_index, lid, queue_id);
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }
 `;
-
-const sampleLightModuleCode = `
-${wgslLib}
+const SAMPLE_LIGHT_CODE = `
+${WGSL_LIB_CODE}
 
 @compute 
 @workgroup_size(WORKGROUP_SIZE)
-fn sample_light(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine global path index (i)
     let global_invocation_index = gid.x;
+    let i = queue.index[SAMPLE_LIGHT_QUEUE_ID][global_invocation_index];
 
+    // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
-    if global_invocation_index < atomicLoad(&queue_counts[SAMPLE_LIGHT_QUEUE_ID]) {
-        let global_path_index = queues[SAMPLE_LIGHT_QUEUE_ID][global_invocation_index];
-        let tr = rand_1(global_path_index, TECHNIQUE_STREAM_INDEX);
-        let path_length = path_state.path_length[global_path_index];
-        let technique = sample_technique(path_length, tr);
-        queue_id = choose_u32(path_length == 2, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
-        let cr = rand_4(global_path_index, LIGHT_STREAM_INDEX);
-        let point = uniform_sample_sphere(cr[0], cr[1]) * sphere.radius[LIGHT_SPHERE_ID];
-        let center = vec3f(sphere.center_x[LIGHT_SPHERE_ID], sphere.center_y[LIGHT_SPHERE_ID], sphere.center_z[LIGHT_SPHERE_ID]);
-        let normal = point - center;
-        let direction = cosine_sample_hemisphere(normal, cr[2], cr[3]);
-        path_state.ray_origin_x[global_path_index] = point.x;
-        path_state.ray_origin_y[global_path_index] = point.y;
-        path_state.ray_origin_z[global_path_index] = point.z;
-        path_state.ray_direction_x[global_path_index] = direction.x;
-        path_state.ray_direction_y[global_path_index] = direction.y;
-        path_state.ray_direction_z[global_path_index] = direction.z;
+    // Check bounds
+    if i < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
+        // Sample        
+        let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
+
+        // Set initial ray
+        set_ray_origin(sample.point);
+        set_ray_direction(sample.direction);
+
+        // MIS
+        path.pdf_fwd[LIGHT][ULTIMATE][i] = sample.positional_pdf;
+
+        // PDF
+        path.directional_pdf[LIGHT][i] = sample.directional_pdf;
+
+        // Beta
+        let radiance = get_sphere_color(LIGHT_SPHERE_ID);
+        let beta = radiance / sample.positional_pdf;
+        update_beta(i, beta);
+
+        // Geometry
+        set_point(LIGHT, ULTIMATE, i, sample.point);
+        set_normal(LIGHT, ULTIMATE, i, sample.normal);
+
+        // Determine queue
+        queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
-    enqueue(global_invocation_index, lid, queue_id);
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }
 `;
 
-const dispatchModuleCode = `
-${wgslLib}
+class CameraData {
+    #config;
+    #scene;
 
-@compute
-@workgroup_size(1)
-fn dispatch() {
-    for (var queue_id: u32 = 0; queue_id < QUEUE_COUNT; queue_id++) {
-        let count = atomicLoad(&queue_counts[queue_id]);
-        let workgroup_count = u32(ceil(f32(count) / f32(WORKGROUP_SIZE)));
-        dispatch_indirect_parameters[queue_id] = vec3u(workgroup_count, 1, 1);
-    }
-}
-`;
+    buffer;
 
-const clearQueueModuleCode = `
-${wgslLib}
-
-@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: ClearQueueUniforms;
-
-@compute
-@workgroup_size(1)
-fn clear_queue() {
-    atomicStore(&queue_counts[uniforms.queue_id], 0);
-}
-`;
-
-const intersectModuleCode = `
-${wgslLib}
-
-@compute
-@workgroup_size(WORKGROUP_SIZE)
-fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
-    let global_invocation_index: u32 = id.x;
-    var queue_id: u32 = NULL_QUEUE_ID;
-
-    if global_invocation_index < atomicLoad(&queue_counts[INTERSECT_QUEUE_ID]) {
-        let global_path_index = queues[INTERSECT_QUEUE_ID][global_invocation_index];
-        let ray_origin = vec3f(path_state.ray_origin_x[global_path_index], path_state.ray_origin_y[global_path_index], path_state.ray_origin_z[global_path_index]);
-        let ray_direction = vec3f(path_state.ray_direction_x[global_path_index], path_state.ray_direction_y[global_path_index], path_state.ray_direction_z[global_path_index]);
-        let ray = Ray(ray_origin, ray_direction);
-        let intersection = intersect(ray);
-        let path_length = path_state.path_length[global_path_index];
-        let vertex_index = path_state.vertex_index[global_path_index];
-        let light_technique = path_state.light_technique[global_path_index];
-        let camera_technique = path_state.camera_technique[global_path_index];
-        queue_id = choose_u32(vertex_index + 1 < camera_technique || vertex_index + 1 < light_technique, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == camera_technique - 1 && light_technique == 0, CONTRIBUTE_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == camera_technique - 1, SAMPLE_LIGHT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+    constructor(params) {
+        this.#config = params.config;
+        this.#scene = params.scene;
     }
 
-    enqueue(global_invocation_index, lid, queue_id);
-}
-`;
-
-const buildCdfModuleCode = `
-${wgslLib}
-
-@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: BuildCdfUniforms;
-
-@compute
-@workgroup_size(WORKGROUP_SIZE)
-fn build_cdf(@builtin(global_invocation_id) id: vec3u) {
-    let global_invocation_index = id.x;
-    if global_invocation_index >= uniforms.path_count {
-        return;
+    initialize(params) {
+        const array = new ArrayBuffer(64);
+        const view = this.getView({ array });
+        const direction = VectorMath.sub(this.#scene.camera.lookAt, this.#scene.camera.origin);
+        const distance = this.#config.image.height / (2.0 * Math.tan(this.#scene.camera.fieldOfView / 2.0));
+        const basis = VectorMath.orthonormalBasis(direction);
+        view.u.set([basis.u.x, basis.u.y, basis.u.z]);
+        view.v.set([basis.v.x, basis.v.y, basis.v.z]);
+        view.w.set([basis.w.x, basis.w.y, basis.w.z]);
+        view.origin.set([this.#scene.camera.origin.x, this.#scene.camera.origin.y, this.#scene.camera.origin.z]);
+        view.distance.set([distance]);
+        this.buffer = params.device.createBuffer({
+            label: 'camera buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+        params.device.queue.writeBuffer(this.buffer, 0, array);
     }
-    let i = uniforms.iteration;
-    let two_pow_i: u32 = u32(1) << i;
-    let m = u32(global_invocation_index >= two_pow_i);
-    let j = uniforms.min_path_index + global_invocation_index;
-    path_state.scalar_contribution[j] = path_state.scalar_contribution[j] + f32(m) * path_state.scalar_contribution[j - m * two_pow_i];
-}
-`;
 
-const scene = {
-    camera: {
+    getView(params) {
+        return {
+            u: new Float32Array(params.array, 0, 3),
+            v: new Float32Array(params.array, 16, 3),
+            w: new Float32Array(params.array, 32, 3),
+            origin: new Float32Array(params.array, 48, 3),
+            distance: new Float32Array(params.array, 60, 1),
+        };
+    }
+}
+
+class ChainData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        const count = this.#config.path.length.max - 2
+        const array = new ArrayBuffer(68 * count);
+    
+        const view = this.getView({ array });
+    
+        for (let i = 0; i < count; i++) {
+            const key = KeyUtil.parse(KEYS[i]);
+            view.key[0].set([key.hi], i);
+            view.key[1].set([key.lo], i);
+            view.iteration.set([0], i);
+            const vertexCount = i + 2;
+            const numbersPerStream = vertexCount * this.#config.random.numbersPerVertex;
+            const numbersPerPath = 2 * numbersPerStream + 1;
+            const numbersPerIteration = numbersPerPath * this.#config.path.count;
+            view.numbers_per_iteration.set([numbersPerIteration], i);
+            view.numbers_per_path.set([numbersPerPath], i);
+            view.numbers_per_stream.set([numbersPerStream], i);
+            view.large_step_index[0].set([0], i);
+            view.large_step_index[1].set([0], i);
+        }
+
+        this.buffer = params.device.createBuffer({
+            label: 'chain buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(this.buffer, 0, array);
+    }
+
+    getView(params) {
+        const count = this.#config.path.length.max - 2;
+        return {
+            key: [
+                new Uint32Array(params.array, 0, count),
+                new Uint32Array(params.array, 4 * count, count),
+            ],
+            iteration: new Uint32Array(params.array, 8 * count, count),
+            numbers_per_iteration: new Uint32Array(params.array, 12 * count, count),
+            numbers_per_path: new Uint32Array(params.array, 16 * count, count),
+            numbers_per_stream: new Uint32Array(params.array, 20 * count, count),
+            large_step_index: [
+                new Uint32Array(params.array, 24 * count, count),
+                new Uint32Array(params.array, 28 * count, count),
+            ],
+            small_step_count: new Uint32Array(params.array, 32 * count, count),
+            b: new Float32Array(params.array, 36 * count, count),
+            pdf: new Float32Array(params.array, 40 * count, count),
+            min_small_step_index: new Uint32Array(params.array, 44 * count, count),
+            max_small_step_index: new Uint32Array(params.array, 48 * count, count),
+            contribution: [
+                new Float32Array(params.array, 52, 1),
+                new Float32Array(params.array, 56, 1),
+                new Float32Array(params.array, 60, 1),
+            ],
+            scalar_contribution: new Float32Array(params.array, 64, 1),
+        };
+    }
+}
+
+class DispatchIndirectParametersData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        const array = new Uint32Array(Array(4 * this.#config.queue.count).fill(0));
+
+        this.buffer = params.device.createBuffer({
+            label: 'dispatch indirect parameters buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
+        });
+
+        params.device.queue.writeBuffer(this.buffer, 0, array);
+    }
+
+    getView(params) {
+        return new Uint32Array(params.array, 0, this.#config.queue.count);
+    }
+}
+
+class ImageData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        const count = this.#config.image.width * this.#config.image.height;
+        this.buffer = params.device.createBuffer({
+            label: 'image buffer',
+            size: 12 * count,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+    }
+
+    getView(params) {
+        const count = this.#config.image.width * this.#config.image.height;
+        return {
+            pixels: [
+                [
+                    new Uint32Array(params.array, 0, count),
+                ],
+                [
+                    new Uint32Array(params.array, 4 * count, count),
+                ],
+                [
+                    new Uint32Array(params.array, 8 * count, count),
+                ],
+            ],
+        };
+    }
+}
+
+class PathData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        const count = this.#config.path.count;
+        this.buffer = params.device.createBuffer({
+            label: 'path state buffer',
+            size: 208 * count,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+    }
+
+    getView(params) {
+        const count = this.#config.path.count;
+        return {
+            step_type: new Uint32Array(params.array, 0, count),
+            index: new Uint32Array(params.array, 4 * count, count),
+            length: new Uint32Array(params.array, 8 * count, count),
+            vertex_index: new Uint32Array(params.array, 12 * count, count),
+            technique: [
+                new Uint32Array(params.array, 16 * count, count),
+                new Uint32Array(params.array, 20 * count, count),
+            ],
+            ray_origin: [
+                new Float32Array(params.array, 24 * count, count),
+                new Float32Array(params.array, 28 * count, count),
+                new Float32Array(params.array, 32 * count, count),
+            ],
+            ray_direction: [
+                new Float32Array(params.array, 36 * count, count),
+                new Float32Array(params.array, 40 * count, count),
+                new Float32Array(params.array, 44 * count, count),
+            ],
+            beta: [
+                new Float32Array(params.array, 48 * count, count),
+                new Float32Array(params.array, 52 * count, count),
+                new Float32Array(params.array, 56 * count, count),
+            ],
+            pixel: [
+                new Uint32Array(params.array, 60 * count, count),
+                new Uint32Array(params.array, 64 * count, count),
+            ],
+            cdf: new Float32Array(params.array, 68 * count, count),
+            point: [
+                [
+                    [
+                        new Float32Array(params.array, 72 * count, count),
+                        new Float32Array(params.array, 76 * count, count),
+                        new Float32Array(params.array, 80 * count, count),
+                    ],
+                    [
+                        new Float32Array(params.array, 84 * count, count),
+                        new Float32Array(params.array, 88 * count, count),
+                        new Float32Array(params.array, 92 * count, count),
+                    ],
+                ],
+                [
+                    [
+                        new Float32Array(params.array, 96 * count, count),
+                        new Float32Array(params.array, 100 * count, count),
+                        new Float32Array(params.array, 104 * count, count),
+                    ],
+                    [
+                        new Float32Array(params.array, 108 * count, count),
+                        new Float32Array(params.array, 112 * count, count),
+                        new Float32Array(params.array, 116 * count, count),
+                    ],
+                ],
+            ],
+            normal: [
+                [
+                    [
+                        new Float32Array(params.array, 120 * count, count),
+                        new Float32Array(params.array, 124 * count, count),
+                        new Float32Array(params.array, 128 * count, count),
+                    ],
+                    [
+                        new Float32Array(params.array, 132 * count, count),
+                        new Float32Array(params.array, 136 * count, count),
+                        new Float32Array(params.array, 140 * count, count),
+                    ],
+                ],
+                [
+                    [
+                        new Float32Array(params.array, 144 * count, count),
+                        new Float32Array(params.array, 148 * count, count),
+                        new Float32Array(params.array, 152 * count, count),
+                    ],
+                    [
+                        new Float32Array(params.array, 156 * count, count),
+                        new Float32Array(params.array, 160 * count, count),
+                        new Float32Array(params.array, 164 * count, count),
+                    ],
+                ],
+            ],
+            material_id: [
+                new Float32Array(params.array, 168 * count, count),
+                new Float32Array(params.array, 172 * count, count),
+            ],
+            pdf_fwd: [
+                [
+                    new Float32Array(params.array, 176 * count, count),
+                    new Float32Array(params.array, 180 * count, count),
+                ],
+                [
+                    new Float32Array(params.array, 184 * count, count),
+                    new Float32Array(params.array, 188 * count, count),
+                ],
+            ],
+            sum_inv_ri: [
+                new Float32Array(params.array, 192 * count, count),
+                new Float32Array(params.array, 196 * count, count),
+            ],
+            prod_ri: [
+                new Float32Array(params.array, 200 * count, count),
+                new Float32Array(params.array, 204 * count, count),
+            ],
+        };
+    }
+}
+
+class QueueData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        this.buffer = params.device.createBuffer({
+            label: 'queues buffer',
+            size: 44 * this.#config.path.count + 4 * this.#config.queue.count,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+        });
+    }
+
+    getView(params) {
+        return {
+            index: [
+              new Uint32Array(params.array, 0, this.#config.path.count),
+              new Uint32Array(params.array, 4 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 8 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 12 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 16 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 20 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 24 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 28 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 32 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 36 * this.#config.path.count, this.#config.path.count),
+              new Uint32Array(params.array, 40 * this.#config.path.count, this.#config.path.count),
+            ],
+            count: new Uint32Array(params.array, 44 * this.#config.path.count, this.#config.queue.count),
+          };
+    }
+}
+
+class SceneData {
+    #scene;
+
+    buffer;
+
+    constructor(params) {
+        this.#scene = params.scene;
+    }
+
+    initialize(params) {
+        const array = new ArrayBuffer(28 * this.#scene.spheres.length);
+
+        const view = this.getView({ array });
+    
+        for (let i = 0; i < this.#scene.spheres.length; i++) {
+            const sphere = this.#scene.spheres[i];
+            view.radius.set([sphere.radius], i);
+            view.center[0].set([sphere.center.x], i);
+            view.center[1].set([sphere.center.y], i);
+            view.center[2].set([sphere.center.z], i);
+            view.color[0].set([sphere.color.r], i);
+            view.color[1].set([sphere.color.g], i);
+            view.color[2].set([sphere.color.b], i);
+        }
+
+        this.buffer = params.device.createBuffer({
+            label: 'sphere buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(this.buffer, 0, array);
+    }
+
+    getView(params) {
+        return {
+            radius: new Float32Array(params.array, 0, this.#scene.spheres.length),
+            center: [
+                new Float32Array(params.array, 4 * this.#scene.spheres.length, this.#scene.spheres.length),
+                new Float32Array(params.array, 8 * this.#scene.spheres.length, this.#scene.spheres.length),
+                new Float32Array(params.array, 12 * this.#scene.spheres.length, this.#scene.spheres.length),
+            ],
+            color: [
+                new Float32Array(params.array, 16 * this.#scene.spheres.length, this.#scene.spheres.length),
+                new Float32Array(params.array, 20 * this.#scene.spheres.length, this.#scene.spheres.length),
+                new Float32Array(params.array, 24 * this.#scene.spheres.length, this.#scene.spheres.length),
+            ],
+        };
+    }
+}
+
+class InitializeKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'initialize module',
+            code: INITIALIZE_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'initialize compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const array = new ArrayBuffer(4);
+        const view = {
+            path_length: new Uint32Array(array, 0, 1),
+        };
+        view.path_length.set([params.pathLength]);
+    
+        const buffer = params.device.createBuffer({
+            label: 'uniforms buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(buffer, 0, array);
+    
+        const bindGroup = params.device.createBindGroup({
+            label: 'initialize uniforms bind group',
+            layout: this.#data.bindGroupLayout.uniform,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    resource: {
+                        buffer,
+                    },
+                },
+            ],
+        });
+    
+        const pass = params.encoder.beginComputePass({
+            label: 'initialize compute pass',
+            timestampWrites: {
+                querySet: params.querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
+        pass.setPipeline(this.#pipeline);
+        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
+        pass.end();
+    }
+}
+
+class SampleCameraKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'sample camera module',
+            code: SAMPLE_CAMERA_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'sample camera compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const pass = params.encoder.beginComputePass({
+            label: 'sample_camera compute pass',
+            timestampWrites: {
+                querySet: params.querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
+        pass.setPipeline(this.#pipeline);
+        pass.setBindGroup(0, this.#data.bindGroup.primary);
+        pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.camera);
+        pass.end();
+    }
+}
+
+class SampleLightKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'sample light module',
+            code: SAMPLE_LIGHT_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'sample light compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const pass = params.encoder.beginComputePass({
+            label: 'sample_light compute pass',
+            timestampWrites: {
+                querySet: params.querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
+        pass.setPipeline(this.#pipeline);
+        pass.setBindGroup(0, this.#data.bindGroup.primary);
+        pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.light);
+        pass.end();
+    }
+}
+
+class Data {
+    #config;
+    #scene;
+
+    bindGroup = {
+        primary: {},
+        auxiliary: {},
+        uniform: {},
+    };
+
+    element = {};
+
+    bindGroupLayout = {};
+
+    pipelineLayout = {};
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#scene = params.scene;
+    }
+
+    initialize(params) {
+        // Bind group layouts
+        this.bindGroupLayout.primary = params.device.createBindGroupLayout({
+            entries: [
+                {
+                    binding: this.#config.bindGroup.primary.binding.camera,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'read-only-storage',
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.sphere,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'read-only-storage',
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.chain,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.path,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.image,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.queue,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
+            ],
+        });
+
+        this.bindGroupLayout.auxiliary = params.device.createBindGroupLayout({
+            entries: [
+                {
+                    binding: this.#config.bindGroup.auxiliary.binding.dispatchIndirectParameters,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
+            ],
+        });
+
+        this.bindGroupLayout.uniform = params.device.createBindGroupLayout({
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'uniform',
+                    },
+                },
+            ],
+        });
+
+        // Pipeline layouts
+        this.pipelineLayout.primary = params.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.bindGroupLayout.primary,
+            ],
+        });
+    
+        this.pipelineLayout.auxiliary = params.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.bindGroupLayout.primary,
+                this.bindGroupLayout.auxiliary,
+            ],
+        });
+    
+        this.pipelineLayout.uniform = params.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.bindGroupLayout.primary,
+                this.bindGroupLayout.auxiliary,
+                this.bindGroupLayout.uniform,
+            ],
+        });
+
+        // Buffers
+        this.element.camera = new CameraData({ config: this.#config, scene: this.#scene });
+        this.element.camera.initialize({ device: params.device });
+        this.element.sphere = new SceneData({ scene: this.#scene });
+        this.element.sphere.initialize({ device: params.device });
+        this.element.chain = new ChainData({ config: this.#config });
+        this.element.chain.initialize({ device: params.device });
+        this.element.path = new PathData({ config: this.#config });
+        this.element.path.initialize({ device: params.device });
+        this.element.image = new ImageData({ config: this.#config });
+        this.element.image.initialize({ device: params.device });
+        this.element.queue = new QueueData({ config: this.#config });
+        this.element.queue.initialize({ device: params.device });
+        this.element.dispatchIndirectParameters = new DispatchIndirectParametersData({ config: this.#config });
+        this.element.dispatchIndirectParameters.initialize({ device: params.device });
+
+        // Bind groups
+        this.bindGroup.primary = params.device.createBindGroup({
+            label: 'primary bind group',
+            layout: this.bindGroupLayout.primary,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.primary.binding.camera,
+                    resource: {
+                        buffer: this.element.camera.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.sphere,
+                    resource: {
+                        buffer: this.element.sphere.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.chain,
+                    resource: {
+                        buffer: this.element.chain.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.path,
+                    resource: {
+                        buffer: this.element.path.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.image,
+                    resource: {
+                        buffer: this.element.image.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.queue,
+                    resource: {
+                        buffer: this.element.queue.buffer,
+                    },
+                },
+            ],
+        });
+    
+        this.bindGroup.auxiliary = params.device.createBindGroup({
+            label: 'auxiliary bind group',
+            layout: this.bindGroupLayout.auxiliary,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.auxiliary.binding.dispatchIndirectParameters,
+                    resource: {
+                        buffer: this.element.dispatchIndirectParameters.buffer,
+                    },
+                },
+            ],
+        });
+    }
+}
+
+class Debug {
+    #label;
+    #data;
+    #resultBuffer;
+
+    constructor(params) {
+        this.#label = params.label;
+        this.#data = params.data;
+    }
+
+    encode(params) {
+        this.#resultBuffer = params.device.createBuffer({
+            label: this.#label,
+            size: this.#data.buffer.size,
+            usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.encoder.copyBufferToBuffer(this.#data.buffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
+    }
+
+    async log() {
+        await this.#resultBuffer.mapAsync(GPUMapMode.READ);
+        const result = this.#resultBuffer.getMappedRange().slice();
+        const view = this.#data.getView(result);
+        this.#resultBuffer.unmap();
+        console.log(`${this.#label}:`);
+        for (let key in view) {
+            console.log(`${key}:`);
+            console.log(view[key]);
+        }
+    }
+}
+
+class Executor {
+    #config;
+    #data;
+
+    #kernels = {};
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+
+        this.#kernels.initialize = new InitializeKernel({ 
+            config: this.#config,
+            data: this.#data,
+        });
+    }
+
+    initialize(params) {
+        this.#kernels.initialize.initialize({ device: params.device });
+    }
+
+    execute(params) {
+        const encoder = params.device.createCommandEncoder({
+            label: 'command encoder',
+        });
+
+        const querySet = params.device.createQuerySet({
+            type: 'timestamp',
+            count: 2,
+        });
+
+        this.#kernels.initialize.encode({ encoder, device: params.device, querySet });
+
+        const debug = new Debug({ label: 'queue counts', data: this.#data.element.queue });
+        debug.encode({ encoder, device: params.device });
+
+        const commandBuffer = encoder.finish();
+        params.device.queue.submit([commandBuffer]);
+
+        debug.log();
+    }
+}
+
+class Scene {
+    camera = {
         origin: { x: 50.0, y: 40.8, z: 220.0 },
         lookAt: { x: 50.0, y: 40.8, z: 0.0 },
         fieldOfView: 40.0,
-    },
-    spheres: [
+    };
+
+    spheres = [
         {
             center: { x: 10.0, y: 70.0, z: 51.6 },
             radius: 6.0,
@@ -978,336 +2058,90 @@ const scene = {
             radius: 16.5,
             color: { r: 1.0, g: 1.0, b: 1.0 },
         },
-    ],
-};
-
-function norm(v) {
-    let n = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    return { x: v.x / n, y: v.y / n, z: v.z / n};
+    ];
 }
 
-function cross(a, b) {
-    return {
-        x: a.y * b.z - a.z * b.y,
-        y: a.z * b.x - a.x * b.z,
-        z: a.x * b.y - a.y * b.x,
-    }
-}
+class Timestamp {
+    #resolveBuffer;
+    #resultBuffer;
 
-function isZero(v) {
-    v.x == 0.0 && v.y == 0.0 && v.z == 0.0;
-}
+    constructor() {
 
-function orthonormalBasis(n) {
-    const w = norm(n);
-    const ey = { x: 0.0, y: 1.0, z: 0.0 };
-    let u = norm(cross(ey, w));
-    let v;
-    if (isZero(u)) {
-        const ex = { x: 1.0, y: 0.0, z: 0.0 };
-        v = norm(cross(w, ex));
-        u = norm(cross(v, w));
-    } else {
-        v = norm(cross(w, u));
-    }
-    return { u, v, w };
-}
-
-function sub(a, b) {
-    return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z, };
-}
-
-function parseKey(key) {
-    const hi = parseInt(key.substring(2, 10), 16);
-    const lo = parseInt(key.substring(10), 16);
-    return { hi, lo };
-}
-
-function getQueuesArrayViews(queuesArray) { 
-    return [
-        new Uint32Array(queuesArray, 0, constants.pathCount),
-        new Uint32Array(queuesArray, 4 * constants.pathCount, constants.pathCount),
-        new Uint32Array(queuesArray, 8 * constants.pathCount, constants.pathCount),
-        new Uint32Array(queuesArray, 12 * constants.pathCount, constants.pathCount),
-        new Uint32Array(queuesArray, 16 * constants.pathCount, constants.pathCount),
-        new Uint32Array(queuesArray, 20 * constants.pathCount, constants.pathCount),
-  ];
-}
-
-function getQueueCountsArrayViews(queueCountsArray) {
-    return [new Uint32Array(queueCountsArray)];
-}
-
-function getCameraArrayViews(cameraArray) {
-    return {
-        u: new Float32Array(cameraArray, 0, 3),
-        v: new Float32Array(cameraArray, 16, 3),
-        w: new Float32Array(cameraArray, 32, 3),
-        origin: new Float32Array(cameraArray, 48, 3),
-        distance: new Float32Array(cameraArray, 60, 1),
-    };
-}
-
-function getSphereArrayViews(sphereArray) {
-    return {
-        radius: new Float32Array(sphereArray, 0, scene.spheres.length),
-        center_x: new Float32Array(sphereArray, 4 * scene.spheres.length, scene.spheres.length),
-        center_y: new Float32Array(sphereArray, 8 * scene.spheres.length, scene.spheres.length),
-        center_z: new Float32Array(sphereArray, 12 * scene.spheres.length, scene.spheres.length),
-        color_r: new Float32Array(sphereArray, 16 * scene.spheres.length, scene.spheres.length),
-        color_g: new Float32Array(sphereArray, 20 * scene.spheres.length, scene.spheres.length),
-        color_b: new Float32Array(sphereArray, 24 * scene.spheres.length, scene.spheres.length),
-    };
-}
-
-function getChainArrayViews(chainArray) {
-    const chainCount = constants.maxPathLength - 1;
-    return {
-        key_hi: new Uint32Array(chainArray, 0, chainCount),
-        key_lo: new Uint32Array(chainArray, 4 * chainCount, chainCount),
-        iteration: new Uint32Array(chainArray, 8 * chainCount, chainCount),
-        numbers_per_iteration: new Uint32Array(chainArray, 12 * chainCount, chainCount),
-        numbers_per_path: new Uint32Array(chainArray, 16 * chainCount, chainCount),
-        numbers_per_stream: new Uint32Array(chainArray, 20 * chainCount, chainCount),
-        large_step_index_hi: new Uint32Array(chainArray, 24 * chainCount, chainCount),
-        large_step_index_lo: new Uint32Array(chainArray, 28 * chainCount, chainCount),
-        small_step_count: new Uint32Array(chainArray, 32 * chainCount, chainCount),
-    };
-}
-
-function getPathStateArrayViews(pathStateArray) {
-    return {
-        step_type: new Uint32Array(pathStateArray, 0, constants.pathCount),
-        local_path_index: new Uint32Array(pathStateArray, 4 * constants.pathCount, constants.pathCount),
-        path_length: new Uint32Array(pathStateArray, 8 * constants.pathCount, constants.pathCount),
-        vertex_index: new Uint32Array(pathStateArray, 12 * constants.pathCount, constants.pathCount),
-        light_technique: new Uint32Array(pathStateArray, 16 * constants.pathCount, constants.pathCount),
-        camera_technique: new Uint32Array(pathStateArray, 20 * constants.pathCount, constants.pathCount),
-        ray_origin_x: new Float32Array(pathStateArray, 24 * constants.pathCount, constants.pathCount),
-        ray_origin_y: new Float32Array(pathStateArray, 28 * constants.pathCount, constants.pathCount),
-        ray_origin_z: new Float32Array(pathStateArray, 32 * constants.pathCount, constants.pathCount),
-        ray_direction_x: new Float32Array(pathStateArray, 36 * constants.pathCount, constants.pathCount),
-        ray_direction_y: new Float32Array(pathStateArray, 40 * constants.pathCount, constants.pathCount),
-        ray_direction_z: new Float32Array(pathStateArray, 44 * constants.pathCount, constants.pathCount),
-        contribution_r: new Float32Array(pathStateArray, 48 * constants.pathCount, constants.pathCount),
-        contribution_g: new Float32Array(pathStateArray, 52 * constants.pathCount, constants.pathCount),
-        contribution_b: new Float32Array(pathStateArray, 56 * constants.pathCount, constants.pathCount),
-        scalar_contribution: new Float32Array(pathStateArray, 60 * constants.pathCount, constants.pathCount),
-        point_x: [
-          new Float32Array(pathStateArray, 64 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 68 * constants.pathCount, constants.pathCount),
-        ],
-        point_y: [
-          new Float32Array(pathStateArray, 72 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 76 * constants.pathCount, constants.pathCount),
-        ],
-        point_z: [
-          new Float32Array(pathStateArray, 80 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 84 * constants.pathCount, constants.pathCount),
-        ],
-        normal_x: [
-          new Float32Array(pathStateArray, 88 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 92 * constants.pathCount, constants.pathCount),
-        ],
-        normal_y: [
-          new Float32Array(pathStateArray, 96 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 100 * constants.pathCount, constants.pathCount),
-        ],
-        normal_z: [
-          new Float32Array(pathStateArray, 104 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 108 * constants.pathCount, constants.pathCount),
-        ],
-        wo_x: [
-          new Float32Array(pathStateArray, 112 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 116 * constants.pathCount, constants.pathCount),
-        ],
-        wo_y: [
-          new Float32Array(pathStateArray, 120 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 124 * constants.pathCount, constants.pathCount),
-        ],
-        wo_z: [
-          new Float32Array(pathStateArray, 128 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 132 * constants.pathCount, constants.pathCount),
-        ],
-        sphere_id: [
-          new Float32Array(pathStateArray, 136 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 140 * constants.pathCount, constants.pathCount),
-        ],
-        pdf_fwd: [
-          [
-            new Float32Array(pathStateArray, 144 * constants.pathCount, constants.pathCount),
-            new Float32Array(pathStateArray, 148 * constants.pathCount, constants.pathCount),
-          ],
-          [
-            new Float32Array(pathStateArray, 152 * constants.pathCount, constants.pathCount),
-            new Float32Array(pathStateArray, 156 * constants.pathCount, constants.pathCount),
-          ],
-        ],
-        sum_inv_ri: [
-          new Float32Array(pathStateArray, 160 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 164 * constants.pathCount, constants.pathCount),
-        ],
-        prod_ri: [
-          new Float32Array(pathStateArray, 168 * constants.pathCount, constants.pathCount),
-          new Float32Array(pathStateArray, 172 * constants.pathCount, constants.pathCount),
-        ],
-      };
-}
-
-function configureCamera() {
-    const cameraArray = new ArrayBuffer(64);
-
-    const cameraArrayViews = getCameraArrayViews(cameraArray);
-
-    const direction = sub(scene.camera.lookAt, scene.camera.origin);
-    const distance = constants.pixelHeight / (2.0 * Math.tan(scene.camera.fieldOfView / 2.0));
-    const basis = orthonormalBasis(direction);
-    cameraArrayViews.u.set([basis.u.x, basis.u.y, basis.u.z]);
-    cameraArrayViews.v.set([basis.v.x, basis.v.y, basis.v.z]);
-    cameraArrayViews.w.set([basis.w.x, basis.w.y, basis.w.z]);
-    cameraArrayViews.origin.set([scene.camera.origin.x, scene.camera.origin.y, scene.camera.origin.z]);
-    cameraArrayViews.distance.set([distance]);
-
-    return cameraArray;
-}
-
-function configureScene() {
-    const sphereArray = new ArrayBuffer(28 * scene.spheres.length);
-
-    const sphereArrayViews = getSphereArrayViews(sphereArray);
-
-    for (let i = 0; i < scene.spheres.length; i++) {
-        const sphere = scene.spheres[i];
-        sphereArrayViews.radius.set([sphere.radius], i);
-        sphereArrayViews.center_x.set([sphere.center.x], i);
-        sphereArrayViews.center_y.set([sphere.center.y], i);
-        sphereArrayViews.center_z.set([sphere.center.z], i);
-        sphereArrayViews.color_r.set([sphere.color.r], i);
-        sphereArrayViews.color_g.set([sphere.color.g], i);
-        sphereArrayViews.color_b.set([sphere.color.b], i);
     }
 
-    return sphereArray;
-}
-
-function configureChains() {
-    const chainCount = constants.maxPathLength - 1;
-    const chainArray = new ArrayBuffer(36 * chainCount);
-
-    const chainArrayViews = getChainArrayViews(chainArray);
-
-    for (let i = 0; i < chainCount; i++) {
-        const key = parseKey(keys[i]);
-        chainArrayViews.key_hi.set([key.hi], i);
-        chainArrayViews.key_lo.set([key.lo], i);
-        chainArrayViews.iteration.set([0], i);
-        const vertexCount = i + 2;
-        const numbersPerStream = vertexCount * constants.numbersPerVertex;
-        const numbersPerPath = 2 * numbersPerStream + 1;
-        const numbersPerIteration = numbersPerPath * constants.pathCount;
-        chainArrayViews.numbers_per_iteration.set([numbersPerIteration], i);
-        chainArrayViews.numbers_per_path.set([numbersPerPath], i);
-        chainArrayViews.numbers_per_stream.set([numbersPerStream], i);
-        chainArrayViews.large_step_index_hi.set([0], i);
-        chainArrayViews.large_step_index_lo.set([0], i);
-    }
-
-    return chainArray;
-}
-
-function configureQueueCounts() {
-    const queueCountsArray = new Uint32Array(Array(constants.queueCount).fill(0));
-    return queueCountsArray;
-}
-
-function configureDispatchIndirectParameters() {
-    return new Uint32Array(Array(4 * constants.queueCount).fill(0));
-}
-
-function configureInitializeUniforms(params) {
-    const uniformsArray = new ArrayBuffer(4);
-    const uniformsViews = {
-        path_length: new Uint32Array(uniformsArray, 0, 1),
-    };
-    uniformsViews.path_length.set([params.path_length]);
-    return uniformsArray;
-}
-
-function configureClearQueueUniforms(params) {
-    const uniformsArray = new ArrayBuffer(4);
-    const uniformsViews = {
-        queue_id: new Uint32Array(uniformsArray, 0, 1),
-    };
-    uniformsViews.queue_id.set([params.queue_id]);
-    return uniformsArray;
-}
-
-function configureBuildCdfUniforms(params) {
-    const uniformsArray = new ArrayBuffer(12);
-    const uniformsViews = {
-        min_path_index: new Uint32Array(uniformsArray, 0, 1),
-        path_count: new Uint32Array(uniformsArray, 4, 1),
-        iteration: new Uint32Array(uniformsArray, 8, 1),
-    };
-    uniformsViews.min_path_index.set([params.min_path_index]);
-    uniformsViews.path_count.set([params.path_count]);
-    uniformsViews.iteration.set([params.iteration]);
-    return uniformsArray;
-}
-
-function prepareDebug(device, buffer, encoder, getView, title) {
-    const resultBuffer = device.createBuffer({
-        label: 'result buffer',
-        size: buffer.size,
-        usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
-    });
-
-    encoder.copyBufferToBuffer(buffer, 0, resultBuffer, 0, resultBuffer.size);
-
-    return { resultBuffer, getView, title };
-}
-
-async function debug(d) {
-    await d.resultBuffer.mapAsync(GPUMapMode.READ);
-    const result = d.resultBuffer.getMappedRange().slice();
-    const view = d.getView(result);
-    d.resultBuffer.unmap();
-    console.log(`${d.title}:`);
-    for (let key in view) {
-        console.log(`${key}:`);
-        console.log(view[key]);
-    }
-}
-
-function prepareTimestamp(device, querySet, encoder) {
-    const resolveBuffer = device.createBuffer({
-        size: querySet.count * 8,
-        usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
-    });
-    const resultBuffer = device.createBuffer({
-        size: resolveBuffer.size,
-        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    });
-    encoder.resolveQuerySet(querySet, 0, 2, resolveBuffer, 0);
-    if (resultBuffer.mapState === 'unmapped') {
-      encoder.copyBufferToBuffer(resolveBuffer, 0, resultBuffer, 0, resultBuffer.size);
-    }
-    return { resolveBuffer, resultBuffer };
-}
-
-async function timestamp(t) {
-    if (t.resultBuffer.mapState === 'unmapped') {
-        await t.resultBuffer.mapAsync(GPUMapMode.READ).then(() => {
-            const times = new BigInt64Array(t.resultBuffer.getMappedRange());
-            const gpuTime = Number(times[1] - times[0]) /  1_000_000.0;
-            console.log(`elapsed time: ${gpuTime} ms.`);
-            t.resultBuffer.unmap();
+    prepare(params) {
+        this.#resolveBuffer = device.createBuffer({
+            size: params.querySet.count * 8,
+            usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
         });
+
+        this.#resultBuffer = device.createBuffer({
+            size: resolveBuffer.size,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+        });
+
+        params.encoder.resolveQuerySet(params.querySet, 0, 2, this.#resolveBuffer, 0);
+
+        if (this.#resultBuffer.mapState === 'unmapped') {
+        params.encoder.copyBufferToBuffer(this.#resolveBuffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
+        }
+    }
+
+    async log() {
+        if (this.#resultBuffer.mapState === 'unmapped') {
+            await this.#resultBuffer.mapAsync(GPUMapMode.READ).then(() => {
+                const times = new BigInt64Array(this.#resultBuffer.getMappedRange());
+                const gpuTime = Number(times[1] - times[0]) /  1_000_000.0;
+                console.log(`elapsed time: ${gpuTime} ms.`);
+                this.#resultBuffer.unmap();
+            });
+        }
+    }
+}
+
+class VectorMath {
+    static norm(v) {
+        let n = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+        return { x: v.x / n, y: v.y / n, z: v.z / n};
+    }
+    
+    static cross(a, b) {
+        return {
+            x: a.y * b.z - a.z * b.y,
+            y: a.z * b.x - a.x * b.z,
+            z: a.x * b.y - a.y * b.x,
+        }
+    }
+    
+    static isZero(v) {
+        v.x == 0.0 && v.y == 0.0 && v.z == 0.0;
+    }
+    
+    static orthonormalBasis(n) {
+        const w = VectorMath.norm(n);
+        const ey = { x: 0.0, y: 1.0, z: 0.0 };
+        let u = VectorMath.norm(VectorMath.cross(ey, w));
+        let v;
+        if (VectorMath.isZero(u)) {
+            const ex = { x: 1.0, y: 0.0, z: 0.0 };
+            v = VectorMath.norm(VectorMath.cross(w, ex));
+            u = VectorMath.norm(VectorMath.cross(v, w));
+        } else {
+            v = VectorMath.norm(VectorMath.cross(w, u));
+        }
+        return { u, v, w };
+    }
+    
+    static sub(a, b) {
+        return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z, };
     }
 }
 
 async function main() {
-    const memoryLimit = 2_147_483_644;
+    // Initialize config
+    const config = new Config();
+
+    // Request a device
     const adapter = await navigator.gpu?.requestAdapter({
         powerPreference: 'high-performance',
     });
@@ -1315,8 +2149,8 @@ async function main() {
     const device = await adapter?.requestDevice({
         requiredFeatures: ['timestamp-query'],
         requiredLimits: {
-            maxStorageBufferBindingSize: memoryLimit,
-            maxBufferSize: memoryLimit,
+            maxStorageBufferBindingSize: config.memory.limit,
+            maxBufferSize: config.memory.limit,
         },
     });
 
@@ -1327,633 +2161,20 @@ async function main() {
 
     device.addEventListener('uncapturederror', event => console.log(event.error.message));
 
-    const initializeModule = device.createShaderModule({
-        label: 'initialize module',
-        code: initializeModuleCode,
-    });
-
-    const dispatchModule = device.createShaderModule({
-        label: 'dispatch module',
-        code: dispatchModuleCode,
-    });
-
-    const clearQueueModule = device.createShaderModule({
-        label: 'clear_queue module',
-        code: clearQueueModuleCode,
-    });
-
-    const sampleCameraModule = device.createShaderModule({
-        label: 'sample_camera module',
-        code: sampleCameraModuleCode,
-    });
-
-    const sampleLightModule = device.createShaderModule({
-        label: 'sample_light module',
-        code: sampleLightModuleCode,
-    });
-
-    const intersectModule = device.createShaderModule({
-        label: 'intersect module',
-        code: intersectModuleCode,
-    });
-
-    const buildCdfModule = device.createShaderModule({
-        label: 'build_cdf module',
-        code: buildCdfModuleCode,
-    });
-
-    const primaryBindGroupLayout = device.createBindGroupLayout({
-        entries: [
-            {
-                binding: constants.cameraBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'read-only-storage',
-                },
-            },
-            {
-                binding: constants.sphereBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'read-only-storage',
-                },
-            },
-            {
-                binding: constants.chainBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-            {
-                binding: constants.pathStateBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-            {
-                binding: constants.imageBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-            {
-                binding: constants.queuesBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-            {
-                binding: constants.queueCountsBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-        ],
-    });
-
-    const auxiliaryBindGroupLayout = device.createBindGroupLayout({
-        entries: [
-            {
-                binding: constants.dispatchIndirectParametersBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'storage',
-                },
-            },
-        ],
-    });
-
-    const uniformsBindGroupLayout = device.createBindGroupLayout({
-        entries: [
-            {
-                binding: constants.uniformsBinding,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: 'uniform',
-                },
-            },
-        ],
-    });
-
-    const primaryPipelineLayout = device.createPipelineLayout({
-        bindGroupLayouts: [
-            primaryBindGroupLayout,
-        ],
-    });
-
-    const auxiliaryPipelineLayout = device.createPipelineLayout({
-        bindGroupLayouts: [
-            primaryBindGroupLayout,
-            auxiliaryBindGroupLayout,
-        ],
-    });
-
-    const parameterizedPipelineLayout = device.createPipelineLayout({
-        bindGroupLayouts: [
-            primaryBindGroupLayout,
-            auxiliaryBindGroupLayout,
-            uniformsBindGroupLayout,
-        ],
-    });
-
-    const cameraArray = configureCamera();
-
-    const cameraBuffer = device.createBuffer({
-        label: 'camera buffer',
-        size: cameraArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(cameraBuffer, 0, cameraArray);
-
-    const sphereArray = configureScene();
-
-    const sphereBuffer = device.createBuffer({
-        label: 'sphere buffer',
-        size: sphereArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(sphereBuffer, 0, sphereArray);
-
-    const chainArray = configureChains();
-
-    const chainBuffer = device.createBuffer({
-        label: 'chain buffer',
-        size: chainArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(chainBuffer, 0, chainArray);
-
-    const pathStateBuffer = device.createBuffer({
-        label: 'path state buffer',
-        size: 176 * constants.pathCount,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-    });
-
-    const imageBuffer = device.createBuffer({
-        label: 'image buffer',
-        size: 12 * constants.pixelWidth * constants.pixelHeight,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    const queuesBuffer = device.createBuffer({
-        label: 'queues buffer',
-        size: 4 * constants.queueCount * constants.pathCount,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    const queueCountsArray = configureQueueCounts();
-
-    const queueCountsBuffer = device.createBuffer({
-        label: 'queue counts buffer',
-        size: queueCountsArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(queueCountsBuffer, 0, queueCountsArray);
-
-    const dispatchIndirectParametersArray = configureDispatchIndirectParameters();
-
-    const dispatchIndirectParametersBuffer = device.createBuffer({
-        label: 'dispatch indirect parameters buffer',
-        size: dispatchIndirectParametersArray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
-    });
-
-    device.queue.writeBuffer(dispatchIndirectParametersBuffer, 0, dispatchIndirectParametersArray);
-    
-    const primaryBindGroup = device.createBindGroup({
-        label: 'primary bind group',
-        layout: primaryBindGroupLayout,
-        entries: [
-            {
-                binding: constants.cameraBinding,
-                resource: {
-                    buffer: cameraBuffer,
-                },
-            },
-            {
-                binding: constants.sphereBinding,
-                resource: {
-                    buffer: sphereBuffer,
-                },
-            },
-            {
-                binding: constants.chainBinding,
-                resource: {
-                    buffer: chainBuffer,
-                },
-            },
-            {
-                binding: constants.pathStateBinding,
-                resource: {
-                    buffer: pathStateBuffer,
-                },
-            },
-            {
-                binding: constants.imageBinding,
-                resource: {
-                    buffer: imageBuffer,
-                },
-            },
-            {
-                binding: constants.queuesBinding,
-                resource: {
-                    buffer: queuesBuffer,
-                },
-            },
-            {
-                binding: constants.queueCountsBinding,
-                resource: {
-                    buffer: queueCountsBuffer,
-                },
-            },
-        ],
-    });
-
-    const auxiliaryBindGroup = device.createBindGroup({
-        label: 'auxiliary bind group',
-        layout: auxiliaryBindGroupLayout,
-        entries: [
-            {
-                binding: constants.dispatchIndirectParametersBinding,
-                resource: {
-                    buffer: dispatchIndirectParametersBuffer,
-                }
-            }
-        ],
-    });
-
-    let uniformsArray = configureInitializeUniforms({
-        path_length: 2,
-    });
-
-    let uniformsBuffer = device.createBuffer({
-        label: 'uniforms buffer',
-        size: uniformsArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
-
-    let uniformsBindGroup = device.createBindGroup({
-        label: 'uniforms bind group',
-        layout: uniformsBindGroupLayout,
-        entries: [
-            {
-                binding: constants.uniformsBinding,
-                resource: {
-                    buffer: uniformsBuffer,
-                },
-            },
-        ],
-    });
-
-    const querySet = device.createQuerySet({
-        type: 'timestamp',
-        count: 2,
-    });
-
-    const initializePipeline = device.createComputePipeline({
-        label: 'initialize compute pipeline',
-        layout: parameterizedPipelineLayout,
-        compute: {
-            module: initializeModule,
-        }
-    });
-
-    let encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    let pass = encoder.beginComputePass({
-        label: 'initialize compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(initializePipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-    pass.setBindGroup(2, uniformsBindGroup);
-    pass.dispatchWorkgroups(Math.ceil(constants.pathCount / constants.workgroupSize));
-    pass.end();
-    
-    let commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    let dispatchPipeline = device.createComputePipeline({
-        label: 'dispatch pipeline',
-        layout: auxiliaryPipelineLayout,
-        compute: {
-            module: dispatchModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'dispatch compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(dispatchPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-    pass.dispatchWorkgroups(1);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    const sampleCameraPipeline = device.createComputePipeline({
-        label: 'sample_camera compute pipeline',
-        layout: primaryPipelineLayout,
-        compute: {
-            module: sampleCameraModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'sample_camera compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(sampleCameraPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.dispatchWorkgroupsIndirect(dispatchIndirectParametersBuffer, 16 * constants.sampleCameraQueueId);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    uniformsArray = configureClearQueueUniforms({
-        queue_id: constants.sampleCameraQueueId,
-    });
-
-    uniformsBuffer = device.createBuffer({
-        label: 'uniforms buffer',
-        size: uniformsArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
-
-    uniformsBindGroup = device.createBindGroup({
-        label: 'uniforms bind group',
-        layout: uniformsBindGroupLayout,
-        entries: [
-            {
-                binding: constants.uniformsBinding,
-                resource: {
-                    buffer: uniformsBuffer,
-                },
-            },
-        ],
-    });
-
-    const clearQueuePipeline = device.createComputePipeline({
-        label: 'clear_queue pipeline',
-        layout: parameterizedPipelineLayout,
-        compute: {
-            module: clearQueueModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'clear_queue compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(clearQueuePipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-    pass.setBindGroup(2, uniformsBindGroup);
-    pass.dispatchWorkgroups(1);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'dispatch compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(dispatchPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-    pass.dispatchWorkgroups(1);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    const sampleLightPipeline = device.createComputePipeline({
-        label: 'sample_light compute pipeline',
-        layout: primaryPipelineLayout,
-        compute: {
-            module: sampleLightModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'sample_light compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(sampleLightPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.dispatchWorkgroupsIndirect(dispatchIndirectParametersBuffer, 16 * constants.sampleLightQueueId);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    uniformsArray = configureClearQueueUniforms({
-        queue_id: constants.sampleLightQueueId,
-    });
-
-    uniformsBuffer = device.createBuffer({
-        label: 'uniforms buffer',
-        size: uniformsArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
-
-    uniformsBindGroup = device.createBindGroup({
-        label: 'uniforms bind group',
-        layout: uniformsBindGroupLayout,
-        entries: [
-            {
-                binding: constants.uniformsBinding,
-                resource: {
-                    buffer: uniformsBuffer,
-                },
-            },
-        ],
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'clear_queue compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(clearQueuePipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-    pass.setBindGroup(2, uniformsBindGroup);
-    pass.dispatchWorkgroups(1);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    const intersectPipeline = device.createComputePipeline({
-        label: 'intersect compute pipeline',
-        layout: primaryPipelineLayout,
-        compute: {
-            module: intersectModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'intersect compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(intersectPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.dispatchWorkgroupsIndirect(dispatchIndirectParametersBuffer, 16 * constants.intersectQueueId);
-    pass.end();
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    const buildCdfPipeline = device.createComputePipeline({
-        label: 'build_cdf compute pipeline',
-        layout: parameterizedPipelineLayout,
-        compute: {
-            module: buildCdfModule,
-        },
-    });
-
-    encoder = device.createCommandEncoder({
-        label: 'command encoder',
-    });
-
-    pass = encoder.beginComputePass({
-        label: 'build_cdf compute pass',
-        timestampWrites: {
-            querySet,
-            beginningOfPassWriteIndex: 0,
-            endOfPassWriteIndex: 1,
-        },
-    });
-    pass.setPipeline(buildCdfPipeline);
-    pass.setBindGroup(0, primaryBindGroup);
-    pass.setBindGroup(1, auxiliaryBindGroup);
-
-    for (let i = 0; i < Math.ceil(Math.log2(constants.pathCount)); i++) {
-        uniformsArray = configureBuildCdfUniforms({
-            min_path_index: 0,
-            path_count: constants.pathCount,
-            iteration: i,
-        });
-    
-        uniformsBuffer = device.createBuffer({
-            label: 'uniforms buffer',
-            size: uniformsArray.byteLength,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-    
-        device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
-    
-        uniformsBindGroup = device.createBindGroup({
-            label: 'uniforms bind group',
-            layout: uniformsBindGroupLayout,
-            entries: [
-                {
-                    binding: constants.uniformsBinding,
-                    resource: {
-                        buffer: uniformsBuffer,
-                    },
-                },
-            ],
-        });
-
-        pass.setBindGroup(2, uniformsBindGroup);
-        pass.dispatchWorkgroups(Math.ceil(constants.pathCount / constants.workgroupSize));
-    }
-
-    pass.end();
-
-    //const d = prepareDebug(device, pathStateBuffer, encoder, getPathStateArrayViews, 'path state');
-    const t = prepareTimestamp(device, querySet, encoder);
-
-    commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-
-    //await debug(d);
-    await timestamp(t);
-}
+    // Create the scene
+    const scene = new Scene();
+
+    // Initialize the GPU memory
+    const data = new Data({ config, scene });
+    data.initialize({ device });
+
+    // Prepare an executor
+    const executor = new Executor({ config, data });
+    executor.initialize({ device });
+
+    // Execute
+    executor.execute({ device });
+};
 
 main();
 

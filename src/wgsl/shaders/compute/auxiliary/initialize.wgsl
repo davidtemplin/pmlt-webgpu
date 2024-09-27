@@ -1,4 +1,4 @@
-@group(UNIFORMS_GROUP) @binding(UNIFORMS_BINDING) var<uniform> uniforms: InitializeUniforms;
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: InitializeUniforms;
 
 @compute
 @workgroup_size(WORKGROUP_SIZE)

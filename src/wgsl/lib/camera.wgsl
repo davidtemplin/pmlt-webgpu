@@ -26,7 +26,7 @@ fn camera_importance(direction: vec3f) -> f32 {
     return d2 / (a * c4);
 }
 
-fn camera_positional_pdf(_: vec3f) -> f32 {
+fn camera_positional_pdf(p: vec3f) -> f32 {
     return 1.0;
 }
 
@@ -39,11 +39,13 @@ fn camera_directional_pdf(direction: vec3f) -> f32 {
 }
 
 fn sample_camera(r: vec2f) -> CameraSample {
-    let u = camera.u * (r[0] - f32(PIXEL_WIDTH) / 2.0);
-    let v = -camera.v * (r[1] - f32(PIXEL_HEIGHT) / 2.0);
+    let x = r[0] * f32(PIXEL_WIDTH);
+    let y = r[1] * f32(PIXEL_HEIGHT);
+    let u = camera.u * (x - f32(PIXEL_WIDTH) / 2.0);
+    let v = -camera.v * (y - f32(PIXEL_HEIGHT) / 2.0);
     let w = camera.w * camera.distance;
     let direction = normalize(u + v + w);
     let positional_pdf = camera_positional_pdf(camera.origin);
     let directional_pdf = camera_directional_pdf(direction);
-    return CameraSample(camera.origin, direction, camera.w, positional_pdf, directional_pdf);
+    return CameraSample(camera.origin, direction, camera.w, positional_pdf, directional_pdf, u32(x), u32(y));
 }

@@ -36,6 +36,15 @@ fn intersect(ray: Ray) -> Intersection {
     return Intersection(point, normal, best_t < MAX_F32);
 }
 
-fn get_sphere_center(i: u32) -> vec3f {
-    return vec3f(sphere.center[0][i], sphere.center[1][i], sphere.center[2][i]);
+fn get_sphere_center(id: u32) -> vec3f {
+    return vec3f(sphere.center[0][id], sphere.center[1][id], sphere.center[2][id]);
+}
+
+fn get_sphere_color(id: u32) -> vec3f {
+    return vec3f(sphere.color[0][id], sphere.color[1][id], sphere.color[2][id]);
+}
+
+fn get_sphere_area(id: u32) -> f32 {
+    let r = sphere.radius[id];
+    return 4.0 * PI * r * r;
 }
