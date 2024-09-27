@@ -1947,7 +1947,7 @@ class Debug {
     async log() {
         await this.#resultBuffer.mapAsync(GPUMapMode.READ);
         const result = this.#resultBuffer.getMappedRange().slice();
-        const view = this.#data.getView(result);
+        const view = this.#data.getView({ array: result });
         this.#resultBuffer.unmap();
         console.log(`${this.#label}:`);
         for (let key in view) {
