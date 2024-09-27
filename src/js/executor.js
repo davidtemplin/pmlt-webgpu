@@ -30,7 +30,7 @@ class Executor {
 
         this.#kernels.initialize.encode({ encoder, device: params.device, querySet });
 
-        const debug = new Debug({ label: 'queue counts', data: this.#data.element.queue });
+        const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();

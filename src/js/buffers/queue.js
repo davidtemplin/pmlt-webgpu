@@ -9,7 +9,7 @@ class QueueData {
 
     initialize(params) {
         this.buffer = params.device.createBuffer({
-            label: 'queues buffer',
+            label: 'queue buffer',
             size: 44 * this.#config.path.count + 4 * this.#config.queue.count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });

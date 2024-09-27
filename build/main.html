@@ -1501,7 +1501,7 @@ class QueueData {
 
     initialize(params) {
         this.buffer = params.device.createBuffer({
-            label: 'queues buffer',
+            label: 'queue buffer',
             size: 44 * this.#config.path.count + 4 * this.#config.queue.count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
@@ -1989,7 +1989,7 @@ class Executor {
 
         this.#kernels.initialize.encode({ encoder, device: params.device, querySet });
 
-        const debug = new Debug({ label: 'queue counts', data: this.#data.element.queue });
+        const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();
