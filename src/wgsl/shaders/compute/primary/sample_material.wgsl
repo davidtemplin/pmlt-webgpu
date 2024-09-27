@@ -33,7 +33,7 @@ fn sample_material(@builtin(global_invocation_id) id: vec3u, @builtin(local_invo
         path.sum_inv_ri[path_type][i] += 1.0 / ri;
 
         // PDF
-        path.directional_pdf[path_type][i] = sample.pdf_fwd;
+        path.directional_pdf[i] = sample.pdf_fwd;
 
         // Beta
         let beta = sample.throughput;

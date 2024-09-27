@@ -44,6 +44,9 @@ struct Path {
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
     sum_inv_ri: array<array<f32, PATH_COUNT>, 2>,
     prod_ri: array<array<f32, PATH_COUNT>, 2>,
+
+    /* PDF */
+    directional_pdf: array<f32, PATH_COUNT>,
 };
 
 struct U64 {

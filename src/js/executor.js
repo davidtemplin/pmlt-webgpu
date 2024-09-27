@@ -12,10 +12,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.sampleCamera = new SampleCameraKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
         this.#kernels.initialize.initialize({ device: params.device });
+        this.#kernels.sampleCamera.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -28,7 +34,9 @@ class Executor {
             count: 2,
         });
 
-        this.#kernels.initialize.encode({ encoder, device: params.device, querySet });
+        this.#kernels.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
+
+        this.#kernels.sampleCamera.encode({ encoder, device: params.device, querySet });
 
         const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });

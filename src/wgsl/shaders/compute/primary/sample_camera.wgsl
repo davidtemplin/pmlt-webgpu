@@ -19,8 +19,8 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         let sample = sample_camera(rand_2(i, CAMERA_STREAM_INDEX));
 
         // Set initial ray
-        set_ray_origin(sample.point);
-        set_ray_direction(sample.direction);
+        set_ray_origin(i, sample.point);
+        set_ray_direction(i, sample.direction);
 
         // Set pixel coordinates
         set_pixel(i, sample.x, sample.y);
@@ -29,11 +29,11 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         path.pdf_fwd[CAMERA][ULTIMATE][i] = sample.positional_pdf;
 
         // PDF
-        path.directional_pdf[CAMERA][i] = sample.directional_pdf;
+        path.directional_pdf[i] = sample.directional_pdf;
 
         // Beta
         let importance = camera_importance(sample.direction);
-        let beta = importance / sample.positional_pdf;
+        let beta = vec3f(1.0, 1.0, 1.0) * (importance / sample.positional_pdf);
         set_beta(i, beta);
 
         // Geometry

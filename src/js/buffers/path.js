@@ -11,7 +11,7 @@ class PathData {
         const count = this.#config.path.count;
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
-            size: 208 * count,
+            size: 212 * count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
     }
@@ -121,6 +121,7 @@ class PathData {
                 new Float32Array(params.array, 200 * count, count),
                 new Float32Array(params.array, 204 * count, count),
             ],
+            directional_pdf: new Float32Array(params.array, 208 * count, count),
         };
     }
 }

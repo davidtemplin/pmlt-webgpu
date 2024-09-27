@@ -14,14 +14,14 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
 
         // Set initial ray
-        set_ray_origin(sample.point);
-        set_ray_direction(sample.direction);
+        set_ray_origin(i, sample.point);
+        set_ray_direction(i, sample.direction);
 
         // MIS
         path.pdf_fwd[LIGHT][ULTIMATE][i] = sample.positional_pdf;
 
         // PDF
-        path.directional_pdf[LIGHT][i] = sample.directional_pdf;
+        path.directional_pdf[i] = sample.directional_pdf;
 
         // Beta
         let radiance = get_sphere_color(LIGHT_SPHERE_ID);

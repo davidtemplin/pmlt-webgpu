@@ -8,7 +8,7 @@ class ChainData {
     }
 
     initialize(params) {
-        const count = this.#config.path.length.max - 2
+        const count = this.#config.path.length.max - 1;
         const array = new ArrayBuffer(68 * count);
     
         const view = this.getView({ array });
@@ -39,7 +39,7 @@ class ChainData {
     }
 
     getView(params) {
-        const count = this.#config.path.length.max - 2;
+        const count = this.#config.path.length.max - 1;
         return {
             key: [
                 new Uint32Array(params.array, 0, count),
@@ -59,11 +59,11 @@ class ChainData {
             min_small_step_index: new Uint32Array(params.array, 44 * count, count),
             max_small_step_index: new Uint32Array(params.array, 48 * count, count),
             contribution: [
-                new Float32Array(params.array, 52, 1),
-                new Float32Array(params.array, 56, 1),
-                new Float32Array(params.array, 60, 1),
+                new Float32Array(params.array, 52 * count, count),
+                new Float32Array(params.array, 56 * count, count),
+                new Float32Array(params.array, 60 * count, count),
             ],
-            scalar_contribution: new Float32Array(params.array, 64, 1),
+            scalar_contribution: new Float32Array(params.array, 64 * count, count),
         };
     }
 }

@@ -321,6 +321,9 @@ struct Path {
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
     sum_inv_ri: array<array<f32, PATH_COUNT>, 2>,
     prod_ri: array<array<f32, PATH_COUNT>, 2>,
+
+    /* PDF */
+    directional_pdf: array<f32, PATH_COUNT>,
 };
 
 struct U64 {
@@ -1115,8 +1118,8 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         let sample = sample_camera(rand_2(i, CAMERA_STREAM_INDEX));
 
         // Set initial ray
-        set_ray_origin(sample.point);
-        set_ray_direction(sample.direction);
+        set_ray_origin(i, sample.point);
+        set_ray_direction(i, sample.direction);
 
         // Set pixel coordinates
         set_pixel(i, sample.x, sample.y);
@@ -1125,11 +1128,11 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
         path.pdf_fwd[CAMERA][ULTIMATE][i] = sample.positional_pdf;
 
         // PDF
-        path.directional_pdf[CAMERA][i] = sample.directional_pdf;
+        path.directional_pdf[i] = sample.directional_pdf;
 
         // Beta
         let importance = camera_importance(sample.direction);
-        let beta = importance / sample.positional_pdf;
+        let beta = vec3f(1.0, 1.0, 1.0) * (importance / sample.positional_pdf);
         set_beta(i, beta);
 
         // Geometry
@@ -1163,14 +1166,14 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
 
         // Set initial ray
-        set_ray_origin(sample.point);
-        set_ray_direction(sample.direction);
+        set_ray_origin(i, sample.point);
+        set_ray_direction(i, sample.direction);
 
         // MIS
         path.pdf_fwd[LIGHT][ULTIMATE][i] = sample.positional_pdf;
 
         // PDF
-        path.directional_pdf[LIGHT][i] = sample.directional_pdf;
+        path.directional_pdf[i] = sample.directional_pdf;
 
         // Beta
         let radiance = get_sphere_color(LIGHT_SPHERE_ID);
@@ -1241,7 +1244,7 @@ class ChainData {
     }
 
     initialize(params) {
-        const count = this.#config.path.length.max - 2
+        const count = this.#config.path.length.max - 1;
         const array = new ArrayBuffer(68 * count);
     
         const view = this.getView({ array });
@@ -1272,7 +1275,7 @@ class ChainData {
     }
 
     getView(params) {
-        const count = this.#config.path.length.max - 2;
+        const count = this.#config.path.length.max - 1;
         return {
             key: [
                 new Uint32Array(params.array, 0, count),
@@ -1292,11 +1295,11 @@ class ChainData {
             min_small_step_index: new Uint32Array(params.array, 44 * count, count),
             max_small_step_index: new Uint32Array(params.array, 48 * count, count),
             contribution: [
-                new Float32Array(params.array, 52, 1),
-                new Float32Array(params.array, 56, 1),
-                new Float32Array(params.array, 60, 1),
+                new Float32Array(params.array, 52 * count, count),
+                new Float32Array(params.array, 56 * count, count),
+                new Float32Array(params.array, 60 * count, count),
             ],
-            scalar_contribution: new Float32Array(params.array, 64, 1),
+            scalar_contribution: new Float32Array(params.array, 64 * count, count),
         };
     }
 }
@@ -1376,7 +1379,7 @@ class PathData {
         const count = this.#config.path.count;
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
-            size: 208 * count,
+            size: 212 * count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
     }
@@ -1486,6 +1489,7 @@ class PathData {
                 new Float32Array(params.array, 200 * count, count),
                 new Float32Array(params.array, 204 * count, count),
             ],
+            directional_pdf: new Float32Array(params.array, 208 * count, count),
         };
     }
 }
@@ -1971,10 +1975,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.sampleCamera = new SampleCameraKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
         this.#kernels.initialize.initialize({ device: params.device });
+        this.#kernels.sampleCamera.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -1987,7 +1997,9 @@ class Executor {
             count: 2,
         });
 
-        this.#kernels.initialize.encode({ encoder, device: params.device, querySet });
+        this.#kernels.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
+
+        this.#kernels.sampleCamera.encode({ encoder, device: params.device, querySet });
 
         const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });

@@ -23,7 +23,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         // MIS
         shift_pdf_fwd(path_type, i);
         let direction = intersection.point - path.point[path_type][ULTIMATE][i];
-        let directional_pdf = path.directional_pdf[path_type][i];
+        let directional_pdf = path.directional_pdf[i];
         path.pdf_fwd[path_type][ULTIMATE][i] = directional_pdf * direction_to_area(direction, intersection.normal);
 
         // Beta
