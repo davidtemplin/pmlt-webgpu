@@ -1279,7 +1279,7 @@ class ChainData {
             view.key[1].set([key.lo], i);
             view.iteration.set([0], i);
             const vertexCount = i + 2;
-            const numbersPerStream = vertexCount * this.#config.random.numbersPerVertex;
+            const numbersPerStream = vertexCount * this.#config.random.counts.vertex;
             const numbersPerPath = 2 * numbersPerStream + 1;
             const numbersPerIteration = numbersPerPath * this.#config.path.count;
             view.numbers_per_iteration.set([numbersPerIteration], i);
@@ -1292,7 +1292,7 @@ class ChainData {
         this.buffer = params.device.createBuffer({
             label: 'chain buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     
         params.device.queue.writeBuffer(this.buffer, 0, array);
