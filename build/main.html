@@ -1192,6 +1192,30 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
     enqueue(i, lid, queue_id);
 }
 `;
+const CLEAR_QUEUE_CODE = `
+${WGSL_LIB_CODE}
+
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: ClearQueueUniforms;
+
+@compute
+@workgroup_size(1)
+fn clear_queue() {
+    atomicStore(&queue.count[uniforms.queue_id], 0);
+}
+`;
+const DISPATCH_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(1)
+fn dispatch() {
+    for (var queue_id: u32 = 0; queue_id < QUEUE_COUNT; queue_id++) {
+        let count = atomicLoad(&queue.count[queue_id]);
+        let workgroup_count = u32(ceil(f32(count) / f32(WORKGROUP_SIZE)));
+        dispatch_indirect_parameters[queue_id] = vec3u(workgroup_count, 1, 1);
+    }
+}
+`;
 
 class CameraData {
     #config;
@@ -1689,7 +1713,7 @@ class SampleCameraKernel {
         });
 
         pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(0, this.#data.bindGroup.primary);
+        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
         pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.camera);
         pass.end();
     }
@@ -1737,6 +1761,120 @@ class SampleLightKernel {
     }
 }
 
+class ClearQueueKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'clear_queue module',
+            code: CLEAR_QUEUE_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'clear_queue compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const array = new ArrayBuffer(4);
+        const view = {
+            queue_id: new Uint32Array(array, 0, 1),
+        };
+        view.queue_id.set([params.queueId]);
+    
+        const buffer = params.device.createBuffer({
+            label: 'clear_queue uniforms buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(buffer, 0, array);
+    
+        const bindGroup = params.device.createBindGroup({
+            label: 'clear_queue uniforms bind group',
+            layout: this.#data.bindGroupLayout.uniform,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    resource: {
+                        buffer,
+                    },
+                },
+            ],
+        });
+    
+        const pass = params.encoder.beginComputePass({
+            label: 'clear_queue compute pass',
+            timestampWrites: {
+                querySet: params.querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
+        pass.setPipeline(this.#pipeline);
+        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        pass.dispatchWorkgroups(1);
+        pass.end();
+    }
+}
+
+class DispatchKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'dispatch module',
+            code: DISPATCH_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'dispatch compute pipeline',
+            layout: this.#data.pipelineLayout.auxiliary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const pass = params.encoder.beginComputePass({
+            label: 'dispatch compute pass',
+            timestampWrites: {
+                querySet: params.querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
+        pass.setPipeline(this.#pipeline);
+        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        pass.dispatchWorkgroups(1);
+        pass.end();
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -1761,6 +1899,7 @@ class Data {
     initialize(params) {
         // Bind group layouts
         this.bindGroupLayout.primary = params.device.createBindGroupLayout({
+            label: 'primary bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.primary.binding.camera,
@@ -1808,6 +1947,7 @@ class Data {
         });
 
         this.bindGroupLayout.auxiliary = params.device.createBindGroupLayout({
+            label: 'auxiliary bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.auxiliary.binding.dispatchIndirectParameters,
@@ -1820,6 +1960,7 @@ class Data {
         });
 
         this.bindGroupLayout.uniform = params.device.createBindGroupLayout({
+            label: 'uniform bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.uniform.binding.parameters,
@@ -1965,26 +2106,42 @@ class Executor {
     #config;
     #data;
 
-    #kernels = {};
+    #kernels = {
+        primary: {},
+        auxiliary: {},
+    };
 
     constructor(params) {
         this.#config = params.config;
         this.#data = params.data;
 
-        this.#kernels.initialize = new InitializeKernel({ 
+        this.#kernels.primary.initialize = new InitializeKernel({ 
             config: this.#config,
             data: this.#data,
         });
 
-        this.#kernels.sampleCamera = new SampleCameraKernel({
+        this.#kernels.primary.sampleCamera = new SampleCameraKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.dispatch = new DispatchKernel({
             config: this.#config,
             data: this.#data,
         });
     }
 
     initialize(params) {
-        this.#kernels.initialize.initialize({ device: params.device });
-        this.#kernels.sampleCamera.initialize({ device: params.device });
+        this.#kernels.primary.initialize.initialize({ device: params.device });
+        this.#kernels.primary.sampleCamera.initialize({ device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
+        this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -1997,9 +2154,14 @@ class Executor {
             count: 2,
         });
 
-        this.#kernels.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
+        this.#kernels.primary.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
 
-        this.#kernels.sampleCamera.encode({ encoder, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
+
+        this.#kernels.primary.sampleCamera.encode({ encoder, device: params.device, querySet });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, encoder, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
 
         const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });

@@ -34,7 +34,7 @@ class SampleCameraKernel {
         });
 
         pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(0, this.#data.bindGroup.primary);
+        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
         pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.camera);
         pass.end();
     }

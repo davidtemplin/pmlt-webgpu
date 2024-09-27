@@ -22,6 +22,7 @@ class Data {
     initialize(params) {
         // Bind group layouts
         this.bindGroupLayout.primary = params.device.createBindGroupLayout({
+            label: 'primary bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.primary.binding.camera,
@@ -69,6 +70,7 @@ class Data {
         });
 
         this.bindGroupLayout.auxiliary = params.device.createBindGroupLayout({
+            label: 'auxiliary bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.auxiliary.binding.dispatchIndirectParameters,
@@ -81,6 +83,7 @@ class Data {
         });
 
         this.bindGroupLayout.uniform = params.device.createBindGroupLayout({
+            label: 'uniform bind group layout',
             entries: [
                 {
                     binding: this.#config.bindGroup.uniform.binding.parameters,
