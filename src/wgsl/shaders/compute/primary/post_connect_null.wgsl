@@ -9,7 +9,7 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
         // MIS
         let p1 = get_point(CAMERA, PENULTIMATE, i);
         let p2 = get_point(CAMERA, ULTIMATE, i);

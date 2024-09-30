@@ -6,7 +6,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
     let i = queue.index[CONTRIBUTE_QUEUE_ID][global_invocation_index];
 
     // Check bounds
-    if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
         // Context
         let chain_id = path.length[i] - MIN_PATH_LENGTH;
 

@@ -9,17 +9,18 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
-        // Intersect
-        let ray = get_ray(i);
-        let intersection = intersect(ray);
-
+    if global_invocation_index < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
         // Context
         let path_length = path.length[i];
         let vertex_index = path.vertex_index[i] + 1;
         path.vertex_index[i] = vertex_index;
         let technique = get_technique(i);
         let path_type = choose_u32(vertex_index < technique.camera, CAMERA, LIGHT);
+
+        // Intersect
+        let ray = get_ray(i);
+        let intersection = intersect(ray);
+        let valid = intersection.valid && (technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
 
         // MIS
         shift_pdf_fwd(path_type, i);
@@ -46,7 +47,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         queue_id = choose_u32(vertex_index == path_length - 1 && technique.light > 0, CONNECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light == 0, POST_CONNECT_NULL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light > 0, SAMPLE_LIGHT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+        queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
     }
 
     // Enqueue

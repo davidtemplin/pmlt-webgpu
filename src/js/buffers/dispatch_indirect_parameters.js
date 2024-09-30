@@ -13,13 +13,13 @@ class DispatchIndirectParametersData {
         this.buffer = params.device.createBuffer({
             label: 'dispatch indirect parameters buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_SRC,
         });
 
         params.device.queue.writeBuffer(this.buffer, 0, array);
     }
 
     getView(params) {
-        return new Uint32Array(params.array, 0, this.#config.queue.count);
+        return new Uint32Array(params.array, 0, 4 * this.#config.queue.count);
     }
 }

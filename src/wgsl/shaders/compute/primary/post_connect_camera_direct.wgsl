@@ -9,7 +9,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID]) {
         // Context
         let technique = get_technique(i);
 

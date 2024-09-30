@@ -9,7 +9,7 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_MATERIAL_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_MATERIAL_QUEUE_ID]) {
         // Context
         let vertex_index = path.vertex_index[i];
         let technique = get_technique(i);

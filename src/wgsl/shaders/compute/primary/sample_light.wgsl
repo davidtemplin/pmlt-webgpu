@@ -9,7 +9,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
         // Sample        
         let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 

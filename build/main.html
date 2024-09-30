@@ -792,7 +792,6 @@ fn sample_camera(r: vec2f) -> CameraSample {
     return CameraSample(camera.origin, direction, camera.w, positional_pdf, directional_pdf, u32(x), u32(y));
 }
 
-// TODO: maybe use workgroup_id instead of global_invocation_id; let id = workgroup_index * WORKGROUP_SIZE + i;
 fn enqueue(global_invocation_id: u32, local_invocation_id: u32, queue_id: u32) {
     workgroup_queue_ballot[local_invocation_id] = queue_id;
 
@@ -1125,7 +1124,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
         // Determine technique
         let path_length = path.length[i];
         let technique = sample_technique(path_length, rand_1(i, TECHNIQUE_STREAM_INDEX));
@@ -1178,7 +1177,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
         // Sample        
         let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 
@@ -1248,17 +1247,18 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
-        // Intersect
-        let ray = get_ray(i);
-        let intersection = intersect(ray);
-
+    if global_invocation_index < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
         // Context
         let path_length = path.length[i];
         let vertex_index = path.vertex_index[i] + 1;
         path.vertex_index[i] = vertex_index;
         let technique = get_technique(i);
         let path_type = choose_u32(vertex_index < technique.camera, CAMERA, LIGHT);
+
+        // Intersect
+        let ray = get_ray(i);
+        let intersection = intersect(ray);
+        let valid = intersection.valid && (technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
 
         // MIS
         shift_pdf_fwd(path_type, i);
@@ -1285,7 +1285,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         queue_id = choose_u32(vertex_index == path_length - 1 && technique.light > 0, CONNECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light == 0, POST_CONNECT_NULL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light > 0, SAMPLE_LIGHT_QUEUE_ID, queue_id);
-        queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+        queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
     }
 
     // Enqueue
@@ -1306,7 +1306,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
         // Context
         let path_length = path.length[i];
         let technique = get_technique(i);
@@ -1345,7 +1345,7 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
         // MIS
         let p1 = get_point(CAMERA, PENULTIMATE, i);
         let p2 = get_point(CAMERA, ULTIMATE, i);
@@ -1385,7 +1385,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID]) {
         // Context
         let technique = get_technique(i);
 
@@ -1429,14 +1429,14 @@ ${WGSL_LIB_CODE}
 @workgroup_size(WORKGROUP_SIZE)
 fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
-    let global_invocation_id = gid.x;
-    let i = queue.index[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID][global_invocation_id];
+    let global_invocation_index = gid.x;
+    let i = queue.index[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID]) {
         // Context
         let material_id = path.material_id[CAMERA][i];
         let technique = get_technique(i);
@@ -1490,7 +1490,7 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
@@ -1530,7 +1530,7 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
         // Context
         let material_id = path.material_id[LIGHT][i];
 
@@ -1579,7 +1579,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
     let i = queue.index[CONTRIBUTE_QUEUE_ID][global_invocation_index];
 
     // Check bounds
-    if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
         // Context
         let chain_id = path.length[i] - MIN_PATH_LENGTH;
 
@@ -1613,7 +1613,7 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_MATERIAL_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_MATERIAL_QUEUE_ID]) {
         // Context
         let vertex_index = path.vertex_index[i];
         let technique = get_technique(i);
@@ -1825,14 +1825,14 @@ class DispatchIndirectParametersData {
         this.buffer = params.device.createBuffer({
             label: 'dispatch indirect parameters buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_SRC,
         });
 
         params.device.queue.writeBuffer(this.buffer, 0, array);
     }
 
     getView(params) {
-        return new Uint32Array(params.array, 0, this.#config.queue.count);
+        return new Uint32Array(params.array, 0, 4 * this.#config.queue.count);
     }
 }
 
@@ -3101,6 +3101,8 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.light, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
+        /*
+
         this.#kernels.primary.intersect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
@@ -3151,6 +3153,8 @@ class Executor {
         const random = Math.random();
 
         this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
+
+        */
 
         pass.end();
 

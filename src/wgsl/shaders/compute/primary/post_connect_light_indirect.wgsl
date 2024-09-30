@@ -9,7 +9,7 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
         // Context
         let material_id = path.material_id[LIGHT][i];
 

@@ -9,7 +9,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
         // Context
         let path_length = path.length[i];
         let technique = get_technique(i);

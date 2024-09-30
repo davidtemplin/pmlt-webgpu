@@ -9,7 +9,7 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);

@@ -9,7 +9,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
     var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
+    if global_invocation_index < atomicLoad(&queue.count[SAMPLE_CAMERA_QUEUE_ID]) {
         // Determine technique
         let path_length = path.length[i];
         let technique = sample_technique(path_length, rand_1(i, TECHNIQUE_STREAM_INDEX));
