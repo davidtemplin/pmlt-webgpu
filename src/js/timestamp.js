@@ -7,20 +7,20 @@ class Timestamp {
     }
 
     prepare(params) {
-        this.#resolveBuffer = device.createBuffer({
+        this.#resolveBuffer = params.device.createBuffer({
             size: params.querySet.count * 8,
             usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
         });
 
-        this.#resultBuffer = device.createBuffer({
-            size: resolveBuffer.size,
+        this.#resultBuffer = params.device.createBuffer({
+            size: this.#resolveBuffer.size,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
         });
 
         params.encoder.resolveQuerySet(params.querySet, 0, 2, this.#resolveBuffer, 0);
 
         if (this.#resultBuffer.mapState === 'unmapped') {
-        params.encoder.copyBufferToBuffer(this.#resolveBuffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
+            params.encoder.copyBufferToBuffer(this.#resolveBuffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
         }
     }
 

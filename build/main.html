@@ -1658,22 +1658,12 @@ class InitializeKernel {
                 },
             ],
         });
-    
-        const pass = params.encoder.beginComputePass({
-            label: 'initialize compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
 
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
-        pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
     }
 }
 
@@ -1703,19 +1693,9 @@ class SampleCameraKernel {
     }
 
     encode(params) {
-        const pass = params.encoder.beginComputePass({
-            label: 'sample_camera compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.camera);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.camera);
     }
 }
 
@@ -1745,19 +1725,9 @@ class SampleLightKernel {
     }
 
     encode(params) {
-        const pass = params.encoder.beginComputePass({
-            label: 'sample_light compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(0, this.#data.bindGroup.primary);
-        pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.light);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(0, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.light);
     }
 }
 
@@ -1813,22 +1783,12 @@ class ClearQueueKernel {
                 },
             ],
         });
-    
-        const pass = params.encoder.beginComputePass({
-            label: 'clear_queue compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
 
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
-        pass.dispatchWorkgroups(1);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(1);
     }
 }
 
@@ -1858,20 +1818,10 @@ class DispatchKernel {
     }
 
     encode(params) {
-        const pass = params.encoder.beginComputePass({
-            label: 'dispatch compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.dispatchWorkgroups(1);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.dispatchWorkgroups(1);
     }
 }
 
@@ -2154,14 +2104,28 @@ class Executor {
             count: 2,
         });
 
-        this.#kernels.primary.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
+        const pass = encoder.beginComputePass({
+            label: 'phase 1 compute pass',
+            timestampWrites: {
+                querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
 
-        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
+        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device, querySet });
 
-        this.#kernels.primary.sampleCamera.encode({ encoder, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, encoder, device: params.device, querySet });
-        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
+        this.#kernels.primary.sampleCamera.encode({ pass, device: params.device, querySet });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
+
+        pass.end();
+
+        const timestamp = new Timestamp();
+        timestamp.prepare({ querySet, device: params.device, encoder });
 
         const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });
@@ -2169,6 +2133,7 @@ class Executor {
         const commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
+        timestamp.log();
         debug.log();
     }
 }
@@ -2244,20 +2209,20 @@ class Timestamp {
     }
 
     prepare(params) {
-        this.#resolveBuffer = device.createBuffer({
+        this.#resolveBuffer = params.device.createBuffer({
             size: params.querySet.count * 8,
             usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
         });
 
-        this.#resultBuffer = device.createBuffer({
-            size: resolveBuffer.size,
+        this.#resultBuffer = params.device.createBuffer({
+            size: this.#resolveBuffer.size,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
         });
 
         params.encoder.resolveQuerySet(params.querySet, 0, 2, this.#resolveBuffer, 0);
 
         if (this.#resultBuffer.mapState === 'unmapped') {
-        params.encoder.copyBufferToBuffer(this.#resolveBuffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
+            params.encoder.copyBufferToBuffer(this.#resolveBuffer, 0, this.#resultBuffer, 0, this.#resultBuffer.size);
         }
     }
 

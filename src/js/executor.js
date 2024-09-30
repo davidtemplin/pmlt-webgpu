@@ -50,14 +50,28 @@ class Executor {
             count: 2,
         });
 
-        this.#kernels.primary.initialize.encode({ pathLength: 2, encoder, device: params.device, querySet });
+        const pass = encoder.beginComputePass({
+            label: 'phase 1 compute pass',
+            timestampWrites: {
+                querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
 
-        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
+        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device, querySet });
 
-        this.#kernels.primary.sampleCamera.encode({ encoder, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, encoder, device: params.device, querySet });
-        this.#kernels.auxiliary.dispatch.encode({ encoder, device: params.device, querySet });
+        this.#kernels.primary.sampleCamera.encode({ pass, device: params.device, querySet });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
+
+        pass.end();
+
+        const timestamp = new Timestamp();
+        timestamp.prepare({ querySet, device: params.device, encoder });
 
         const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
         debug.encode({ encoder, device: params.device });
@@ -65,6 +79,7 @@ class Executor {
         const commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
+        timestamp.log();
         debug.log();
     }
 }

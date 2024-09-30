@@ -24,18 +24,8 @@ class SampleLightKernel {
     }
 
     encode(params) {
-        const pass = params.encoder.beginComputePass({
-            label: 'sample_light compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(0, this.#data.bindGroup.primary);
-        pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.light);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(0, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.sample.light);
     }
 }

@@ -24,19 +24,9 @@ class DispatchKernel {
     }
 
     encode(params) {
-        const pass = params.encoder.beginComputePass({
-            label: 'dispatch compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.dispatchWorkgroups(1);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.dispatchWorkgroups(1);
     }
 }

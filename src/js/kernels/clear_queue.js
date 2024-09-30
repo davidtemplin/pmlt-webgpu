@@ -50,21 +50,11 @@ class ClearQueueKernel {
                 },
             ],
         });
-    
-        const pass = params.encoder.beginComputePass({
-            label: 'clear_queue compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
 
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
-        pass.dispatchWorkgroups(1);
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(1);
     }
 }

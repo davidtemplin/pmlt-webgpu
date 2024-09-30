@@ -50,21 +50,11 @@ class InitializeKernel {
                 },
             ],
         });
-    
-        const pass = params.encoder.beginComputePass({
-            label: 'initialize compute pass',
-            timestampWrites: {
-                querySet: params.querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
 
-        pass.setPipeline(this.#pipeline);
-        pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
-        pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
-        pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
-        pass.end();
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
     }
 }
