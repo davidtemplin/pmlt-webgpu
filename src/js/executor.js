@@ -36,6 +36,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.postConnectNull = new PostConnectNullKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -53,6 +58,7 @@ class Executor {
         this.#kernels.primary.sampleLight.initialize({ device: params.device });
         this.#kernels.primary.intersect.initialize({ device: params.device });
         this.#kernels.primary.connect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectNull.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -99,6 +105,11 @@ class Executor {
         this.#kernels.primary.connect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();

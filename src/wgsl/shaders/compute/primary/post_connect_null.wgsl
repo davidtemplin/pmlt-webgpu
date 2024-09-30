@@ -6,7 +6,7 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
     let i = queue.index[POST_CONNECT_NULL_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
-    let queue_id: u32 = NULL_QUEUE_ID;
+    var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
     if i < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
@@ -16,13 +16,14 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
         let n1 = get_normal(CAMERA, PENULTIMATE, i);
         let n2 = get_normal(CAMERA, ULTIMATE, i);
         let d1 = p2 - p1;
-        let d2 = p1 = p2;
+        let d2 = p1 - p2;
 
         let ri1 = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
         path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
 
-        let ri2 = light_positional_pdf(p2) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        let radius = sphere.radius[LIGHT_SPHERE_ID];
+        let ri2 = light_positional_pdf(radius) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri2;
         path.sum_inv_ri[CAMERA][i] += 1.0 / ri2;
 

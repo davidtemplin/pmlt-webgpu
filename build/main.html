@@ -1307,12 +1307,52 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
 
         // Validate
-        let valid = intersection.valid; //&& approx_eq_vec3f(intersection.point, destination, 1e-6);
+        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-6);
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(technique.camera > 1, POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
+}
+`;
+const POST_CONNECT_NULL_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index = gid.x;
+    let i = queue.index[POST_CONNECT_NULL_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[POST_CONNECT_NULL_QUEUE_ID]) {
+        // MIS
+        let p1 = get_point(CAMERA, PENULTIMATE, i);
+        let p2 = get_point(CAMERA, ULTIMATE, i);
+        let n1 = get_normal(CAMERA, PENULTIMATE, i);
+        let n2 = get_normal(CAMERA, ULTIMATE, i);
+        let d1 = p2 - p1;
+        let d2 = p1 - p2;
+
+        let ri1 = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
+        path.prod_ri[CAMERA][i] *= ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+
+        let radius = sphere.radius[LIGHT_SPHERE_ID];
+        let ri2 = light_positional_pdf(radius) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        path.prod_ri[CAMERA][i] *= ri2;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / ri2;
+
+        // Next queue
+        queue_id = CONTRIBUTE_QUEUE_ID;
     }
 
     // Enqueue
@@ -1992,6 +2032,38 @@ class ConnectKernel {
     }
 }
 
+class PostConnectNullKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'post-connect null module',
+            code: POST_CONNECT_NULL_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'post-connect null compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.postConnect.null);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -2257,6 +2329,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.postConnectNull = new PostConnectNullKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -2274,6 +2351,7 @@ class Executor {
         this.#kernels.primary.sampleLight.initialize({ device: params.device });
         this.#kernels.primary.intersect.initialize({ device: params.device });
         this.#kernels.primary.connect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectNull.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -2320,6 +2398,11 @@ class Executor {
         this.#kernels.primary.connect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();

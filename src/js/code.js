@@ -9,3 +9,4 @@ const CLEAR_QUEUE_CODE = `#include clear_queue.wgsl`;
 const DISPATCH_CODE = `#include dispatch.wgsl`;
 const INTERSECT_CODE = `#include intersect.wgsl`;
 const CONNECT_CODE = `#include connect.wgsl`;
+const POST_CONNECT_NULL_CODE = `#include post_connect_null.wgsl`;
