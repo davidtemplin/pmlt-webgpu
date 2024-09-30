@@ -356,6 +356,8 @@ struct Chain {
     max_small_step_index: array<u32, CHAIN_COUNT>,
     contribution: array<array<f32, CHAIN_COUNT>, 3>,
     scalar_contribution: array<f32, CHAIN_COUNT>,
+    min_path_index: array<f32, CHAIN_COUNT>,
+    path_count: array<f32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -732,6 +734,10 @@ fn light_positional_pdf(radius: f32) -> f32 {
 
 fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
     return abs_cos_theta(d, n) / PI;
+}
+
+fn luminance(v: vec3f) -> f32 {
+    return v.r * 0.212671 + v.g * 0.715160 + v.b * 0.072169;
 }
 
 fn get_pixel_coordinates(ray: Ray) -> PixelCoordinates {
@@ -1470,6 +1476,129 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
     enqueue(i, lid, queue_id);
 }
 `;
+const POST_CONNECT_LIGHT_DIRECT_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index = gid.x;
+    let i = queue.index[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
+        // Geometry
+        let p1 = get_point(CAMERA, ULTIMATE, i);
+        let p2 = get_point(LIGHT, ULTIMATE, i);
+        let n1 = get_normal(CAMERA, ULTIMATE, i);
+        let n2 = get_normal(LIGHT, ULTIMATE, i);
+        let d1 = p2 - p1;
+        let d2 = p1 - p2;
+
+        // Beta
+        let beta = vec3f(1.0, 1.0, 1.0) * geometry_term(d1, n1, n2);
+        update_beta(i, beta);
+
+        // MIS
+        let ri = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        path.prod_ri[CAMERA][i] *= ri;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / ri;
+
+        // Next queue
+        queue_id = CONTRIBUTE_QUEUE_ID;
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
+}
+`;
+const POST_CONNECT_LIGHT_INDIRECT_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index = gid.x;
+    let i = queue.index[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
+        // Context
+        let material_id = path.material_id[LIGHT][i];
+
+        // Compute geometry
+        let p1 = get_point(CAMERA, ULTIMATE, i);
+        let p2 = get_point(LIGHT, ULTIMATE, i);
+        let p3 = get_point(LIGHT, PENULTIMATE, i);
+        let n1 = get_normal(CAMERA, ULTIMATE, i);
+        let n2 = get_normal(CAMERA, ULTIMATE, i);
+        let n3 = get_normal(LIGHT, PENULTIMATE, i);
+        let wo = p3 - p2;
+        let wi = p1 - p2;
+
+        // Evaluate material
+        let evaluation = evaluate_material(material_id, wo, n2, wi);
+
+        // Beta
+        let beta = evaluation.throughput;
+        update_beta(i, beta);
+
+        // MIS
+        let ri1 = evaluation.pdf_fwd * direction_to_area(wi, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        path.prod_ri[CAMERA][i] *= ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+
+        let ri2 = evaluation.pdf_rev * direction_to_area(wo, n3) / path.pdf_fwd[LIGHT][PENULTIMATE][i];
+        path.prod_ri[LIGHT][i] *= ri2;
+        path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
+
+        // Choose next queue
+        queue_id = CONTRIBUTE_QUEUE_ID;
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
+}
+`;
+const CONTRIBUTE_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
+    // Determine the global path index (i)
+    let global_invocation_index = gid.x;
+    let i = queue.index[CONTRIBUTE_QUEUE_ID][global_invocation_index];
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[CONTRIBUTE_QUEUE_ID]) {
+        // Context
+        let chain_id = path.length[i] - MIN_PATH_LENGTH;
+
+        let pixel = get_pixel(i);
+
+        // Compute the final contribution
+        let c = get_path_contribution(i);
+        let sc = luminance(c);
+        path.cdf[i] = sc;
+
+        // Compute the weight
+        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / chain.path_count[chain_id];
+        let weight = get_contribution_weight(chain_id, a, PROPOSAL, path.step_type[i]);
+
+        // Contribute
+        contribute(c * weight, pixel.x, pixel.y);
+    }
+}
+`;
 
 class CameraData {
     #config;
@@ -1523,7 +1652,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(68 * count);
+        const array = new ArrayBuffer(76 * count);
     
         const view = this.getView({ array });
     
@@ -1541,6 +1670,8 @@ class ChainData {
             view.numbers_per_stream.set([numbersPerStream], i);
             view.large_step_index[0].set([0], i);
             view.large_step_index[1].set([0], i);
+            view.min_path_index.set([0], i);
+            view.path_count.set([this.#config.path.count], i);
         }
 
         this.buffer = params.device.createBuffer({
@@ -1578,6 +1709,8 @@ class ChainData {
                 new Float32Array(params.array, 60 * count, count),
             ],
             scalar_contribution: new Float32Array(params.array, 64 * count, count),
+            min_path_index: new Float32Array(params.array, 68 * count, count),
+            path_count: new Float32Array(params.array, 72 * count, count),
         };
     }
 }
@@ -2239,6 +2372,102 @@ class PostConnectCameraIndirectKernel {
     }
 }
 
+class PostConnectLightDirectKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'post-connect light direct module',
+            code: POST_CONNECT_LIGHT_DIRECT_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'post-connect light direct compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.postConnect.light.direct);
+    }
+}
+
+class PostConnectLightIndirectKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'post-connect light indirect module',
+            code: POST_CONNECT_LIGHT_INDIRECT_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'post-connect light indirect compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.postConnect.light.indirect);
+    }
+}
+
+class ContributeKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'contribute module',
+            code: CONTRIBUTE_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'contribute compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(0, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.contribute);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -2519,6 +2748,21 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.postConnectLightDirect = new PostConnectLightDirectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.primary.postConnectLightIndirect = new PostConnectLightIndirectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.primary.contribute = new ContributeKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -2539,6 +2783,9 @@ class Executor {
         this.#kernels.primary.postConnectNull.initialize({ device: params.device });
         this.#kernels.primary.postConnectCameraDirect.initialize({ device: params.device });
         this.#kernels.primary.postConnectCameraIndirect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectLightDirect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectLightIndirect.initialize({ device: params.device });
+        this.#kernels.primary.contribute.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -2600,6 +2847,21 @@ class Executor {
         this.#kernels.primary.postConnectCameraIndirect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.indirect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectLightDirect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.direct, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectLightIndirect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.indirect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.contribute.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();

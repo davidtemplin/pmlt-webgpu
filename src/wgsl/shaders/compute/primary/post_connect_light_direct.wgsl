@@ -3,13 +3,13 @@
 fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
     let global_invocation_index = gid.x;
-    let i = queue.index[POST_CONNECT_DIRECT_QUEUE_ID][global_invocation_index];
+    let i = queue.index[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
-    let queue_id: u32 = NULL_QUEUE_ID;
+    var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_DIRECT_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[POST_CONNECT_LIGHT_DIRECT_QUEUE_ID]) {
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
@@ -19,7 +19,7 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         let d2 = p1 - p2;
 
         // Beta
-        let beta = geometry_term(d1, n1, n2);
+        let beta = vec3f(1.0, 1.0, 1.0) * geometry_term(d1, n1, n2);
         update_beta(i, beta);
 
         // MIS

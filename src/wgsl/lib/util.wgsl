@@ -146,3 +146,7 @@ fn light_positional_pdf(radius: f32) -> f32 {
 fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
     return abs_cos_theta(d, n) / PI;
 }
+
+fn luminance(v: vec3f) -> f32 {
+    return v.r * 0.212671 + v.g * 0.715160 + v.b * 0.072169;
+}

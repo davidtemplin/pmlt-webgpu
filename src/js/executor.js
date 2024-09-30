@@ -51,6 +51,21 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.postConnectLightDirect = new PostConnectLightDirectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.primary.postConnectLightIndirect = new PostConnectLightIndirectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.primary.contribute = new ContributeKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -71,6 +86,9 @@ class Executor {
         this.#kernels.primary.postConnectNull.initialize({ device: params.device });
         this.#kernels.primary.postConnectCameraDirect.initialize({ device: params.device });
         this.#kernels.primary.postConnectCameraIndirect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectLightDirect.initialize({ device: params.device });
+        this.#kernels.primary.postConnectLightIndirect.initialize({ device: params.device });
+        this.#kernels.primary.contribute.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -132,6 +150,21 @@ class Executor {
         this.#kernels.primary.postConnectCameraIndirect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.indirect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectLightDirect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.direct, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectLightIndirect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.indirect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.contribute.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();

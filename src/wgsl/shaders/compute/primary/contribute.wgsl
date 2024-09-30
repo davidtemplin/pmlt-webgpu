@@ -2,7 +2,7 @@
 @workgroup_size(WORKGROUP_SIZE)
 fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
     // Determine the global path index (i)
-    let global_invocation_index = id.x;
+    let global_invocation_index = gid.x;
     let i = queue.index[CONTRIBUTE_QUEUE_ID][global_invocation_index];
 
     // Check bounds
