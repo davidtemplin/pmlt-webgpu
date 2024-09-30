@@ -3,21 +3,25 @@
 fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
     let global_invocation_index = gid.x;
-    let i = queue.index[POST_CONNECT_DIRECT_QUEUE_ID][global_invocation_index];
+    let i = queue.index[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID][global_invocation_index];
 
     // Default to no queue
-    let queue_id: u32 = NULL_QUEUE_ID;
+    var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_DIRECT_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_DIRECT_QUEUE_ID]) {
+        // Context
+        let technique = get_technique(i);
+
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
+        let n1 = get_point(CAMERA, ULTIMATE, i);
         let n2 = get_normal(LIGHT, ULTIMATE, i);
         let d1 = p2 - p1;
 
         // Beta
-        let beta = choose_f32(technique.light > 1, geometry_term(d1, n1, n2), 1.0);
+        let beta = vec3f(1.0, 1.0, 1.0) * choose_f32(technique.light > 1, geometry_term(d1, n1, n2), 1.0);
         update_beta(i, beta);
 
         // MIS
@@ -26,10 +30,10 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         path.sum_inv_ri[LIGHT][i] += 1.0 / ri;
 
         // Pixel coordinates
-        let p1 = get_point(CAMERA, ULTIMATE, i);
-        let p2 = get_point(LIGHT, ULTIMATE, i);
-        let d = p1 - p2;
-        let ray = Ray(p2, d);
+        let pc = get_point(CAMERA, ULTIMATE, i);
+        let pl = get_point(LIGHT, ULTIMATE, i);
+        let d = pc - pl;
+        let ray = Ray(pl, d);
         let pixel = get_pixel_coordinates(ray);
         set_pixel(i, pixel.x, pixel.y);
 

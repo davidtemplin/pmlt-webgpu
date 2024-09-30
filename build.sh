@@ -66,6 +66,8 @@ cat src/js/kernels/connect.js;
 echo "\n";
 cat src/js/kernels/post_connect_null.js;
 echo "\n";
+cat src/js/kernels/post_connect_camera_direct.js;
+echo "\n";
 cat src/js/data.js;
 echo "\n";
 cat src/js/debug.js;

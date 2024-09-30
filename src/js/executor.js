@@ -41,6 +41,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.postConnectCameraDirect = new PostConnectCameraDirectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -59,6 +64,7 @@ class Executor {
         this.#kernels.primary.intersect.initialize({ device: params.device });
         this.#kernels.primary.connect.initialize({ device: params.device });
         this.#kernels.primary.postConnectNull.initialize({ device: params.device });
+        this.#kernels.primary.postConnectCameraDirect.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -110,6 +116,11 @@ class Executor {
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.postConnectCameraDirect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.direct, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();
