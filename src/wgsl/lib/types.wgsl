@@ -175,6 +175,6 @@ struct LightSample {
 struct MaterialEvaluation {
     pdf_fwd: f32,
     pdf_rev: f32,
-    throughput: f32,
+    throughput: vec3f,
     valid: bool,
 };

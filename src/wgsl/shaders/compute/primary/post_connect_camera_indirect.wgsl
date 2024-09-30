@@ -2,16 +2,17 @@
 @workgroup_size(WORKGROUP_SIZE)
 fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) lid: u32) {
     // Determine the global path index (i)
-    let global_invocation_id = id.x;
-    let i = queue.index[POST_CONNECT_CAMERA_QUEUE_ID];
+    let global_invocation_id = gid.x;
+    let i = queue.index[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID][global_invocation_id];
 
     // Default to no queue
-    let queue_id: u32 = NULL_QUEUE_ID;
+    var queue_id: u32 = NULL_QUEUE_ID;
 
     // Check bounds
-    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_QUEUE_ID]) {
+    if i < atomicLoad(&queue.count[POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID]) {
         // Context
         let material_id = path.material_id[CAMERA][i];
+        let technique = get_technique(i);
 
         // Compute geometry
         let p1 = get_point(CAMERA, PENULTIMATE, i);
@@ -37,7 +38,7 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
 
         let ri2 = evaluation.pdf_fwd * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= r12;
+        path.prod_ri[LIGHT][i] *= ri2;
         path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
 
         // Choose next queue
