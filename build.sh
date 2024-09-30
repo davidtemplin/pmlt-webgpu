@@ -76,6 +76,8 @@ cat src/js/kernels/post_connect_light_indirect.js;
 echo "\n";
 cat src/js/kernels/contribute.js;
 echo "\n";
+cat src/js/kernels/sample_material.js;
+echo "\n";
 cat src/js/data.js;
 echo "\n";
 cat src/js/debug.js;

@@ -15,3 +15,4 @@ const POST_CONNECT_CAMERA_INDIRECT_CODE = `#include post_connect_camera_indirect
 const POST_CONNECT_LIGHT_DIRECT_CODE = `#include post_connect_light_direct.wgsl`;
 const POST_CONNECT_LIGHT_INDIRECT_CODE = `#include post_connect_light_indirect.wgsl`;
 const CONTRIBUTE_CODE = `#include contribute.wgsl`;
+const SAMPLE_MATERIAL_CODE = `#include sample_material.wgsl`;
