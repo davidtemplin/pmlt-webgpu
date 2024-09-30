@@ -31,6 +31,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.connect = new ConnectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -47,6 +52,7 @@ class Executor {
         this.#kernels.primary.sampleCamera.initialize({ device: params.device });
         this.#kernels.primary.sampleLight.initialize({ device: params.device });
         this.#kernels.primary.intersect.initialize({ device: params.device });
+        this.#kernels.primary.connect.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -88,6 +94,11 @@ class Executor {
         this.#kernels.primary.intersect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.connect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();

@@ -62,6 +62,8 @@ cat src/js/kernels/dispatch.js;
 echo "\n";
 cat src/js/kernels/intersect.js;
 echo "\n";
+cat src/js/kernels/connect.js;
+echo "\n";
 cat src/js/data.js;
 echo "\n";
 cat src/js/debug.js;

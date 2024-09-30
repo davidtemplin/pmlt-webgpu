@@ -1280,6 +1280,45 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
     enqueue(i, lid, queue_id);
 }
 `;
+const CONNECT_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index = id.x;
+    let i = queue.index[CONNECT_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[CONNECT_QUEUE_ID]) {
+        // Context
+        let path_length = path.length[i];
+        let technique = get_technique(i);
+
+        // Intersect
+        let source = get_point(CAMERA, ULTIMATE, i);
+        let destination = get_point(LIGHT, ULTIMATE, i);
+        let direction = normalize(destination - source);
+        let ray = Ray(source, direction);
+        let intersection = intersect(ray);
+
+        // Validate
+        let valid = approx_eq_vec3f(intersection.point, destination, 1e-6);
+
+        // Determine queue
+        queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(technique.camera > 1, POST_CONNECT_CAMERA_INDIRECT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(valid, queue_id, NULL_QUEUE_ID);
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
+}
+`;
 
 class CameraData {
     #config;
@@ -1921,6 +1960,38 @@ class IntersectKernel {
     }
 }
 
+class ConnectKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'connect module',
+            code: CONNECT_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'connect compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(0, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.connect);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -2181,6 +2252,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.connect = new ConnectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -2197,6 +2273,7 @@ class Executor {
         this.#kernels.primary.sampleCamera.initialize({ device: params.device });
         this.#kernels.primary.sampleLight.initialize({ device: params.device });
         this.#kernels.primary.intersect.initialize({ device: params.device });
+        this.#kernels.primary.connect.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -2238,6 +2315,11 @@ class Executor {
         this.#kernels.primary.intersect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.connect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();
