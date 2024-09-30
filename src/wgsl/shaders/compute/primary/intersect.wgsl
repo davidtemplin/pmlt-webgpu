@@ -43,7 +43,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
 
         // Determine queue
         queue_id = choose_u32(vertex_index + 1 < technique.camera || vertex_index + 1 < technique.light, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
-        queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == path_length - 1 && technique.light > 0, CONNECT_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light == 0, POST_CONNECT_NULL_QUEUE_ID, queue_id);
         queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light > 0, SAMPLE_LIGHT_QUEUE_ID, queue_id);
         queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
