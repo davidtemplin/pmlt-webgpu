@@ -107,6 +107,10 @@ fn choose_f32(b: bool, u1: f32, u2: f32) -> f32 {
     return f32(b) * u1 + f32(!b) * u2;
 }
 
+fn choose_vec3f(b: bool, v1: vec3f, v2: vec3f) -> vec3f {
+    return f32(b) * v1 + f32(!b) * v2;
+}
+
 fn approx_eq_f32(a: f32, b: f32, tolerance: f32) -> bool {
     return abs(a - b) < tolerance;
 }

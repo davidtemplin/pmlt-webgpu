@@ -315,7 +315,7 @@ struct Path {
     normal: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
 
     /* material */
-    material_id: array<array<f32, PATH_COUNT>, 2>,
+    material_id: array<array<u32, PATH_COUNT>, 2>,
 
     /* MIS */
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
@@ -408,6 +408,7 @@ struct UpdateChainUniforms {
 struct Intersection {
     point: vec3f,
     normal: vec3f,
+    sphere_id: u32,
     valid: bool,
 };
 
@@ -693,6 +694,10 @@ fn choose_f32(b: bool, u1: f32, u2: f32) -> f32 {
     return f32(b) * u1 + f32(!b) * u2;
 }
 
+fn choose_vec3f(b: bool, v1: vec3f, v2: vec3f) -> vec3f {
+    return f32(b) * v1 + f32(!b) * v2;
+}
+
 fn approx_eq_f32(a: f32, b: f32, tolerance: f32) -> bool {
     return abs(a - b) < tolerance;
 }
@@ -893,7 +898,7 @@ fn intersect(ray: Ray) -> Intersection {
     let center = get_sphere_center(best_sphere_id);
     let normal = normalize(point - center);
 
-    return Intersection(point, normal, best_t < MAX_F32);
+    return Intersection(point, normal, best_sphere_id, best_t < MAX_F32);
 }
 
 fn get_sphere_center(id: u32) -> vec3f {
@@ -1163,7 +1168,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
     // Check bounds
     if i < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
         // Sample        
-        let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
+        let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 
         // Set initial ray
         set_ray_origin(i, sample.point);
@@ -1185,6 +1190,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         set_normal(LIGHT, ULTIMATE, i, sample.normal);
 
         // Determine queue
+        let technique = get_technique(i);
         queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
@@ -1214,6 +1220,64 @@ fn dispatch() {
         let workgroup_count = u32(ceil(f32(count) / f32(WORKGROUP_SIZE)));
         dispatch_indirect_parameters[queue_id] = vec3u(workgroup_count, 1, 1);
     }
+}
+`;
+const INTERSECT_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index: u32 = id.x;
+    let i = queue.index[INTERSECT_QUEUE_ID][global_invocation_index];
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if i < atomicLoad(&queue.count[INTERSECT_QUEUE_ID]) {
+        // Intersect
+        let ray = get_ray(i);
+        let intersection = intersect(ray);
+
+        // Context
+        let path_length = path.length[i];
+        let vertex_index = path.vertex_index[i] + 1;
+        path.vertex_index[i] = vertex_index;
+        let technique = get_technique(i);
+        let path_type = choose_u32(vertex_index < technique.camera, CAMERA, LIGHT);
+
+        // MIS
+        shift_pdf_fwd(path_type, i);
+        let direction = intersection.point - get_point(path_type, ULTIMATE, i);
+        let directional_pdf = path.directional_pdf[i];
+        path.pdf_fwd[path_type][ULTIMATE][i] = directional_pdf * direction_to_area(direction, intersection.normal);
+
+        // Beta
+        let emission = choose_vec3f(intersection.sphere_id == LIGHT_SPHERE_ID, get_sphere_color(LIGHT_SPHERE_ID), vec3f(1.0, 1.0, 1.0));
+        let beta = emission * abs_cos_theta(direction, get_normal(path_type, ULTIMATE, i)) / directional_pdf;
+        update_beta(i, beta);
+
+        // Material
+        path.material_id[path_type][i] = intersection.sphere_id;
+
+        // Geometry
+        shift_point(path_type, i);
+        shift_normal(path_type, i);
+        set_point(path_type, ULTIMATE, i, intersection.point);
+        set_normal(path_type, ULTIMATE, i, intersection.normal);
+
+        // Determine queue
+        queue_id = choose_u32(vertex_index + 1 < technique.camera || vertex_index + 1 < technique.light, SAMPLE_MATERIAL_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == path_length - 1, CONNECT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light == 0, POST_CONNECT_NULL_QUEUE_ID, queue_id);
+        queue_id = choose_u32(vertex_index == technique.camera - 1 && technique.light > 0, SAMPLE_LIGHT_QUEUE_ID, queue_id);
+        queue_id = choose_u32(intersection.valid, queue_id, NULL_QUEUE_ID);
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
 }
 `;
 
@@ -1492,8 +1556,8 @@ class PathData {
                 ],
             ],
             material_id: [
-                new Float32Array(params.array, 168 * count, count),
-                new Float32Array(params.array, 172 * count, count),
+                new Uint32Array(params.array, 168 * count, count),
+                new Uint32Array(params.array, 172 * count, count),
             ],
             pdf_fwd: [
                 [
@@ -1825,6 +1889,38 @@ class DispatchKernel {
     }
 }
 
+class IntersectKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'intersect module',
+            code: INTERSECT_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'intersect compute pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(0, this.#data.bindGroup.primary);
+        params.pass.dispatchWorkgroupsIndirect(this.#data.element.dispatchIndirectParameters.buffer, 16 * this.#config.queue.index.intersect);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -2075,6 +2171,16 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.sampleLight = new SampleLightKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.primary.intersect = new IntersectKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -2089,6 +2195,8 @@ class Executor {
     initialize(params) {
         this.#kernels.primary.initialize.initialize({ device: params.device });
         this.#kernels.primary.sampleCamera.initialize({ device: params.device });
+        this.#kernels.primary.sampleLight.initialize({ device: params.device });
+        this.#kernels.primary.intersect.initialize({ device: params.device });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -2113,14 +2221,24 @@ class Executor {
             },
         });
 
-        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device, querySet });
+        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device });
 
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.sampleCamera.encode({ pass, device: params.device, querySet });
+        this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device, querySet });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device, querySet });
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.sampleLight.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.light, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.primary.intersect.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
+        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
         pass.end();
 

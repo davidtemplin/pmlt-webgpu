@@ -100,8 +100,8 @@ class PathData {
                 ],
             ],
             material_id: [
-                new Float32Array(params.array, 168 * count, count),
-                new Float32Array(params.array, 172 * count, count),
+                new Uint32Array(params.array, 168 * count, count),
+                new Uint32Array(params.array, 172 * count, count),
             ],
             pdf_fwd: [
                 [

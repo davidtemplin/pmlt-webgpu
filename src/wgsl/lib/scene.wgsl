@@ -33,7 +33,7 @@ fn intersect(ray: Ray) -> Intersection {
     let center = get_sphere_center(best_sphere_id);
     let normal = normalize(point - center);
 
-    return Intersection(point, normal, best_t < MAX_F32);
+    return Intersection(point, normal, best_sphere_id, best_t < MAX_F32);
 }
 
 fn get_sphere_center(id: u32) -> vec3f {

@@ -38,7 +38,7 @@ struct Path {
     normal: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
 
     /* material */
-    material_id: array<array<f32, PATH_COUNT>, 2>,
+    material_id: array<array<u32, PATH_COUNT>, 2>,
 
     /* MIS */
     pdf_fwd: array<array<array<f32, PATH_COUNT>, 2>, 2>,
@@ -131,6 +131,7 @@ struct UpdateChainUniforms {
 struct Intersection {
     point: vec3f,
     normal: vec3f,
+    sphere_id: u32,
     valid: bool,
 };
 

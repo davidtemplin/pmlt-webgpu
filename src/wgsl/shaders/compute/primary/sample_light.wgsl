@@ -11,7 +11,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
     // Check bounds
     if i < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
         // Sample        
-        let sample = sample_light(rand_4(global_path_index, LIGHT_STREAM_INDEX));
+        let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 
         // Set initial ray
         set_ray_origin(i, sample.point);
@@ -33,6 +33,7 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         set_normal(LIGHT, ULTIMATE, i, sample.normal);
 
         // Determine queue
+        let technique = get_technique(i);
         queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
     }
     
