@@ -66,8 +66,8 @@ class ChainData {
                 new Float32Array(params.array, 60 * count, count),
             ],
             scalar_contribution: new Float32Array(params.array, 64 * count, count),
-            min_path_index: new Float32Array(params.array, 68 * count, count),
-            path_count: new Float32Array(params.array, 72 * count, count),
+            min_path_index: new Uint32Array(params.array, 68 * count, count),
+            path_count: new Uint32Array(params.array, 72 * count, count),
         };
     }
 }

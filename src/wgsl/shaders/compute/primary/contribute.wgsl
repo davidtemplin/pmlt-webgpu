@@ -18,7 +18,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         path.cdf[i] = sc;
 
         // Compute the weight
-        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / chain.path_count[chain_id];
+        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
         let weight = get_contribution_weight(chain_id, a, PROPOSAL, path.step_type[i]);
 
         // Contribute

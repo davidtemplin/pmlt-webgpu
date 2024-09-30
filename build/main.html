@@ -147,6 +147,7 @@ class Config {
     path = {
         count: 1_000_000,
         length: {
+            min: 2,
             max: 6,
         },
     };
@@ -356,8 +357,8 @@ struct Chain {
     max_small_step_index: array<u32, CHAIN_COUNT>,
     contribution: array<array<f32, CHAIN_COUNT>, 3>,
     scalar_contribution: array<f32, CHAIN_COUNT>,
-    min_path_index: array<f32, CHAIN_COUNT>,
-    path_count: array<f32, CHAIN_COUNT>,
+    min_path_index: array<u32, CHAIN_COUNT>,
+    path_count: array<u32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -392,8 +393,7 @@ struct ClearQueueUniforms {
 }
 
 struct BuildCdfUniforms {
-    min_path_index: u32,
-    path_count: u32,
+    chain_id: u32,
     iteration: u32,
 };
 
@@ -1591,7 +1591,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         path.cdf[i] = sc;
 
         // Compute the weight
-        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / chain.path_count[chain_id];
+        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
         let weight = get_contribution_weight(chain_id, a, PROPOSAL, path.step_type[i]);
 
         // Contribute
@@ -1649,6 +1649,49 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
 
     // Enqueue
     enqueue(i, lid, queue_id);
+}
+`;
+const BUILD_CDF_CODE = `
+${WGSL_LIB_CODE}
+
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: BuildCdfUniforms;
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn build_cdf(@builtin(global_invocation_id) id: vec3u) {
+    // Determine the global invocation index
+    let global_invocation_index = id.x;
+
+    // Check bounds
+    if global_invocation_index >= chain.path_count[uniforms.chain_id] {
+        return;
+    }
+
+    // Compute index parameters
+    let two_pow_i: u32 = u32(1) << uniforms.iteration;
+    let m = u32(global_invocation_index >= two_pow_i);
+    let j = chain.min_path_index[uniforms.chain_id] + global_invocation_index;
+    
+    // Update prefix sums
+    path.cdf[j] = path.cdf[j] + f32(m) * path.cdf[j - m * two_pow_i];
+}
+`;
+const START_CHAIN_CODE = `
+${WGSL_LIB_CODE}
+
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: StartChainUniforms;
+
+@compute
+@workgroup_size(1)
+fn start_chain() {
+    let sum = path.cdf[PATH_COUNT - 1];
+    let m = binary_search(0, PATH_COUNT - 1, sum, uniforms.random);
+    let large_step_index = m * chain.numbers_per_path[uniforms.chain_id];
+    chain.large_step_index[HI][uniforms.chain_id] = 0;
+    chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
+    chain.small_step_count[uniforms.chain_id] = 1;
+    chain.b[uniforms.chain_id] = sum;
+    chain.iteration[uniforms.chain_id] += 1;
 }
 `;
 
@@ -1761,8 +1804,8 @@ class ChainData {
                 new Float32Array(params.array, 60 * count, count),
             ],
             scalar_contribution: new Float32Array(params.array, 64 * count, count),
-            min_path_index: new Float32Array(params.array, 68 * count, count),
-            path_count: new Float32Array(params.array, 72 * count, count),
+            min_path_index: new Uint32Array(params.array, 68 * count, count),
+            path_count: new Uint32Array(params.array, 72 * count, count),
         };
     }
 }
@@ -2552,6 +2595,135 @@ class SampleMaterialKernel {
     }
 }
 
+class BuildCdfKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'build_cdf module',
+            code: BUILD_CDF_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'build_cdf compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const iterations = Math.ceil(Math.log2(this.#config.path.count));
+        for (var iteration = 0; iteration < iterations; iteration++) {
+            const array = new ArrayBuffer(8);
+            const view = {
+                chain_id: new Uint32Array(array, 0, 1),
+                iteration: new Uint32Array(array, 4, 1),
+            };
+            view.chain_id.set([params.chainId]);
+            view.iteration.set([iteration]);
+        
+            const buffer = params.device.createBuffer({
+                label: 'build_cdf uniforms buffer',
+                size: array.byteLength,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+        
+            params.device.queue.writeBuffer(buffer, 0, array);
+        
+            const bindGroup = params.device.createBindGroup({
+                label: 'build_cdf uniforms bind group',
+                layout: this.#data.bindGroupLayout.uniform,
+                entries: [
+                    {
+                        binding: this.#config.bindGroup.uniform.binding.parameters,
+                        resource: {
+                            buffer,
+                        },
+                    },
+                ],
+            });
+
+            params.pass.setPipeline(this.#pipeline);
+            params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+            params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+            params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+            params.pass.dispatchWorkgroups(1);
+        }
+    }
+}
+
+class StartChainKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'start_chain module',
+            code: START_CHAIN_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'start_chain compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const array = new ArrayBuffer(8);
+        const view = {
+            chain_id: new Uint32Array(array, 0, 1),
+            random: new Float32Array(array, 4, 1),
+        };
+        view.chain_id.set([params.chainId]);
+        view.random.set([params.random]);
+    
+        const buffer = params.device.createBuffer({
+            label: 'start_chain uniforms buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(buffer, 0, array);
+    
+        const bindGroup = params.device.createBindGroup({
+            label: 'start_chain uniforms bind group',
+            layout: this.#data.bindGroupLayout.uniform,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    resource: {
+                        buffer,
+                    },
+                },
+            ],
+        });
+
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(1);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -2861,6 +3033,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.buildCdf = new BuildCdfKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.startChain = new StartChainKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -2879,6 +3061,8 @@ class Executor {
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
+        this.#kernels.auxiliary.buildCdf.initialize({ device: params.device });
+        this.#kernels.auxiliary.startChain.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -2900,7 +3084,10 @@ class Executor {
             },
         });
 
-        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device });
+        const pathLength = 2;
+        const chainId = pathLength - this.#config.path.length.min;
+
+        this.#kernels.primary.initialize.encode({ pathLength, pass, device: params.device });
 
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
@@ -2958,6 +3145,12 @@ class Executor {
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device });
+
+        const random = Math.random();
+
+        this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
 
         pass.end();
 

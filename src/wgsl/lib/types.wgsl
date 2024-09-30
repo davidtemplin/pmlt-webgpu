@@ -79,8 +79,8 @@ struct Chain {
     max_small_step_index: array<u32, CHAIN_COUNT>,
     contribution: array<array<f32, CHAIN_COUNT>, 3>,
     scalar_contribution: array<f32, CHAIN_COUNT>,
-    min_path_index: array<f32, CHAIN_COUNT>,
-    path_count: array<f32, CHAIN_COUNT>,
+    min_path_index: array<u32, CHAIN_COUNT>,
+    path_count: array<u32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -115,8 +115,7 @@ struct ClearQueueUniforms {
 }
 
 struct BuildCdfUniforms {
-    min_path_index: u32,
-    path_count: u32,
+    chain_id: u32,
     iteration: u32,
 };
 

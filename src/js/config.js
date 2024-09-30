@@ -34,6 +34,7 @@ class Config {
     path = {
         count: 1_000_000,
         length: {
+            min: 2,
             max: 6,
         },
     };

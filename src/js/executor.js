@@ -80,6 +80,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.buildCdf = new BuildCdfKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.startChain = new StartChainKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -98,6 +108,8 @@ class Executor {
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
+        this.#kernels.auxiliary.buildCdf.initialize({ device: params.device });
+        this.#kernels.auxiliary.startChain.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -119,7 +131,10 @@ class Executor {
             },
         });
 
-        this.#kernels.primary.initialize.encode({ pathLength: 2, pass, device: params.device });
+        const pathLength = 2;
+        const chainId = pathLength - this.#config.path.length.min;
+
+        this.#kernels.primary.initialize.encode({ pathLength, pass, device: params.device });
 
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
@@ -177,6 +192,12 @@ class Executor {
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device });
+
+        const random = Math.random();
+
+        this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
 
         pass.end();
 
