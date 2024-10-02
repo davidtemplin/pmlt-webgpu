@@ -7,10 +7,6 @@ fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
         return;
     }
 
-    if queue_id == NULL_QUEUE_ID {
-        return;
-    }
-
     var tally: u32 = 0;
 
     for (var i: u32 = 0; i < WORKGROUP_SIZE; i++) {

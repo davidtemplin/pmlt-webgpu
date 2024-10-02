@@ -819,10 +819,6 @@ fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
         return;
     }
 
-    if queue_id == NULL_QUEUE_ID {
-        return;
-    }
-
     var tally: u32 = 0;
 
     for (var i: u32 = 0; i < WORKGROUP_SIZE; i++) {
@@ -1333,7 +1329,7 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         // Intersect
         let ray = get_ray(i);
         let intersection = intersect(ray);
-        let valid = intersection.valid && (technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
+        let valid = intersection.valid && intersection.sphere_id == LIGHT_SPHERE_ID; //(technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
 
         // MIS
         shift_pdf_fwd(path_type, i);
@@ -3243,6 +3239,8 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
+        /*
+
         this.#kernels.primary.sampleMaterial.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.material, pass, device: params.device });
@@ -3288,6 +3286,8 @@ class Executor {
         const random = Math.random();
 
         this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
+
+        */
 
         pass.end();
 
