@@ -7,3 +7,5 @@
 @group(DISPATCH_INDIRECT_PARAMETERS_GROUP) @binding(DISPATCH_INDIRECT_PARAMETERS_BINDING) var<storage, read_write> dispatch_indirect_parameters: array<vec3u, QUEUE_COUNT>;
 
 var<workgroup> workgroup_queue_ballot: array<u32, WORKGROUP_SIZE>;
+
+@group(PATH_LOG_GROUP) @binding(PATH_LOG_BINDING) var<storage, read_write> path_log: PathLog;

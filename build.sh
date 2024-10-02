@@ -25,6 +25,8 @@ cat src/wgsl/lib/material.wgsl;
 echo "\n";
 cat src/wgsl/lib/path.wgsl;
 echo "\n";
+cat src/wgsl/lib/path_log.wgsl;
+echo "\n";
 `
 
 JS=`
@@ -49,6 +51,8 @@ echo "\n";
 cat src/js/buffers/queue.js;
 echo "\n";
 cat src/js/buffers/scene.js;
+echo "\n";
+cat src/js/buffers/path_log.js;
 echo "\n";
 cat src/js/kernels/initialize.js;
 echo "\n";

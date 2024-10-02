@@ -66,6 +66,13 @@ class Data {
                         type: 'storage',
                     },
                 },
+                {
+                    binding: this.#config.bindGroup.primary.binding.pathLog,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
             ],
         });
 
@@ -130,6 +137,8 @@ class Data {
         this.element.image.initialize({ device: params.device });
         this.element.queue = new QueueData({ config: this.#config });
         this.element.queue.initialize({ device: params.device });
+        this.element.pathLog = new PathLogData({ config: this.#config });
+        this.element.pathLog.initialize({ device: params.device });
         this.element.dispatchIndirectParameters = new DispatchIndirectParametersData({ config: this.#config });
         this.element.dispatchIndirectParameters.initialize({ device: params.device });
 
@@ -172,6 +181,12 @@ class Data {
                     binding: this.#config.bindGroup.primary.binding.queue,
                     resource: {
                         buffer: this.element.queue.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.pathLog,
+                    resource: {
+                        buffer: this.element.pathLog.buffer,
                     },
                 },
             ],

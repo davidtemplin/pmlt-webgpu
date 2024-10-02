@@ -1,4 +1,9 @@
 class Config {
+    pathLog = {
+        enabled: true,
+        targetIndex: 69,
+    };
+
     bindGroup = {
         primary: {
             index: 0,
@@ -9,6 +14,7 @@ class Config {
                 path: 3,
                 image: 4,
                 queue: 5,
+                pathLog: 6,
             },
         },
         auxiliary: {

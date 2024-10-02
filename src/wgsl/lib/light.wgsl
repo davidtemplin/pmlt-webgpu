@@ -7,3 +7,11 @@ fn sample_light(r: vec4f) -> LightSample {
     let directional_pdf = abs(dot(normalize(direction), normal)) / PI;
     return LightSample(point, direction, normal, positional_pdf, directional_pdf);
 }
+
+fn light_positional_pdf(radius: f32) -> f32 {
+    return 1.0 / (4.0 * PI * radius * radius);
+}
+
+fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
+    return abs_cos_theta(d, n) / PI;
+}

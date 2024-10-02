@@ -47,6 +47,8 @@ const IMAGE_GROUP: u32 = ${config.bindGroup.primary.index};
 const IMAGE_BINDING: u32 = ${config.bindGroup.primary.binding.image};
 const QUEUE_GROUP: u32 = ${config.bindGroup.primary.index};
 const QUEUE_BINDING: u32 = ${config.bindGroup.primary.binding.queue}; 
+const PATH_LOG_GROUP: u32 = ${config.bindGroup.primary.index};
+const PATH_LOG_BINDING: u32 = ${config.bindGroup.primary.binding.pathLog};
 const DISPATCH_INDIRECT_PARAMETERS_GROUP: u32 = ${config.bindGroup.auxiliary.index}; 
 const DISPATCH_INDIRECT_PARAMETERS_BINDING: u32 = ${config.bindGroup.auxiliary.binding.dispatchIndirectParameters};
 const UNIFORM_GROUP: u32 = ${config.bindGroup.uniform.index};
@@ -72,3 +74,6 @@ const PROPOSAL: u32 = 0;
 const CURRENT: u32 = 1;
 
 const FIXED_POINT_SCALE: f32 = 1048576.0;
+
+const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
+const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};

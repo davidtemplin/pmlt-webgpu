@@ -112,6 +112,11 @@ class KeyUtil {
 }
 
 class Config {
+    pathLog = {
+        enabled: true,
+        targetIndex: 69,
+    };
+
     bindGroup = {
         primary: {
             index: 0,
@@ -122,6 +127,7 @@ class Config {
                 path: 3,
                 image: 4,
                 queue: 5,
+                pathLog: 6,
             },
         },
         auxiliary: {
@@ -250,6 +256,8 @@ const IMAGE_GROUP: u32 = ${config.bindGroup.primary.index};
 const IMAGE_BINDING: u32 = ${config.bindGroup.primary.binding.image};
 const QUEUE_GROUP: u32 = ${config.bindGroup.primary.index};
 const QUEUE_BINDING: u32 = ${config.bindGroup.primary.binding.queue}; 
+const PATH_LOG_GROUP: u32 = ${config.bindGroup.primary.index};
+const PATH_LOG_BINDING: u32 = ${config.bindGroup.primary.binding.pathLog};
 const DISPATCH_INDIRECT_PARAMETERS_GROUP: u32 = ${config.bindGroup.auxiliary.index}; 
 const DISPATCH_INDIRECT_PARAMETERS_BINDING: u32 = ${config.bindGroup.auxiliary.binding.dispatchIndirectParameters};
 const UNIFORM_GROUP: u32 = ${config.bindGroup.uniform.index};
@@ -275,6 +283,9 @@ const PROPOSAL: u32 = 0;
 const CURRENT: u32 = 1;
 
 const FIXED_POINT_SCALE: f32 = 1048576.0;
+
+const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
+const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
 
 struct Camera {
     u: vec3f,
@@ -458,6 +469,19 @@ struct MaterialEvaluation {
     valid: bool,
 };
 
+struct VertexLog {
+    point: vec3f,
+    normal: vec3f,
+    direction: vec3f,
+    sphere_id: u32,
+};
+
+struct PathLog {
+    vertices: array<VertexLog, MAX_PATH_LENGTH>,
+    beta: vec3f,
+    mis_weight: f32,
+};
+
 @group(CAMERA_GROUP) @binding(CAMERA_BINDING) var<storage, read> camera: Camera;
 @group(SPHERE_GROUP) @binding(SPHERE_BINDING) var<storage, read> sphere: Sphere;
 @group(CHAIN_GROUP) @binding(CHAIN_BINDING) var<storage, read_write> chain: Chain;
@@ -467,6 +491,8 @@ struct MaterialEvaluation {
 @group(DISPATCH_INDIRECT_PARAMETERS_GROUP) @binding(DISPATCH_INDIRECT_PARAMETERS_BINDING) var<storage, read_write> dispatch_indirect_parameters: array<vec3u, QUEUE_COUNT>;
 
 var<workgroup> workgroup_queue_ballot: array<u32, WORKGROUP_SIZE>;
+
+@group(PATH_LOG_GROUP) @binding(PATH_LOG_BINDING) var<storage, read_write> path_log: PathLog;
 
 fn rand(p: RandomParameters, number_index: u32) -> f32 {
     let stream_offset = p.stream_index * p.numbers_per_stream 
@@ -1080,6 +1106,35 @@ fn set_pixel(i: u32, x: u32, y: u32) {
 fn get_pixel(i: u32) -> vec2u {
     return vec2u(path.pixel[0][i], path.pixel[1][i]);
 }
+
+fn log_vertex(path_type: u32, i: u32) {
+    if PATH_LOG_ENABLED {
+        if i == PATH_LOG_TARGET_INDEX {
+            let point = get_point(path_type, ULTIMATE, i);
+            let normal = get_normal(path_type, ULTIMATE, i);
+            let direction = get_ray_direction(i);
+            let sphere_id = path.material_id[path_type][i];
+            let vertex_index = path.vertex_index[i];
+            let technique = get_technique(i);
+            var j: u32 = 0;
+            if vertex_index < technique.camera {
+                j = vertex_index;
+            } else {
+                j = (technique.camera + technique.light) - (vertex_index - technique.camera) - 1;
+            }
+            path_log.vertices[j] = VertexLog(point, normal, direction, sphere_id);
+        }
+    }
+}
+
+fn log_contribution(i: u32) {
+    if PATH_LOG_ENABLED {
+        if i == PATH_LOG_TARGET_INDEX {
+            path_log.beta = get_beta(i);
+            path_log.mis_weight = get_mis_weight(i);
+        }
+    }
+}
 `;
 
 const INITIALIZE_CODE = `
@@ -1164,6 +1219,9 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
 
         // Determine queue
         queue_id = choose_u32(technique.light >= 1, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
+
+        // Log
+        log_vertex(CAMERA, i);
     }
     
     // Enqueue
@@ -1185,6 +1243,9 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
 
     // Check bounds
     if global_invocation_index < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
+        // Update context
+        path.vertex_index[i]++;
+
         // Sample        
         let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 
@@ -1210,6 +1271,9 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         // Determine queue
         let technique = get_technique(i);
         queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
+
+        // Log
+        log_vertex(LIGHT, i);
     }
     
     // Enqueue
@@ -1603,6 +1667,9 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
 
         // Contribute
         contribute(c * weight, pixel.x, pixel.y);
+
+        // Log
+        log_contribution(i);
     }
 }
 `;
@@ -2092,6 +2159,50 @@ class SceneData {
                 new Float32Array(params.array, 24 * this.#scene.spheres.length, this.#scene.spheres.length),
             ],
         };
+    }
+}
+
+class PathLogData {
+    #config;
+
+    buffer;
+
+    constructor(params) {
+        this.#config = params.config;
+    }
+
+    initialize(params) {
+        const count = this.#config.path.length.max;
+        const array = new ArrayBuffer(64 * count);
+
+        this.buffer = params.device.createBuffer({
+            label: 'path_log buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+        });
+    
+        params.device.queue.writeBuffer(this.buffer, 0, array);
+    }
+
+    getView(params) {
+        const count = this.#config.path.length.max;
+        
+        const view = {
+            vertices: [],
+            beta: new Float32Array(params.array, 48 * count, 3),
+            mis_weight: new Float32Array(params.array, 48 * count + 12, 1),
+        };
+
+        for (let i = 0; i < count; i++) {
+            view.vertices.push({
+                point: new Float32Array(params.array, 48 * i, 3),
+                normal: new Float32Array(params.array, 48 * i + 16, 3),
+                direction: new Float32Array(params.array, 48 * i + 32, 3),
+                sphere_id: new Uint32Array(params.array, 48 * i + 44, 1),
+            });
+        }
+
+        return view;
     }
 }
 
@@ -2799,6 +2910,13 @@ class Data {
                         type: 'storage',
                     },
                 },
+                {
+                    binding: this.#config.bindGroup.primary.binding.pathLog,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: 'storage',
+                    },
+                },
             ],
         });
 
@@ -2863,6 +2981,8 @@ class Data {
         this.element.image.initialize({ device: params.device });
         this.element.queue = new QueueData({ config: this.#config });
         this.element.queue.initialize({ device: params.device });
+        this.element.pathLog = new PathLogData({ config: this.#config });
+        this.element.pathLog.initialize({ device: params.device });
         this.element.dispatchIndirectParameters = new DispatchIndirectParametersData({ config: this.#config });
         this.element.dispatchIndirectParameters.initialize({ device: params.device });
 
@@ -2905,6 +3025,12 @@ class Data {
                     binding: this.#config.bindGroup.primary.binding.queue,
                     resource: {
                         buffer: this.element.queue.buffer,
+                    },
+                },
+                {
+                    binding: this.#config.bindGroup.primary.binding.pathLog,
+                    resource: {
+                        buffer: this.element.pathLog.buffer,
                     },
                 },
             ],
@@ -3164,7 +3290,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'path', data: this.#data.element.path });
+        const debug = new Debug({ label: 'path log', data: this.#data.element.pathLog });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();

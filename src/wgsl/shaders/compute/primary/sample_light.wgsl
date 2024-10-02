@@ -10,6 +10,9 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
 
     // Check bounds
     if global_invocation_index < atomicLoad(&queue.count[SAMPLE_LIGHT_QUEUE_ID]) {
+        // Update context
+        path.vertex_index[i]++;
+
         // Sample        
         let sample = sample_light(rand_4(i, LIGHT_STREAM_INDEX));
 
@@ -35,6 +38,9 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         // Determine queue
         let technique = get_technique(i);
         queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
+
+        // Log
+        log_vertex(LIGHT, i);
     }
     
     // Enqueue

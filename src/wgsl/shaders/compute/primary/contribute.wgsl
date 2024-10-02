@@ -23,5 +23,8 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
 
         // Contribute
         contribute(c * weight, pixel.x, pixel.y);
+
+        // Log
+        log_contribution(i);
     }
 }

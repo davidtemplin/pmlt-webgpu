@@ -42,6 +42,9 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
 
         // Determine queue
         queue_id = choose_u32(technique.light >= 1, SAMPLE_LIGHT_QUEUE_ID, INTERSECT_QUEUE_ID);
+
+        // Log
+        log_vertex(CAMERA, i);
     }
     
     // Enqueue

@@ -179,3 +179,16 @@ struct MaterialEvaluation {
     throughput: vec3f,
     valid: bool,
 };
+
+struct VertexLog {
+    point: vec3f,
+    normal: vec3f,
+    direction: vec3f,
+    sphere_id: u32,
+};
+
+struct PathLog {
+    vertices: array<VertexLog, MAX_PATH_LENGTH>,
+    beta: vec3f,
+    mis_weight: f32,
+};
