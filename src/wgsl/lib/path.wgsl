@@ -96,11 +96,11 @@ fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, goal: f32) 
 
     while l <= r {
         m = (l + r) / 2;
+        if m == min_path_index {
+            break;
+        }
         let vr = path.cdf[m] / sum;
         if goal <= vr {
-            if m == 0 {
-                break;
-            }
             let vl = path.cdf[m - 1] / sum;
             if goal > vl {
                 break;
