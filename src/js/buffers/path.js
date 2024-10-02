@@ -12,7 +12,7 @@ class PathData {
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
             size: 212 * count,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     }
 

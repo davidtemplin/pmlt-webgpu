@@ -204,7 +204,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
+        const debug = new Debug({ label: 'path', data: this.#data.element.path });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();
