@@ -28,7 +28,7 @@ class Timestamp {
         if (this.#resultBuffer.mapState === 'unmapped') {
             await this.#resultBuffer.mapAsync(GPUMapMode.READ).then(() => {
                 const times = new BigInt64Array(this.#resultBuffer.getMappedRange());
-                const gpuTime = Number(times[1] - times[0]) /  1_000_000.0;
+                const gpuTime = Number(times[1] - times[0]) / 1_000_000.0;
                 console.log(`elapsed time: ${gpuTime} ms.`);
                 this.#resultBuffer.unmap();
             });

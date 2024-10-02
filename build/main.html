@@ -1319,7 +1319,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
 
         // Validate
-        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-3);
+        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-4);
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
@@ -3116,8 +3116,6 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        /*
-
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
@@ -3153,8 +3151,6 @@ class Executor {
         const random = Math.random();
 
         this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
-
-        */
 
         pass.end();
 
@@ -3264,7 +3260,7 @@ class Timestamp {
         if (this.#resultBuffer.mapState === 'unmapped') {
             await this.#resultBuffer.mapAsync(GPUMapMode.READ).then(() => {
                 const times = new BigInt64Array(this.#resultBuffer.getMappedRange());
-                const gpuTime = Number(times[1] - times[0]) /  1_000_000.0;
+                const gpuTime = Number(times[1] - times[0]) / 1_000_000.0;
                 console.log(`elapsed time: ${gpuTime} ms.`);
                 this.#resultBuffer.unmap();
             });

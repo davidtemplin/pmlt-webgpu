@@ -163,8 +163,6 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        /*
-
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
@@ -200,8 +198,6 @@ class Executor {
         const random = Math.random();
 
         this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
-
-        */
 
         pass.end();
 
