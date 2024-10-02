@@ -26,7 +26,7 @@ class SceneData {
         this.buffer = params.device.createBuffer({
             label: 'sphere buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     
         params.device.queue.writeBuffer(this.buffer, 0, array);

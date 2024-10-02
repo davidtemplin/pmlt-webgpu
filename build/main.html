@@ -920,8 +920,8 @@ fn get_sphere_area(id: u32) -> f32 {
 }
 
 fn sample_light(r: vec4f) -> LightSample {
-    let point = uniform_sample_sphere(r[0], r[1]) * sphere.radius[LIGHT_SPHERE_ID];
     let center = get_sphere_center(LIGHT_SPHERE_ID);
+    let point = center + uniform_sample_sphere(r[0], r[1]) * sphere.radius[LIGHT_SPHERE_ID];
     let normal = point - center;
     let direction = cosine_sample_hemisphere(normal, r[2], r[3]);
     let positional_pdf = 1.0 / get_sphere_area(LIGHT_SPHERE_ID);
@@ -1319,7 +1319,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
 
         // Validate
-        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-6);
+        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-3);
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
@@ -1720,7 +1720,7 @@ class CameraData {
         this.buffer = params.device.createBuffer({
             label: 'camera buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
         params.device.queue.writeBuffer(this.buffer, 0, array);
     }
@@ -2065,7 +2065,7 @@ class SceneData {
         this.buffer = params.device.createBuffer({
             label: 'sphere buffer',
             size: array.byteLength,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     
         params.device.queue.writeBuffer(this.buffer, 0, array);
@@ -3101,8 +3101,6 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.light, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        /*
-
         this.#kernels.primary.intersect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
@@ -3117,6 +3115,8 @@ class Executor {
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        /*
 
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
