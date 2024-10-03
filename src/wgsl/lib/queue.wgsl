@@ -1,5 +1,6 @@
 fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
     workgroup_queue_ballot[local_invocation_index] = queue_id;
+    workgroup_global_path_index[local_invocation_index] = global_path_index;
 
     workgroupBarrier();
 
@@ -23,7 +24,7 @@ fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
 
     for (var i: u32 = 0; i < WORKGROUP_SIZE; i++) {
         let queue_index = workgroup_queue_ballot[i];
-        let id = global_path_index - local_invocation_index + i;
+        let id = workgroup_global_path_index[i];
         let index_match = queue_index == local_invocation_index;
         queue.index[local_invocation_index][index] = choose_u32(index_match, id, queue.index[local_invocation_index][index]);
         index = index + u32(index_match && index < last_index);
