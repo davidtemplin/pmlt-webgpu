@@ -158,12 +158,10 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.material, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-
         this.#kernels.primary.connect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
-
 
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
@@ -206,7 +204,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
+        const debug = new Debug({ label: 'path', data: this.#data.element.path });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();

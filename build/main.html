@@ -114,7 +114,7 @@ class KeyUtil {
 class Config {
     pathLog = {
         enabled: true,
-        targetIndex: 69,
+        targetIndex: 385,
     };
 
     bindGroup = {
@@ -940,7 +940,7 @@ fn get_sphere_area(id: u32) -> f32 {
 fn sample_light(r: vec4f) -> LightSample {
     let center = get_sphere_center(LIGHT_SPHERE_ID);
     let point = center + uniform_sample_sphere(r[0], r[1]) * sphere.radius[LIGHT_SPHERE_ID];
-    let normal = point - center;
+    let normal = normalize(point - center);
     let direction = cosine_sample_hemisphere(normal, r[2], r[3]);
     let positional_pdf = 1.0 / get_sphere_area(LIGHT_SPHERE_ID);
     let directional_pdf = abs(dot(normalize(direction), normal)) / PI;
@@ -1390,7 +1390,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
 
         // Validate
-        let valid = intersection.valid && approx_eq_vec3f(intersection.point, destination, 1e-4);
+        let valid = intersection.valid && intersection.sphere_id == path.material_id[LIGHT][i];
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
@@ -3244,12 +3244,10 @@ class Executor {
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.material, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-
         this.#kernels.primary.connect.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
-
 
         this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
@@ -3292,7 +3290,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'queue', data: this.#data.element.queue });
+        const debug = new Debug({ label: 'path', data: this.#data.element.path });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();
