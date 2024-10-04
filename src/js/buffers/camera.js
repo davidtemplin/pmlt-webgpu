@@ -13,7 +13,7 @@ class CameraData {
         const array = new ArrayBuffer(64);
         const view = this.getView({ array });
         const direction = VectorMath.sub(this.#scene.camera.lookAt, this.#scene.camera.origin);
-        const distance = this.#config.image.height / (2.0 * Math.tan(this.#scene.camera.fieldOfView / 2.0));
+        const distance = this.#config.image.height / (2.0 * Math.tan((this.#scene.camera.fieldOfView * Math.PI / 180.0) / 2.0));
         const basis = VectorMath.orthonormalBasis(direction);
         view.u.set([basis.u.x, basis.u.y, basis.u.z]);
         view.v.set([basis.v.x, basis.v.y, basis.v.z]);
