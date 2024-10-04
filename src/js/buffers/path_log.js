@@ -9,7 +9,7 @@ class PathLogData {
 
     initialize(params) {
         const count = this.#config.path.length.max;
-        const array = new ArrayBuffer(64 * count);
+        const array = new ArrayBuffer(48 * count + 16);
 
         this.buffer = params.device.createBuffer({
             label: 'path_log buffer',
