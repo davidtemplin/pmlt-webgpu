@@ -33,7 +33,7 @@ fn sample_camera_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_
 
         // Beta
         let importance = camera_importance(sample.direction);
-        let beta = vec3f(1.0, 1.0, 1.0) * (importance / sample.positional_pdf);
+        let beta = vec3f(1.0, 1.0, 1.0) * (choose_f32(technique.camera > 1, importance, 1.0) / sample.positional_pdf);
         set_beta(i, beta);
 
         // Geometry

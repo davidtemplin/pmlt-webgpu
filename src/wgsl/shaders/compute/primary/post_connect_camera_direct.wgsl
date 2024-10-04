@@ -21,7 +21,8 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         let d1 = p2 - p1;
 
         // Beta
-        let beta = vec3f(1.0, 1.0, 1.0) * choose_f32(technique.light > 1, geometry_term(d1, n1, n2), 1.0);
+        let importance = camera_importance(d1);
+        let beta = vec3f(1.0, 1.0, 1.0) * choose_f32(technique.camera == 1, importance, 1.0) * choose_f32(technique.light > 1, geometry_term(d1, n1, n2), 1.0);
         update_beta(i, beta);
 
         // MIS
