@@ -3,8 +3,8 @@ fn sample_material(material_id: u32, p: vec3f, wo: vec3f, n: vec3f, u: vec2f) ->
 }
 
 fn evaluate_material(material_id: u32, wo: vec3f, n: vec3f, wi: vec3f) -> MaterialEvaluation {
-    let pdf = abs_cos_theta(n, wi) / PI;
-    let throughput = get_sphere_color(material_id);
+    let pdf = matte_material_directional_pdf(wo, n, wi);
+    let throughput = get_sphere_color(material_id) * matte_material_reflectance(wo, n, wi);
     return MaterialEvaluation(pdf, pdf, throughput, true);
 }
 
