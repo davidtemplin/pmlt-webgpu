@@ -9,7 +9,7 @@ class PathLogData {
 
     initialize(params) {
         const count = this.#config.path.length.max;
-        const array = new ArrayBuffer(48 * count + 16);
+        const array = new ArrayBuffer(48 * count + 20 + 12);
 
         this.buffer = params.device.createBuffer({
             label: 'path_log buffer',
@@ -27,6 +27,7 @@ class PathLogData {
             vertices: [],
             beta: new Float32Array(params.array, 48 * count, 3),
             mis_weight: new Float32Array(params.array, 48 * count + 12, 1),
+            foo: new Float32Array(params.array, 48 * count + 16, 1),
         };
 
         for (let i = 0; i < count; i++) {

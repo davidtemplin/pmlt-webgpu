@@ -25,7 +25,10 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         // MIS
         let ri = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
+
+        path.prod_ri[LIGHT][i] *= path.final_ri[i];
+        path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
         // Next queue
         queue_id = CONTRIBUTE_QUEUE_ID;

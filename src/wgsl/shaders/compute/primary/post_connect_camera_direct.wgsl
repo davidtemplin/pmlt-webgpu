@@ -16,7 +16,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
-        let n1 = get_point(CAMERA, ULTIMATE, i);
+        let n1 = get_normal(CAMERA, ULTIMATE, i);
         let n2 = get_normal(LIGHT, ULTIMATE, i);
         let d1 = p2 - p1;
 
@@ -27,8 +27,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
 
         // MIS
         let ri = camera_directional_pdf(d1) * direction_to_area(d1, n2) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= ri;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri;
+        path.final_ri[i] = ri;
 
         // Pixel coordinates
         let pc = get_point(CAMERA, ULTIMATE, i);

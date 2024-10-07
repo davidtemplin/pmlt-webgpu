@@ -47,6 +47,8 @@ struct Path {
 
     /* PDF */
     directional_pdf: array<f32, PATH_COUNT>,
+
+    final_ri: array<f32, PATH_COUNT>,
 };
 
 struct U64 {
@@ -191,4 +193,5 @@ struct PathLog {
     vertices: array<VertexLog, MAX_PATH_LENGTH>,
     beta: vec3f,
     mis_weight: f32,
+    foo: f32,
 };

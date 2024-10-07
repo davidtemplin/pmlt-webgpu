@@ -30,7 +30,7 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
         // MIS
         let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
         path.prod_ri[path_type][i] *= ri;
-        path.sum_inv_ri[path_type][i] += 1.0 / ri;
+        path.sum_inv_ri[path_type][i] += 1.0 / path.prod_ri[path_type][i];
 
         // PDF
         path.directional_pdf[i] = sample.pdf_fwd;

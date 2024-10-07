@@ -20,12 +20,12 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
 
         let ri1 = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         let radius = sphere.radius[LIGHT_SPHERE_ID];
         let ri2 = light_positional_pdf(radius) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri2;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri2;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         // Next queue
         queue_id = CONTRIBUTE_QUEUE_ID;

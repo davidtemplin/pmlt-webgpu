@@ -336,6 +336,8 @@ struct Path {
 
     /* PDF */
     directional_pdf: array<f32, PATH_COUNT>,
+
+    final_ri: array<f32, PATH_COUNT>,
 };
 
 struct U64 {
@@ -480,6 +482,7 @@ struct PathLog {
     vertices: array<VertexLog, MAX_PATH_LENGTH>,
     beta: vec3f,
     mis_weight: f32,
+    foo: f32,
 };
 
 @group(CAMERA_GROUP) @binding(CAMERA_BINDING) var<storage, read> camera: Camera;
@@ -1431,12 +1434,12 @@ fn post_connect_null_main(@builtin(global_invocation_id) gid: vec3u, @builtin(lo
 
         let ri1 = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         let radius = sphere.radius[LIGHT_SPHERE_ID];
         let ri2 = light_positional_pdf(radius) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri2;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri2;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         // Next queue
         queue_id = CONTRIBUTE_QUEUE_ID;
@@ -1467,7 +1470,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
         // Geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
-        let n1 = get_point(CAMERA, ULTIMATE, i);
+        let n1 = get_normal(CAMERA, ULTIMATE, i);
         let n2 = get_normal(LIGHT, ULTIMATE, i);
         let d1 = p2 - p1;
 
@@ -1478,8 +1481,7 @@ fn post_connect_camera_direct_main(@builtin(global_invocation_id) gid: vec3u, @b
 
         // MIS
         let ri = camera_directional_pdf(d1) * direction_to_area(d1, n2) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= ri;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri;
+        path.final_ri[i] = ri;
 
         // Pixel coordinates
         let pc = get_point(CAMERA, ULTIMATE, i);
@@ -1538,11 +1540,10 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         // MIS
         let ri1 = evaluation.pdf_rev * direction_to_area(wo, n2) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         let ri2 = evaluation.pdf_fwd * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= ri2;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
+        path.final_ri[i] = ri2;
 
         // Choose next queue
         queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID, POST_CONNECT_LIGHT_DIRECT_QUEUE_ID);
@@ -1582,7 +1583,10 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         // MIS
         let ri = light_directional_pdf(d2, n2) * direction_to_area(d2, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
+
+        path.prod_ri[LIGHT][i] *= path.final_ri[i];
+        path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
         // Next queue
         queue_id = CONTRIBUTE_QUEUE_ID;
@@ -1609,16 +1613,17 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
     if global_invocation_index < atomicLoad(&queue.count[POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID]) {
         // Context
         let material_id = path.material_id[LIGHT][i];
+        let technique = get_technique(i);
 
         // Compute geometry
         let p1 = get_point(CAMERA, ULTIMATE, i);
         let p2 = get_point(LIGHT, ULTIMATE, i);
         let p3 = get_point(LIGHT, PENULTIMATE, i);
         let n1 = get_normal(CAMERA, ULTIMATE, i);
-        let n2 = get_normal(CAMERA, ULTIMATE, i);
+        let n2 = get_normal(LIGHT, ULTIMATE, i);
         let n3 = get_normal(LIGHT, PENULTIMATE, i);
-        let wo = p3 - p2;
-        let wi = p1 - p2;
+        let wo = p1 - p2;
+        let wi = p3 - p2;
 
         // Evaluate material
         let evaluation = evaluate_material(material_id, wo, n2, wi);
@@ -1628,13 +1633,16 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
         update_beta(i, beta);
 
         // MIS
-        let ri1 = evaluation.pdf_fwd * direction_to_area(wi, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        let ri1 = evaluation.pdf_fwd * direction_to_area(wo, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
-        let ri2 = evaluation.pdf_rev * direction_to_area(wo, n3) / path.pdf_fwd[LIGHT][PENULTIMATE][i];
+        let ri2 = evaluation.pdf_rev * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][PENULTIMATE][i];
         path.prod_ri[LIGHT][i] *= ri2;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
+        path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
+
+        path.prod_ri[LIGHT][i] *= path.final_ri[i];
+        path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
         // Choose next queue
         queue_id = CONTRIBUTE_QUEUE_ID;
@@ -1713,7 +1721,7 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
         // MIS
         let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
         path.prod_ri[path_type][i] *= ri;
-        path.sum_inv_ri[path_type][i] += 1.0 / ri;
+        path.sum_inv_ri[path_type][i] += 1.0 / path.prod_ri[path_type][i];
 
         // PDF
         path.directional_pdf[i] = sample.pdf_fwd;
@@ -1964,7 +1972,7 @@ class PathData {
         const count = this.#config.path.count;
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
-            size: 212 * count,
+            size: 216 * count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     }
@@ -2075,6 +2083,7 @@ class PathData {
                 new Float32Array(params.array, 204 * count, count),
             ],
             directional_pdf: new Float32Array(params.array, 208 * count, count),
+            final_ri: new Float32Array(params.array, 212 * count, count),
         };
     }
 }
@@ -2178,7 +2187,7 @@ class PathLogData {
 
     initialize(params) {
         const count = this.#config.path.length.max;
-        const array = new ArrayBuffer(48 * count + 16);
+        const array = new ArrayBuffer(48 * count + 20 + 12);
 
         this.buffer = params.device.createBuffer({
             label: 'path_log buffer',
@@ -2196,6 +2205,7 @@ class PathLogData {
             vertices: [],
             beta: new Float32Array(params.array, 48 * count, 3),
             mis_weight: new Float32Array(params.array, 48 * count + 12, 1),
+            foo: new Float32Array(params.array, 48 * count + 16, 1),
         };
 
         for (let i = 0; i < count; i++) {

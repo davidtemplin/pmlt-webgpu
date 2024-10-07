@@ -35,11 +35,10 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         // MIS
         let ri1 = evaluation.pdf_rev * direction_to_area(wo, n2) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
-        path.sum_inv_ri[CAMERA][i] += 1.0 / ri1;
+        path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
         let ri2 = evaluation.pdf_fwd * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][ULTIMATE][i];
-        path.prod_ri[LIGHT][i] *= ri2;
-        path.sum_inv_ri[LIGHT][i] += 1.0 / ri2;
+        path.final_ri[i] = ri2;
 
         // Choose next queue
         queue_id = choose_u32(technique.light > 1, POST_CONNECT_LIGHT_INDIRECT_QUEUE_ID, POST_CONNECT_LIGHT_DIRECT_QUEUE_ID);
