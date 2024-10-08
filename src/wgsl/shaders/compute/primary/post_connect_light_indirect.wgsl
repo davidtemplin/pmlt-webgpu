@@ -44,7 +44,7 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
         path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
         // Choose next queue
-        queue_id = CONTRIBUTE_QUEUE_ID;
+        queue_id = choose_u32(evaluation.valid, CONTRIBUTE_QUEUE_ID, NULL_QUEUE_ID);
     }
 
     // Enqueue
