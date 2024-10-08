@@ -1,7 +1,7 @@
 class Config {
     pathLog = {
         enabled: true,
-        targetIndex: 0,
+        targetIndex: 15,
     };
 
     bindGroup = {

@@ -15,3 +15,7 @@ fn light_positional_pdf(radius: f32) -> f32 {
 fn light_directional_pdf(d: vec3f, n: vec3f) -> f32 {
     return abs_cos_theta(d, n) / PI;
 }
+
+fn light_direction_valid(direction: vec3f, normal: vec3f) -> bool {
+    return dot(normal, direction) > 0.0;
+}

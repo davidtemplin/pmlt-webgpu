@@ -18,6 +18,9 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         let d1 = p2 - p1;
         let d2 = p1 - p2;
 
+        // Validation
+        let valid = light_direction_valid(d2, n2);
+
         // Beta
         let beta = vec3f(1.0, 1.0, 1.0) * geometry_term(d1, n1, n2);
         update_beta(i, beta);
@@ -31,7 +34,7 @@ fn post_connect_light_direct_main(@builtin(global_invocation_id) gid: vec3u, @bu
         path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
         // Next queue
-        queue_id = CONTRIBUTE_QUEUE_ID;
+        queue_id = choose_u32(valid, CONTRIBUTE_QUEUE_ID, NULL_QUEUE_ID);
     }
 
     // Enqueue
