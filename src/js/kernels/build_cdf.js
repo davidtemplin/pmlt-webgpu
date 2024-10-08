@@ -59,7 +59,7 @@ class BuildCdfKernel {
             params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
             params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
             params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
-            params.pass.dispatchWorkgroups(1);
+            params.pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
         }
     }
 }
