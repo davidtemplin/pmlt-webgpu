@@ -114,7 +114,7 @@ class KeyUtil {
 class Config {
     pathLog = {
         enabled: true,
-        targetIndex: 853987,
+        targetIndex: 0,
     };
 
     bindGroup = {
@@ -1341,7 +1341,8 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let intersection = intersect(ray);
         let valid = intersection.valid && (
             (vertex_index < path_length - 1 && intersection.sphere_id != LIGHT_SPHERE_ID) || 
-            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID)
+            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID) ||
+            (vertex_index == path_length - 1 && technique.light > 0 && intersection.sphere_id != LIGHT_SPHERE_ID)
         );
 
         // MIS
@@ -1745,10 +1746,6 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
 
         // Determine queue
         queue_id = choose_u32(sample.valid, INTERSECT_QUEUE_ID, queue_id);
-
-        if i == 853987 {
-            path_log.foo = sample.pdf_rev * direction_to_area(wo, n1);
-        }
     }
 
     // Enqueue

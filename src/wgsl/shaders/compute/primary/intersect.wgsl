@@ -21,8 +21,9 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         let ray = get_ray(i);
         let intersection = intersect(ray);
         let valid = intersection.valid && (
-            (vertex_index < path_length - 1 && intersection.sphere_id != LIGHT_SPHERE_ID) ||
-            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID)
+            (vertex_index < path_length - 1 && intersection.sphere_id != LIGHT_SPHERE_ID) || 
+            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID) ||
+            (vertex_index == path_length - 1 && technique.light > 0 && intersection.sphere_id != LIGHT_SPHERE_ID)
         );
 
         // MIS
