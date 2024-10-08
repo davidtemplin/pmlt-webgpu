@@ -114,7 +114,7 @@ class KeyUtil {
 class Config {
     pathLog = {
         enabled: true,
-        targetIndex: 15,
+        targetIndex: 853987,
     };
 
     bindGroup = {
@@ -1339,7 +1339,10 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         // Intersect
         let ray = get_ray(i);
         let intersection = intersect(ray);
-        let valid = intersection.valid && (technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
+        let valid = intersection.valid && (
+            (vertex_index < path_length - 1 && intersection.sphere_id != LIGHT_SPHERE_ID) || 
+            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID)
+        );
 
         // MIS
         shift_pdf_fwd(path_type, i);
@@ -1717,18 +1720,19 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
         let path_type = choose_u32(vertex_index < technique.camera, CAMERA, LIGHT);
 
         // Sample
-        let normal = get_normal(path_type, ULTIMATE, i);
+        let n1 = get_normal(path_type, PENULTIMATE, i);
+        let n2 = get_normal(path_type, ULTIMATE, i);
         let p1 = get_point(path_type, PENULTIMATE, i);
         let p2 = get_point(path_type, ULTIMATE, i);
         let wo = p1 - p2;
-        let sample = sample_material(path.material_id[path_type][i], p2, wo, normal, rand_2(i, stream_index));
+        let sample = sample_material(path.material_id[path_type][i], p2, wo, n2, rand_2(i, stream_index));
 
         // Update ray
         set_ray_origin(i, p2);
         set_ray_direction(i, sample.wi);
 
         // MIS
-        let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
+        let ri = sample.pdf_rev * direction_to_area(wo, n1) / path.pdf_fwd[path_type][PENULTIMATE][i];
         path.prod_ri[path_type][i] *= ri;
         path.sum_inv_ri[path_type][i] += 1.0 / path.prod_ri[path_type][i];
 
@@ -1741,6 +1745,10 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
 
         // Determine queue
         queue_id = choose_u32(sample.valid, INTERSECT_QUEUE_ID, queue_id);
+
+        if i == 853987 {
+            path_log.foo = sample.pdf_rev * direction_to_area(wo, n1);
+        }
     }
 
     // Enqueue
@@ -3316,7 +3324,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'path', data: this.#data.element.path });
+        const debug = new Debug({ label: 'path log', data: this.#data.element.pathLog });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();

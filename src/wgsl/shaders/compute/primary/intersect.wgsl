@@ -20,7 +20,10 @@ fn intersect_main(@builtin(global_invocation_id) id: vec3u, @builtin(local_invoc
         // Intersect
         let ray = get_ray(i);
         let intersection = intersect(ray);
-        let valid = intersection.valid && (technique.light > 0 || vertex_index < technique.camera - 1 || intersection.sphere_id == LIGHT_SPHERE_ID);
+        let valid = intersection.valid && (
+            (vertex_index < path_length - 1 && intersection.sphere_id != LIGHT_SPHERE_ID) ||
+            (vertex_index == path_length - 1 && technique.light == 0 && intersection.sphere_id == LIGHT_SPHERE_ID)
+        );
 
         // MIS
         shift_pdf_fwd(path_type, i);

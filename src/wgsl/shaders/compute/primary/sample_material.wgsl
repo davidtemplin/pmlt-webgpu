@@ -17,18 +17,19 @@ fn sample_material_main(@builtin(global_invocation_id) id: vec3u, @builtin(local
         let path_type = choose_u32(vertex_index < technique.camera, CAMERA, LIGHT);
 
         // Sample
-        let normal = get_normal(path_type, ULTIMATE, i);
+        let n1 = get_normal(path_type, PENULTIMATE, i);
+        let n2 = get_normal(path_type, ULTIMATE, i);
         let p1 = get_point(path_type, PENULTIMATE, i);
         let p2 = get_point(path_type, ULTIMATE, i);
         let wo = p1 - p2;
-        let sample = sample_material(path.material_id[path_type][i], p2, wo, normal, rand_2(i, stream_index));
+        let sample = sample_material(path.material_id[path_type][i], p2, wo, n2, rand_2(i, stream_index));
 
         // Update ray
         set_ray_origin(i, p2);
         set_ray_direction(i, sample.wi);
 
         // MIS
-        let ri = sample.pdf_rev / path.pdf_fwd[path_type][PENULTIMATE][i];
+        let ri = sample.pdf_rev * direction_to_area(wo, n1) / path.pdf_fwd[path_type][PENULTIMATE][i];
         path.prod_ri[path_type][i] *= ri;
         path.sum_inv_ri[path_type][i] += 1.0 / path.prod_ri[path_type][i];
 
