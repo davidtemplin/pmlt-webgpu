@@ -32,7 +32,6 @@ class Scene {
             color: { r: 0.50, g: 0.50, b: 0.50 },
         },
         {
-     
             center: { x: 50.0, y: 10000.0, z: 81.6 },
             radius: 10000,
             color: { r: 0.65, g: 0.75, b: 0.75 },
