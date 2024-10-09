@@ -11,7 +11,8 @@ fn sample_matte_material(material_id: u32, wo: vec3f, n: vec3f, u: vec2f) -> Mat
     let pdf_fwd = matte_material_directional_pdf(wo, n, wi);
     let pdf_rev = matte_material_directional_pdf(wi, n, wo);
     let throughput = get_sphere_color(material_id) / PI;
-    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, true);
+    let valid = same_hemisphere(n, wo, wi);
+    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, valid);
 }
 
 fn evaluate_matte_material(material_id: u32, wo: vec3f, n: vec3f, wi: vec3f) -> MaterialEvaluation {

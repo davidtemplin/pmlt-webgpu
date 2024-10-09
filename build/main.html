@@ -114,7 +114,7 @@ class KeyUtil {
 class Config {
     pathLog = {
         enabled: true,
-        targetIndex: 902638,
+        targetIndex: 39,
     };
 
     bindGroup = {
@@ -977,7 +977,8 @@ fn sample_matte_material(material_id: u32, wo: vec3f, n: vec3f, u: vec2f) -> Mat
     let pdf_fwd = matte_material_directional_pdf(wo, n, wi);
     let pdf_rev = matte_material_directional_pdf(wi, n, wo);
     let throughput = get_sphere_color(material_id) / PI;
-    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, true);
+    let valid = same_hemisphere(n, wo, wi);
+    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, valid);
 }
 
 fn evaluate_matte_material(material_id: u32, wo: vec3f, n: vec3f, wi: vec3f) -> MaterialEvaluation {
@@ -1702,11 +1703,6 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
 
         // Log
         log_contribution(i);
-
-        let technique = get_technique(i);
-        if technique.camera == 4 && technique.light == 0 {
-            path_log.foo = f32(i);
-        }
     }
 }
 `;
@@ -3257,7 +3253,7 @@ class Executor {
             },
         });
 
-        for (let pathLength = 4/*this.#config.path.length.min*/; pathLength <= 4/*this.#config.path.length.max*/; pathLength++) {
+        for (let pathLength = 5/*this.#config.path.length.min*/; pathLength <= 5/*this.#config.path.length.max*/; pathLength++) {
             const chainId = pathLength - this.#config.path.length.min;
 
             this.#kernels.primary.initialize.encode({ pathLength, pass, device: params.device });
