@@ -32,11 +32,11 @@ fn post_connect_light_indirect_main(@builtin(global_invocation_id) gid: vec3u, @
         update_beta(i, beta);
 
         // MIS
-        let ri1 = evaluation.pdf_fwd * direction_to_area(wo, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
+        let ri1 = evaluation.pdf_rev * direction_to_area(wo, n1) / path.pdf_fwd[CAMERA][ULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
         path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
-        let ri2 = evaluation.pdf_rev * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][PENULTIMATE][i];
+        let ri2 = evaluation.pdf_fwd * direction_to_area(wi, n3) / path.pdf_fwd[LIGHT][PENULTIMATE][i];
         path.prod_ri[LIGHT][i] *= ri2;
         path.sum_inv_ri[LIGHT][i] += 1.0 / path.prod_ri[LIGHT][i];
 
