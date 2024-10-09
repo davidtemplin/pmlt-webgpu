@@ -33,7 +33,7 @@ fn post_connect_camera_indirect_main(@builtin(global_invocation_id) gid: vec3u, 
         update_beta(i, beta);
 
         // MIS
-        let ri1 = evaluation.pdf_rev * direction_to_area(wo, n2) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
+        let ri1 = evaluation.pdf_rev * direction_to_area(wo, n1) / path.pdf_fwd[CAMERA][PENULTIMATE][i];
         path.prod_ri[CAMERA][i] *= ri1;
         path.sum_inv_ri[CAMERA][i] += 1.0 / path.prod_ri[CAMERA][i];
 
