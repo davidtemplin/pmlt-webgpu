@@ -3253,7 +3253,7 @@ class Executor {
             },
         });
 
-        for (let pathLength = 5/*this.#config.path.length.min*/; pathLength <= 5/*this.#config.path.length.max*/; pathLength++) {
+        for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
             const chainId = pathLength - this.#config.path.length.min;
 
             this.#kernels.primary.initialize.encode({ pathLength, pass, device: params.device });
