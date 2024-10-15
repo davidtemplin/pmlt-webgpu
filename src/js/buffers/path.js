@@ -11,7 +11,7 @@ class PathData {
         const count = this.#config.path.count;
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
-            size: 216 * count,
+            size: 220 * count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     }
@@ -46,83 +46,86 @@ class PathData {
                 new Uint32Array(params.array, 60 * count, count),
                 new Uint32Array(params.array, 64 * count, count),
             ],
-            cdf: new Float32Array(params.array, 68 * count, count),
+            cdf: [
+                new Float32Array(params.array, 68 * count, count),
+                new Float32Array(params.array, 72 * count, count),
+            ],
             point: [
                 [
                     [
-                        new Float32Array(params.array, 72 * count, count),
                         new Float32Array(params.array, 76 * count, count),
                         new Float32Array(params.array, 80 * count, count),
+                        new Float32Array(params.array, 84 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 84 * count, count),
                         new Float32Array(params.array, 88 * count, count),
                         new Float32Array(params.array, 92 * count, count),
+                        new Float32Array(params.array, 96 * count, count),
                     ],
                 ],
                 [
                     [
-                        new Float32Array(params.array, 96 * count, count),
                         new Float32Array(params.array, 100 * count, count),
                         new Float32Array(params.array, 104 * count, count),
+                        new Float32Array(params.array, 108 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 108 * count, count),
                         new Float32Array(params.array, 112 * count, count),
                         new Float32Array(params.array, 116 * count, count),
+                        new Float32Array(params.array, 120 * count, count),
                     ],
                 ],
             ],
             normal: [
                 [
                     [
-                        new Float32Array(params.array, 120 * count, count),
                         new Float32Array(params.array, 124 * count, count),
                         new Float32Array(params.array, 128 * count, count),
+                        new Float32Array(params.array, 132 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 132 * count, count),
                         new Float32Array(params.array, 136 * count, count),
                         new Float32Array(params.array, 140 * count, count),
+                        new Float32Array(params.array, 144 * count, count),
                     ],
                 ],
                 [
                     [
-                        new Float32Array(params.array, 144 * count, count),
                         new Float32Array(params.array, 148 * count, count),
                         new Float32Array(params.array, 152 * count, count),
+                        new Float32Array(params.array, 156 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 156 * count, count),
                         new Float32Array(params.array, 160 * count, count),
                         new Float32Array(params.array, 164 * count, count),
+                        new Float32Array(params.array, 168 * count, count),
                     ],
                 ],
             ],
             material_id: [
-                new Uint32Array(params.array, 168 * count, count),
                 new Uint32Array(params.array, 172 * count, count),
+                new Uint32Array(params.array, 176 * count, count),
             ],
             pdf_fwd: [
                 [
-                    new Float32Array(params.array, 176 * count, count),
                     new Float32Array(params.array, 180 * count, count),
+                    new Float32Array(params.array, 184 * count, count),
                 ],
                 [
-                    new Float32Array(params.array, 184 * count, count),
                     new Float32Array(params.array, 188 * count, count),
+                    new Float32Array(params.array, 192 * count, count),
                 ],
             ],
             sum_inv_ri: [
-                new Float32Array(params.array, 192 * count, count),
                 new Float32Array(params.array, 196 * count, count),
+                new Float32Array(params.array, 200 * count, count),
             ],
             prod_ri: [
-                new Float32Array(params.array, 200 * count, count),
                 new Float32Array(params.array, 204 * count, count),
+                new Float32Array(params.array, 208 * count, count),
             ],
-            directional_pdf: new Float32Array(params.array, 208 * count, count),
-            final_ri: new Float32Array(params.array, 212 * count, count),
+            directional_pdf: new Float32Array(params.array, 212 * count, count),
+            final_ri: new Float32Array(params.array, 216 * count, count),
         };
     }
 }

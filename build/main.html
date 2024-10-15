@@ -287,6 +287,9 @@ const FIXED_POINT_SCALE: f32 = 1048576.0;
 const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
 const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
 
+const PRIMARY: u32 = 0;
+const AUXILIARY: u32 = 1;
+
 struct Camera {
     u: vec3f,
     v: vec3f,
@@ -320,7 +323,7 @@ struct Path {
     pixel: array<array<u32, PATH_COUNT>, 2>,
 
     /* CDF */
-    cdf: array<f32, PATH_COUNT>,
+    cdf: array<array<f32, PATH_COUNT>, 2>,
 
     /* geometry */
     point: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
@@ -409,6 +412,7 @@ struct ClearQueueUniforms {
 struct BuildCdfUniforms {
     chain_id: u32,
     iteration: u32,
+    final_iteration: u32,
 };
 
 struct StartChainUniforms {
@@ -1100,9 +1104,9 @@ fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, goal: f32) 
         if m == min_path_index {
             break;
         }
-        let vr = path.cdf[m] / sum;
+        let vr = path.cdf[PRIMARY][m] / sum;
         if goal <= vr {
-            let vl = path.cdf[m - 1] / sum;
+            let vl = path.cdf[PRIMARY][m - 1] / sum;
             if goal > vl {
                 break;
             } else {
@@ -1176,7 +1180,8 @@ fn initialize(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
         path.index[i] = i;
         path.length[i] = uniforms.path_length;
         path.vertex_index[i] = 0;
-        path.cdf[i] = 0;
+        path.cdf[PRIMARY][i] = 0;
+        path.cdf[AUXILIARY][i] = 0;
         path.prod_ri[CAMERA][i] = 1.0;
         path.prod_ri[LIGHT][i] = 1.0;
         path.sum_inv_ri[CAMERA][i] = 0.0;
@@ -1693,7 +1698,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         // Compute the final contribution
         let c = get_path_contribution(i);
         let sc = luminance(c);
-        path.cdf[i] = sc;
+        path.cdf[PRIMARY][i] = sc;
 
         // Compute the weight
         let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
@@ -1776,13 +1781,24 @@ fn build_cdf(@builtin(global_invocation_id) id: vec3u) {
         return;
     }
 
-    // Compute index parameters
+    // Compute 2^i
     let two_pow_i: u32 = u32(1) << uniforms.iteration;
-    let m = u32(global_invocation_index >= two_pow_i);
+    let m: u32 = u32(global_invocation_index >= two_pow_i);
+
+    // Determine which CDF arrays will serve as primary and auxiliary this iteration
+    let read_index = uniforms.iteration % 2;
+    let write_index = (read_index + 1) % 2;
+
+    // Compute the translated index
     let j = chain.min_path_index[uniforms.chain_id] + global_invocation_index;
     
     // Update prefix sums
-    path.cdf[j] = path.cdf[j] + f32(m) * path.cdf[j - m * two_pow_i];
+    path.cdf[write_index][j] = path.cdf[read_index][j] + f32(m) * path.cdf[read_index][j - m * two_pow_i];
+
+    // Ensure that the primary array contains the final result
+    if uniforms.iteration == uniforms.final_iteration && write_index != PRIMARY {
+        path.cdf[PRIMARY][j] = path.cdf[AUXILIARY][j];
+    }
 }
 `;
 const START_CHAIN_CODE = `
@@ -1793,7 +1809,7 @@ ${WGSL_LIB_CODE}
 @compute
 @workgroup_size(1)
 fn start_chain() {
-    let sum = path.cdf[PATH_COUNT - 1];
+    let sum = path.cdf[PRIMARY][PATH_COUNT - 1];
     let m = binary_search(0, PATH_COUNT - 1, sum, uniforms.random);
     let large_step_index = m * chain.numbers_per_path[uniforms.chain_id];
     chain.large_step_index[HI][uniforms.chain_id] = 0;
@@ -2026,7 +2042,7 @@ class PathData {
         const count = this.#config.path.count;
         this.buffer = params.device.createBuffer({
             label: 'path state buffer',
-            size: 216 * count,
+            size: 220 * count,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
         });
     }
@@ -2061,83 +2077,86 @@ class PathData {
                 new Uint32Array(params.array, 60 * count, count),
                 new Uint32Array(params.array, 64 * count, count),
             ],
-            cdf: new Float32Array(params.array, 68 * count, count),
+            cdf: [
+                new Float32Array(params.array, 68 * count, count),
+                new Float32Array(params.array, 72 * count, count),
+            ],
             point: [
                 [
                     [
-                        new Float32Array(params.array, 72 * count, count),
                         new Float32Array(params.array, 76 * count, count),
                         new Float32Array(params.array, 80 * count, count),
+                        new Float32Array(params.array, 84 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 84 * count, count),
                         new Float32Array(params.array, 88 * count, count),
                         new Float32Array(params.array, 92 * count, count),
+                        new Float32Array(params.array, 96 * count, count),
                     ],
                 ],
                 [
                     [
-                        new Float32Array(params.array, 96 * count, count),
                         new Float32Array(params.array, 100 * count, count),
                         new Float32Array(params.array, 104 * count, count),
+                        new Float32Array(params.array, 108 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 108 * count, count),
                         new Float32Array(params.array, 112 * count, count),
                         new Float32Array(params.array, 116 * count, count),
+                        new Float32Array(params.array, 120 * count, count),
                     ],
                 ],
             ],
             normal: [
                 [
                     [
-                        new Float32Array(params.array, 120 * count, count),
                         new Float32Array(params.array, 124 * count, count),
                         new Float32Array(params.array, 128 * count, count),
+                        new Float32Array(params.array, 132 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 132 * count, count),
                         new Float32Array(params.array, 136 * count, count),
                         new Float32Array(params.array, 140 * count, count),
+                        new Float32Array(params.array, 144 * count, count),
                     ],
                 ],
                 [
                     [
-                        new Float32Array(params.array, 144 * count, count),
                         new Float32Array(params.array, 148 * count, count),
                         new Float32Array(params.array, 152 * count, count),
+                        new Float32Array(params.array, 156 * count, count),
                     ],
                     [
-                        new Float32Array(params.array, 156 * count, count),
                         new Float32Array(params.array, 160 * count, count),
                         new Float32Array(params.array, 164 * count, count),
+                        new Float32Array(params.array, 168 * count, count),
                     ],
                 ],
             ],
             material_id: [
-                new Uint32Array(params.array, 168 * count, count),
                 new Uint32Array(params.array, 172 * count, count),
+                new Uint32Array(params.array, 176 * count, count),
             ],
             pdf_fwd: [
                 [
-                    new Float32Array(params.array, 176 * count, count),
                     new Float32Array(params.array, 180 * count, count),
+                    new Float32Array(params.array, 184 * count, count),
                 ],
                 [
-                    new Float32Array(params.array, 184 * count, count),
                     new Float32Array(params.array, 188 * count, count),
+                    new Float32Array(params.array, 192 * count, count),
                 ],
             ],
             sum_inv_ri: [
-                new Float32Array(params.array, 192 * count, count),
                 new Float32Array(params.array, 196 * count, count),
+                new Float32Array(params.array, 200 * count, count),
             ],
             prod_ri: [
-                new Float32Array(params.array, 200 * count, count),
                 new Float32Array(params.array, 204 * count, count),
+                new Float32Array(params.array, 208 * count, count),
             ],
-            directional_pdf: new Float32Array(params.array, 208 * count, count),
-            final_ri: new Float32Array(params.array, 212 * count, count),
+            directional_pdf: new Float32Array(params.array, 212 * count, count),
+            final_ri: new Float32Array(params.array, 216 * count, count),
         };
     }
 }
@@ -2808,15 +2827,17 @@ class BuildCdfKernel {
     }
 
     encode(params) {
-        const iterations = Math.ceil(Math.log2(this.#config.path.count));
+        const iterations = Math.floor(Math.log2(this.#config.path.count));
         for (var iteration = 0; iteration < iterations; iteration++) {
-            const array = new ArrayBuffer(8);
+            const array = new ArrayBuffer(12);
             const view = {
                 chain_id: new Uint32Array(array, 0, 1),
                 iteration: new Uint32Array(array, 4, 1),
+                final_iteration: new Uint32Array(array, 8, 1),
             };
             view.chain_id.set([params.chainId]);
             view.iteration.set([iteration]);
+            view.final_iteration.set([iterations - 1]);
         
             const buffer = params.device.createBuffer({
                 label: 'build_cdf uniforms buffer',

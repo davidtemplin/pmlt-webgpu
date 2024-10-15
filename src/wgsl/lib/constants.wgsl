@@ -77,3 +77,6 @@ const FIXED_POINT_SCALE: f32 = 1048576.0;
 
 const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
 const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
+
+const PRIMARY: u32 = 0;
+const AUXILIARY: u32 = 1;

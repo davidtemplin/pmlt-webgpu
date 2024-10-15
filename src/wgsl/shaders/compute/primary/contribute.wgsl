@@ -15,7 +15,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         // Compute the final contribution
         let c = get_path_contribution(i);
         let sc = luminance(c);
-        path.cdf[i] = sc;
+        path.cdf[PRIMARY][i] = sc;
 
         // Compute the weight
         let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);

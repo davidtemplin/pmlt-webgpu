@@ -24,15 +24,17 @@ class BuildCdfKernel {
     }
 
     encode(params) {
-        const iterations = Math.ceil(Math.log2(this.#config.path.count));
+        const iterations = Math.floor(Math.log2(this.#config.path.count));
         for (var iteration = 0; iteration < iterations; iteration++) {
-            const array = new ArrayBuffer(8);
+            const array = new ArrayBuffer(12);
             const view = {
                 chain_id: new Uint32Array(array, 0, 1),
                 iteration: new Uint32Array(array, 4, 1),
+                final_iteration: new Uint32Array(array, 8, 1),
             };
             view.chain_id.set([params.chainId]);
             view.iteration.set([iteration]);
+            view.final_iteration.set([iterations - 1]);
         
             const buffer = params.device.createBuffer({
                 label: 'build_cdf uniforms buffer',

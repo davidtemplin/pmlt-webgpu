@@ -99,9 +99,9 @@ fn binary_search(min_path_index: u32, max_path_index: u32, sum: f32, goal: f32) 
         if m == min_path_index {
             break;
         }
-        let vr = path.cdf[m] / sum;
+        let vr = path.cdf[PRIMARY][m] / sum;
         if goal <= vr {
-            let vl = path.cdf[m - 1] / sum;
+            let vl = path.cdf[PRIMARY][m - 1] / sum;
             if goal > vl {
                 break;
             } else {

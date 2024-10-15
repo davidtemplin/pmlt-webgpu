@@ -6,17 +6,17 @@ fn update_chain() {
     // Add the current contribution
     let c = get_chain_contribution(uniforms.chain_id);
     let max_path_index = chain.max_path_index[uniforms.chain_id];
-    let a = 1.0 - path.cdf[max_path_index];
+    let a = 1.0 - path.cdf[PRIMARY][max_path_index];
     let step_type = chain.step_type[uniforms.chain_id];
     let weight = get_contribution_weight(chain_id, a, CURRENT, step_type);
     let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
     contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
 
     // Compute normalization factor
-    let sum = path.cdf[r] + chain.scalar_contribution[chain_id];
+    let sum = path.cdf[PRIMARY][r] + chain.scalar_contribution[chain_id];
 
     // Accept or reject
-    if uniforms.random <= path.cdf[r] / sum {
+    if uniforms.random <= path.cdf[PRIMARY][r] / sum {
         // Binary search
         let min_path_index = chain.min_path_index[uniforms.chain_id];
         let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);

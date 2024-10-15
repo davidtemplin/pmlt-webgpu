@@ -31,7 +31,7 @@ struct Path {
     pixel: array<array<u32, PATH_COUNT>, 2>,
 
     /* CDF */
-    cdf: array<f32, PATH_COUNT>,
+    cdf: array<array<f32, PATH_COUNT>, 2>,
 
     /* geometry */
     point: array<array<array<array<f32, PATH_COUNT>, 3>, 2>, 2>,
@@ -120,6 +120,7 @@ struct ClearQueueUniforms {
 struct BuildCdfUniforms {
     chain_id: u32,
     iteration: u32,
+    final_iteration: u32,
 };
 
 struct StartChainUniforms {
