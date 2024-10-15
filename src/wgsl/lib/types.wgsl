@@ -82,6 +82,7 @@ struct Chain {
     contribution: array<array<f32, CHAIN_COUNT>, 3>,
     scalar_contribution: array<f32, CHAIN_COUNT>,
     min_path_index: array<u32, CHAIN_COUNT>,
+    max_path_index: array<u32, CHAIN_COUNT>,
     path_count: array<u32, CHAIN_COUNT>,
 };
 

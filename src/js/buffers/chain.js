@@ -9,7 +9,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(76 * count);
+        const array = new ArrayBuffer(80 * count);
     
         const view = this.getView({ array });
     
@@ -67,7 +67,8 @@ class ChainData {
             ],
             scalar_contribution: new Float32Array(params.array, 64 * count, count),
             min_path_index: new Uint32Array(params.array, 68 * count, count),
-            path_count: new Uint32Array(params.array, 72 * count, count),
+            max_path_index: new Uint32Array(params.array, 72 * count, count),
+            path_count: new Uint32Array(params.array, 76 * count, count),
         };
     }
 }

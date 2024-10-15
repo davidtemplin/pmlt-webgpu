@@ -90,6 +90,11 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.buildPdf = new BuildPdfKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -110,6 +115,7 @@ class Executor {
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
         this.#kernels.auxiliary.buildCdf.initialize({ device: params.device });
         this.#kernels.auxiliary.startChain.initialize({ device: params.device });
+        this.#kernels.auxiliary.buildPdf.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -201,12 +207,14 @@ class Executor {
             this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
         }
 
+        this.#kernels.auxiliary.buildPdf.encode({ pass, device: params.device });
+
         pass.end();
 
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'path log', data: this.#data.element.pathLog });
+        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();

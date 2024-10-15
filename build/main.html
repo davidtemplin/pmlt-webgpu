@@ -371,6 +371,7 @@ struct Chain {
     contribution: array<array<f32, CHAIN_COUNT>, 3>,
     scalar_contribution: array<f32, CHAIN_COUNT>,
     min_path_index: array<u32, CHAIN_COUNT>,
+    max_path_index: array<u32, CHAIN_COUNT>,
     path_count: array<u32, CHAIN_COUNT>,
 };
 
@@ -1802,6 +1803,37 @@ fn start_chain() {
     chain.iteration[uniforms.chain_id] += 1;
 }
 `;
+const BUILD_PDF_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(1)
+fn build_pdf() {
+    var sum: f32 = 0.0;
+    for (var i: u32 = 0; i < CHAIN_COUNT; i++) {
+        sum += chain.b[i];
+    }
+
+    for (var i: u32 = 0; i < CHAIN_COUNT; i++) {
+        chain.pdf[i] = chain.b[i] / sum;
+    }
+
+    // Compute the bounds of each chain
+    sum = 0.0;
+    var min_path_index: u32 = 0;
+    for(var i: u32 = 0; i < CHAIN_COUNT; i++) {
+        sum += chain.pdf[i];
+        let max_path_index = u32(round(sum * f32(PATH_COUNT)));
+        chain.min_path_index[i] = min_path_index;
+        chain.max_path_index[i] = max_path_index;
+        let path_count = max_path_index - min_path_index + 1;
+        chain.path_count[i] = path_count;
+        chain.min_small_step_index[i] = min_path_index;
+        chain.max_small_step_index[i] = min_path_index + u32(round(SMALL_STEP_PROBABILITY * f32(path_count)));
+        min_path_index = max_path_index + 1;
+    }
+}
+`;
 
 class CameraData {
     #config;
@@ -1855,7 +1887,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(76 * count);
+        const array = new ArrayBuffer(80 * count);
     
         const view = this.getView({ array });
     
@@ -1913,7 +1945,8 @@ class ChainData {
             ],
             scalar_contribution: new Float32Array(params.array, 64 * count, count),
             min_path_index: new Uint32Array(params.array, 68 * count, count),
-            path_count: new Uint32Array(params.array, 72 * count, count),
+            max_path_index: new Uint32Array(params.array, 72 * count, count),
+            path_count: new Uint32Array(params.array, 76 * count, count),
         };
     }
 }
@@ -2878,6 +2911,39 @@ class StartChainKernel {
     }
 }
 
+class BuildPdfKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'build_pdf module',
+            code: BUILD_PDF_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'build_pdf compute pipeline',
+            layout: this.#data.pipelineLayout.auxiliary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.dispatchWorkgroups(1);        
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -3212,6 +3278,11 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.buildPdf = new BuildPdfKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -3232,6 +3303,7 @@ class Executor {
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
         this.#kernels.auxiliary.buildCdf.initialize({ device: params.device });
         this.#kernels.auxiliary.startChain.initialize({ device: params.device });
+        this.#kernels.auxiliary.buildPdf.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -3323,12 +3395,14 @@ class Executor {
             this.#kernels.auxiliary.startChain.encode({ chainId, random, pass, device: params.device });
         }
 
+        this.#kernels.auxiliary.buildPdf.encode({ pass, device: params.device });
+
         pass.end();
 
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'path log', data: this.#data.element.pathLog });
+        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
         debug.encode({ encoder, device: params.device });
 
         const commandBuffer = encoder.finish();
