@@ -11,22 +11,17 @@ fn build_cdf(@builtin(global_invocation_id) id: vec3u) {
         return;
     }
 
-    // Compute 2^i
-    let two_pow_i: u32 = u32(1) << uniforms.iteration;
-    let m: u32 = u32(global_invocation_index >= two_pow_i);
+    // Compute p = 2^i, and an indicator, m
+    let p: u32 = u32(1) << uniforms.iteration;
+    let m: u32 = u32(global_invocation_index >= p);
 
-    // Determine which CDF arrays will serve as primary and auxiliary this iteration
-    let read_index = uniforms.iteration % 2;
-    let write_index = (read_index + 1) % 2;
+    // Determine which CDF array will be read (r) and written (w)
+    let r = uniforms.iteration % 2;
+    let w = choose_u32(uniforms.iteration == uniforms.final_iteration, PRIMARY, (r + 1) % 2);
 
     // Compute the translated index
     let j = chain.min_path_index[uniforms.chain_id] + global_invocation_index;
     
     // Update prefix sums
-    path.cdf[write_index][j] = path.cdf[read_index][j] + f32(m) * path.cdf[read_index][j - m * two_pow_i];
-
-    // Ensure that the primary array contains the final result
-    if uniforms.iteration == uniforms.final_iteration && write_index != PRIMARY {
-        path.cdf[PRIMARY][j] = path.cdf[AUXILIARY][j];
-    }
+    path.cdf[w][j] = path.cdf[r][j] + f32(m) * path.cdf[r][j - m * p];
 }
