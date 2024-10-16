@@ -88,6 +88,8 @@ cat src/js/kernels/start_chain.js;
 echo "\n";
 cat src/js/kernels/build_pdf.js;
 echo "\n";
+cat src/js/kernels/distribute.js;
+echo "\n";
 cat src/js/data.js;
 echo "\n";
 cat src/js/debug.js;

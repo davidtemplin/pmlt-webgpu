@@ -19,3 +19,4 @@ const SAMPLE_MATERIAL_CODE = `#include sample_material.wgsl`;
 const BUILD_CDF_CODE = `#include build_cdf.wgsl`;
 const START_CHAIN_CODE = `#include start_chain.wgsl`;
 const BUILD_PDF_CODE = `#include build_pdf.wgsl`;
+const DISTRIBUTE_CODE = `#include distribute.wgsl`;
