@@ -243,6 +243,18 @@ class Executor {
             },
         });
 
+        const renderPassDescriptor = {
+            label: 'canvas render pass',
+            colorAttachments: [
+                {
+                    view: params.context.getCurrentTexture().createView(),
+                    clearValue: [0, 0, 0, 1],
+                    loadOp: 'clear',
+                    storeOp: 'store',
+                },
+            ],
+        };
+
         for (let iteration = 1; iteration <= 10; iteration++) {
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
@@ -302,17 +314,26 @@ class Executor {
             for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
                 let chainId = pathLength - this.#config.path.length.min;
                 if (iteration % (pathLength - 1) == 0) {
-                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device });
+                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
                     const random = Math.random();
                     this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
                 }
             }
+
+            // TODO: configure how often to render and how often to submit commands
+            
+            pass.end();
+
+            pass = encoder.beginRenderPass(renderPassDescriptor);
+
+            this.#kernels.render.encode({ pass, device: params.device });
+
+            pass.end();
+
+            commandBuffer = encoder.finish();
+            params.device.queue.submit([commandBuffer]);
         }
-        
-        pass.end();
-        commandBuffer = encoder.finish();
-        params.device.queue.submit([commandBuffer]);
         */
     }
 }
