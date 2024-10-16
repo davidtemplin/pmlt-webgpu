@@ -134,7 +134,7 @@ class Executor {
             count: 2,
         });
 
-        const pass = encoder.beginComputePass({
+        let pass = encoder.beginComputePass({
             label: 'phase 1 compute pass',
             timestampWrites: {
                 querySet,
@@ -227,13 +227,22 @@ class Executor {
         const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
         debug.encode({ encoder, device: params.device });
 
-        const commandBuffer = encoder.finish();
+        let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
         timestamp.log();
         debug.log();
 
         /*
+        pass = encoder.beginComputePass({
+            label: 'phase 2 compute pass',
+            timestampWrites: {
+                querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
         for (let iteration = 1; iteration <= 10; iteration++) {
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
@@ -300,6 +309,10 @@ class Executor {
                 }
             }
         }
+        
+        pass.end();
+        commandBuffer = encoder.finish();
+        params.device.queue.submit([commandBuffer]);
         */
     }
 }
