@@ -84,6 +84,7 @@ struct Chain {
     min_path_index: array<u32, CHAIN_COUNT>,
     max_path_index: array<u32, CHAIN_COUNT>,
     path_count: array<u32, CHAIN_COUNT>,
+    offset: array<u32, CHAIN_COUNT>,
 };
 
 struct RandomParameters {
@@ -98,6 +99,7 @@ struct RandomParameters {
   large_step_index: U64,
   key: U64,
   small_step_count: u32,
+  offset: u32,
 };
 
 struct Image {

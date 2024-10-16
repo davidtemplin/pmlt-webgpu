@@ -9,7 +9,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(80 * count);
+        const array = new ArrayBuffer(84 * count);
     
         const view = this.getView({ array });
     
@@ -29,6 +29,7 @@ class ChainData {
             view.large_step_index[1].set([0], i);
             view.min_path_index.set([0], i);
             view.path_count.set([this.#config.path.count], i);
+            view.offset.set([0], i);
         }
 
         this.buffer = params.device.createBuffer({
@@ -69,6 +70,7 @@ class ChainData {
             min_path_index: new Uint32Array(params.array, 68 * count, count),
             max_path_index: new Uint32Array(params.array, 72 * count, count),
             path_count: new Uint32Array(params.array, 76 * count, count),
+            offset: new Uint32Array(params.array, 80 * count, count),
         };
     }
 }

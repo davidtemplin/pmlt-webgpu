@@ -3,7 +3,7 @@ fn rand(p: RandomParameters, number_index: u32) -> f32 {
       +  p.vertex_index * NUMBERS_PER_VERTEX 
       + number_index;
     let path_offset = p.local_path_index * p.numbers_per_path + stream_offset;
-    let index = u64_add(u64_mul(u64_from(p.iteration), u64_from(p.numbers_per_iteration)), u64_from(path_offset));
+    let index = u64_add(u64_mul(u64_from(p.iteration), u64_from(p.numbers_per_iteration)), u64_from(path_offset + p.offset));
     let random_number = squares32(index, p.key);
     if  p.step_type == LARGE_STEP {
         return random_number;
@@ -44,7 +44,8 @@ fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomPar
     chain.numbers_per_iteration[chain_index], 
     U64(chain.large_step_index[HI][chain_index], chain.large_step_index[LO][chain_index]),
     U64(chain.key[HI][chain_index], chain.key[LO][chain_index]),
-    chain.small_step_count[chain_index]
+    chain.small_step_count[chain_index],
+    chain.offset[chain_index],
   );
 }
 

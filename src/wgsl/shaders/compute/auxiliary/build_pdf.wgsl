@@ -22,6 +22,14 @@ fn build_pdf() {
         chain.path_count[i] = path_count;
         chain.min_small_step_index[i] = min_path_index;
         chain.max_small_step_index[i] = min_path_index + u32(round(SMALL_STEP_PROBABILITY * f32(path_count)));
+        chain.offset[i] = chain.numbers_per_iteration[i];
+        let vertex_count = i + 2;
+        let numbers_per_stream = vertex_count * NUMBERS_PER_VERTEX;
+        let numbers_per_path = 2 * numbers_per_stream + 1;
+        let numbers_per_iteration = path_count * numbers_per_path;
+        chain.numbers_per_stream[i] = numbers_per_stream;
+        chain.numbers_per_path[i] = numbers_per_path;
+        chain.numbers_per_iteration[i] = numbers_per_iteration;
         min_path_index = max_path_index + 1;
     }
 }

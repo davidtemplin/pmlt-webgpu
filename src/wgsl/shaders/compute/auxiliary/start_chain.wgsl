@@ -10,5 +10,4 @@ fn start_chain() {
     chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
     chain.small_step_count[uniforms.chain_id] = 1;
     chain.b[uniforms.chain_id] = sum;
-    chain.iteration[uniforms.chain_id] += 1;
 }
