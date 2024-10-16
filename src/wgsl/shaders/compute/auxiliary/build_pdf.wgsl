@@ -23,7 +23,7 @@ fn build_pdf() {
         chain.min_small_step_index[i] = min_path_index;
         chain.max_small_step_index[i] = min_path_index + u32(round(SMALL_STEP_PROBABILITY * f32(path_count)));
         chain.offset[i] = chain.numbers_per_iteration[i];
-        let vertex_count = i + 2;
+        let vertex_count = i + MIN_PATH_LENGTH;
         let numbers_per_stream = vertex_count * NUMBERS_PER_VERTEX;
         let numbers_per_path = 2 * numbers_per_stream + 1;
         let numbers_per_iteration = path_count * numbers_per_path;
