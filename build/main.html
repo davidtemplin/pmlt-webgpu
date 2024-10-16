@@ -523,12 +523,21 @@ fn rand(p: RandomParameters, number_index: u32) -> f32 {
     }
 }
 
+fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
+  let technique = get_technique(global_path_index);
+  let path_vertex_index = path.vertex_index[global_path_index];
+  let vertex_index: u32 = 0;
+  choose_u32(stream_index == CAMERA_STREAM_INDEX, path_vertex_index, vertex_index);
+  choose_u32(stream_index == LIGHT_STREAM_INDEX, path_vertex_index - technique.camera, vertex_index);
+  return vertex_index;
+}
+
 fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomParameters {
   let path_length = path.length[global_path_index];
   let chain_index = path_length - MIN_PATH_LENGTH;
   let step_type = path.step_type[global_path_index];
   let local_path_index = path.index[global_path_index];
-  let vertex_index = path.vertex_index[global_path_index];
+  let vertex_index = get_vertex_index(global_path_index, stream_index);
   return RandomParameters(
     step_type, 
     local_path_index, 
@@ -1781,7 +1790,7 @@ fn build_cdf(@builtin(global_invocation_id) id: vec3u) {
         return;
     }
 
-    // Compute p = 2^i, and its indicator, m
+    // Compute p = 2^i, and an indicator, m
     let p: u32 = u32(1) << uniforms.iteration;
     let m: u32 = u32(global_invocation_index >= p);
 
