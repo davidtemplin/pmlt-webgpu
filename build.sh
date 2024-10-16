@@ -90,6 +90,8 @@ cat src/js/kernels/build_pdf.js;
 echo "\n";
 cat src/js/kernels/distribute.js;
 echo "\n";
+cat src/js/kernels/render.js;
+echo "\n";
 cat src/js/data.js;
 echo "\n";
 cat src/js/debug.js;
@@ -127,6 +129,9 @@ JS="$(echo "$JS" | sed -e "s/#include update_chain.wgsl/\n\${WGSL_LIB_CODE}\n\n$
 JS="$(echo "$JS" | sed -e "s/#include sample_material.wgsl/\n\${WGSL_LIB_CODE}\n\n$(cat src/wgsl/shaders/compute/primary/sample_material.wgsl| sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
 JS="$(echo "$JS" | sed -e "s/#include contribute.wgsl/\n\${WGSL_LIB_CODE}\n\n$(cat src/wgsl/shaders/compute/primary/contribute.wgsl| sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
 JS="$(echo "$JS" | sed -e "s/#include connect.wgsl/\n\${WGSL_LIB_CODE}\n\n$(cat src/wgsl/shaders/compute/primary/connect.wgsl| sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
+JS="$(echo "$JS" | sed -e "s/#include vertex.wgsl/\n\${WGSL_LIB_CODE}\n\n$(cat src/wgsl/shaders/vertex/vertex_main.wgsl| sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
+JS="$(echo "$JS" | sed -e "s/#include fragment.wgsl/\n\${WGSL_LIB_CODE}\n\n$(cat src/wgsl/shaders/fragment/fragment_main.wgsl| sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
+
 
 HTML="$(cat src/html/main.html | sed -e "s/<!-- #include main.js -->/$(echo "$JS" | sed -e 's/[\&/]/\\&/g' -e 's/$/\\n/' | tr -d '\n')/g"; echo "\n")"
 

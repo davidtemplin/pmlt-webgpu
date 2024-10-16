@@ -492,6 +492,18 @@ struct PathLog {
     foo: f32,
 };
 
+struct VertexInput {
+    @builtin(vertex_index) vertex_index: u32,
+};
+
+struct VertexOutput {
+    @builtin(position) position: vec4f,
+};
+
+struct FragmentOutput {
+    @location(0) color: vec4f,
+};
+
 @group(CAMERA_GROUP) @binding(CAMERA_BINDING) var<storage, read> camera: Camera;
 @group(SPHERE_GROUP) @binding(SPHERE_BINDING) var<storage, read> sphere: Sphere;
 @group(CHAIN_GROUP) @binding(CHAIN_BINDING) var<storage, read_write> chain: Chain;
@@ -870,11 +882,27 @@ fn contribute(contribution: vec3f, x: u32, y: u32) {
     atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
 }
 
-fn read_image(x: u32, y: u32) -> vec3f {
+fn read_image(x: u32, y: u32) -> vec4f {
     let r = atomicLoad(&image.pixels[y][x][0]);
     let g = atomicLoad(&image.pixels[y][x][1]);
     let b = atomicLoad(&image.pixels[y][x][2]);
-    return vec3f(f32(r) / FIXED_POINT_SCALE, f32(g) / FIXED_POINT_SCALE, f32(b) / FIXED_POINT_SCALE);
+    return vec4f(f32(r) / FIXED_POINT_SCALE, f32(g) / FIXED_POINT_SCALE, f32(b) / FIXED_POINT_SCALE, 1.0);
+}
+
+fn tone_map(value: vec4f) -> vec4f {
+    return vec4f(tone_map_f32(value.r), tone_map_f32(value.g), tone_map_f32(value.b), 1.0);
+}
+
+fn gamma_correct(value: vec4f) -> vec4f {
+    return vec4f(gamma_correct_f32(value.r), gamma_correct_f32(value.g), gamma_correct_f32(value.b), 1.0);
+}
+
+fn tone_map_f32(value: f32) -> f32 {
+    return 1.0 - exp(-value);
+}
+
+fn gamma_correct_f32(value: f32) -> f32 {
+    return pow(value, 1.0 / 2.2);
 }
 
 fn get_chain_contribution(chain_id: u32) -> vec3f {
@@ -1903,6 +1931,40 @@ fn distribute(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
 
     // Enqueue
     enqueue(i, lid, queue_id);
+}
+`;
+const VERTEX_CODE = `
+${WGSL_LIB_CODE}
+
+const VERTICES = array(
+  // 1
+  vec2f(-1.0, -1.0),
+  vec2f(1.0, -1.0),
+  vec2f(-1.0, 1.0),
+  // 2
+  vec2f( -1.0, 1.0),
+  vec2f(1.0, -1.0),
+  vec2f(1.0, 1.0),
+);
+
+@vertex
+fn vertex_main(input: VertexInput) -> VertexOutput {
+    let output: VertexOutput;
+    let v = VERTICES[input.vertex_index];
+    output.position = vec4f(v.x, v.y, 0.0, 1.0);
+    return output;
+}
+`;
+const FRAGMENT_CODE = `
+${WGSL_LIB_CODE}
+
+@fragment
+fn fragment_main(input: VertexOutput) -> FragmentOutput {
+    let value = read_image(input.position.x, input.position.y);
+    let color = gamma_correct(tone_map(value));
+    let output: FragmentOutput;
+    output.color = color;
+    return output;
 }
 `;
 
@@ -3055,6 +3117,51 @@ class DistributeKernel {
     }
 }
 
+class RenderKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const vertexModule = params.device.createShaderModule({
+            label: 'vertex shader module',
+            code: VERTEX_CODE,
+        });
+
+        const fragmentModule = params.device.createShaderModule({
+            label: 'fragment shader module',
+            code: FRAGMENT_CODE,
+        });
+
+        this.#pipeline = params.device.createRenderPipeline({
+            label: 'render pipeline',
+            layout: this.#data.pipelineLayout.primary,
+            vertex: {
+                module: vertexModule,
+            },
+            fragment: {
+                module: fragmentModule,
+                targets: [
+                    {
+                        format: params.presentationFormat,
+                    },
+                ],
+            },
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        pass.draw(6);
+    }
+}
+
 class Data {
     #config;
     #scene;
@@ -3433,7 +3540,7 @@ class Executor {
             count: 2,
         });
 
-        const pass = encoder.beginComputePass({
+        let pass = encoder.beginComputePass({
             label: 'phase 1 compute pass',
             timestampWrites: {
                 querySet,
@@ -3526,13 +3633,22 @@ class Executor {
         const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
         debug.encode({ encoder, device: params.device });
 
-        const commandBuffer = encoder.finish();
+        let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
         timestamp.log();
         debug.log();
 
         /*
+        pass = encoder.beginComputePass({
+            label: 'phase 2 compute pass',
+            timestampWrites: {
+                querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1,
+            },
+        });
+
         for (let iteration = 1; iteration <= 10; iteration++) {
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
@@ -3599,6 +3715,10 @@ class Executor {
                 }
             }
         }
+        
+        pass.end();
+        commandBuffer = encoder.finish();
+        params.device.queue.submit([commandBuffer]);
         */
     }
 }

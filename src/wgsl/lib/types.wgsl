@@ -199,3 +199,15 @@ struct PathLog {
     mis_weight: f32,
     foo: f32,
 };
+
+struct VertexInput {
+    @builtin(vertex_index) vertex_index: u32,
+};
+
+struct VertexOutput {
+    @builtin(position) position: vec4f,
+};
+
+struct FragmentOutput {
+    @location(0) color: vec4f,
+};
