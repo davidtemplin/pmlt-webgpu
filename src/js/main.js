@@ -22,6 +22,15 @@ async function main() {
 
     device.addEventListener('uncapturederror', event => console.log(event.error.message));
 
+    // Create the context for the canvas
+    const canvas = document.querySelector('canvas');
+    const context = canvas.getContext('webgpu');
+    const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+    context.configure({
+        device,
+        format: presentationFormat,
+    });
+
     // Create the scene
     const scene = new Scene();
 
@@ -31,10 +40,10 @@ async function main() {
 
     // Prepare an executor
     const executor = new Executor({ config, data });
-    executor.initialize({ device });
+    executor.initialize({ device, presentationFormat });
 
     // Execute
-    executor.execute({ device });
+    executor.execute({ device, context });
 };
 
 main();
