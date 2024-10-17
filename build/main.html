@@ -113,7 +113,7 @@ class KeyUtil {
 
 class Config {
     pathLog = {
-        enabled: true,
+        enabled: false,
         targetIndex: 0,
     };
 
@@ -241,6 +241,7 @@ const LARGE_STEP_PROBABILITY = 0.3;
 const SMALL_STEP_PROBABILITY = 1.0 - LARGE_STEP_PROBABILITY;
 const SMALL_STEP: u32 = 0;
 const LARGE_STEP: u32 = 1;
+const NO_STEP: u32 = 2;
 const CHAIN_COUNT: u32 = MAX_PATH_LENGTH - MIN_PATH_LENGTH + 1;
 const WORKGROUP_SIZE: u32 = ${config.workgroup.size};
 
@@ -377,6 +378,7 @@ struct Chain {
     max_path_index: array<u32, CHAIN_COUNT>,
     path_count: array<u32, CHAIN_COUNT>,
     offset: array<u32, CHAIN_COUNT>,
+    pixel: array<array<u32, CHAIN_COUNT>, 2>,
 };
 
 struct RandomParameters {
@@ -425,6 +427,10 @@ struct StartChainUniforms {
 struct UpdateChainUniforms {
     chain_id: u32,
     random: f32,
+};
+
+struct RestartUniforms {
+    chain_id: u32,
 };
 
 struct Intersection {
@@ -918,6 +924,15 @@ fn set_chain_contribution(chain_id: u32, c: vec3f) {
 fn set_chain_large_step_index(chain_id: u32, index: U64) {
     chain.large_step_index[HI][chain_id] = index.hi;
     chain.large_step_index[LO][chain_id] = index.lo;
+}
+
+fn set_chain_pixel(chain_id: u32, pixel: vec2u) {
+    chain.pixel[0][chain_id] = pixel.x;
+    chain.pixel[1][chain_id] = pixel.y;
+}
+
+fn get_chain_pixel(chain_id: u32) -> vec2u {
+    return vec2u(chain.pixel[0][chain_id], chain.pixel[1][chain_id]);
 }
 
 fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
@@ -1851,6 +1866,10 @@ fn start_chain() {
     chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
     chain.small_step_count[uniforms.chain_id] = 1;
     chain.b[uniforms.chain_id] = sum;
+    let contribution = get_path_contribution(m);
+    chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
+    set_chain_contribution(uniforms.chain_id, contribution);
+    set_chain_pixel(uniforms.chain_id, get_pixel(m));
 }
 `;
 const BUILD_PDF_CODE = `
@@ -1967,6 +1986,81 @@ fn fragment_main(input: VertexOutput) -> FragmentOutput {
     return output;
 }
 `;
+const UPDATE_CHAIN_CODE = `
+${WGSL_LIB_CODE}
+
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: UpdateChainUniforms;
+
+@compute
+@workgroup_size(1)
+fn update_chain() {
+    // Add the current contribution
+    let c = get_chain_contribution(uniforms.chain_id);
+    let max_path_index = chain.max_path_index[uniforms.chain_id];
+    let a = 1.0 - path.cdf[PRIMARY][max_path_index];
+    let weight = get_contribution_weight(uniforms.chain_id, a, CURRENT, NO_STEP);
+    let pixel = get_chain_pixel(uniforms.chain_id);
+    contribute(c * weight, pixel.x, pixel.y);
+
+    // Compute normalization factor
+    let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
+
+    // Accept or reject
+    if uniforms.random <= path.cdf[PRIMARY][max_path_index] / sum {
+        // Binary search
+        let min_path_index = chain.min_path_index[uniforms.chain_id];
+        let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
+
+        // Update the current contribution
+        let contribution = get_path_contribution(m);
+        chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
+        set_chain_contribution(uniforms.chain_id, contribution);
+        set_chain_pixel(uniforms.chain_id, get_pixel(m));
+
+        // Update the sample space parameters
+        if path.step_type[m] == LARGE_STEP {
+            set_chain_large_step_index(uniforms.chain_id, compute_large_step_index(uniforms.chain_id, m));
+            chain.small_step_count[uniforms.chain_id] = 1;
+        } else {
+            chain.small_step_count[uniforms.chain_id] = chain.small_step_count[uniforms.chain_id] + 1;
+        }
+    }
+    
+    // Increment the iteration
+    chain.iteration[uniforms.chain_id] += 1;
+}
+`;
+const RESTART_CODE = `
+${WGSL_LIB_CODE}
+
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: RestartUniforms;
+
+@compute
+@workgroup_size(WORKGROUP_SIZE)
+fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {
+    // Determine the global path index (i)
+    let global_invocation_index = id.x;
+    let i = chain.min_path_index[uniforms.chain_id] + global_invocation_index;
+
+    // Default to no queue
+    var queue_id: u32 = NULL_QUEUE_ID;
+
+    // Check bounds
+    if global_invocation_index < chain.path_count[uniforms.chain_id] {
+        path.vertex_index[i] = 0;
+        path.cdf[PRIMARY][i] = 0;
+        path.cdf[AUXILIARY][i] = 0;
+        path.prod_ri[CAMERA][i] = 1.0;
+        path.prod_ri[LIGHT][i] = 1.0;
+        path.sum_inv_ri[CAMERA][i] = 0.0;
+        path.sum_inv_ri[LIGHT][i] = 0.0;
+        queue_id = SAMPLE_CAMERA_QUEUE_ID;
+    }
+
+    // Enqueue
+    enqueue(i, lid, queue_id);
+}
+`;
 
 class CameraData {
     #config;
@@ -2020,7 +2114,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(84 * count);
+        const array = new ArrayBuffer(92 * count);
     
         const view = this.getView({ array });
     
@@ -2082,6 +2176,10 @@ class ChainData {
             max_path_index: new Uint32Array(params.array, 72 * count, count),
             path_count: new Uint32Array(params.array, 76 * count, count),
             offset: new Uint32Array(params.array, 80 * count, count),
+            pixel: [
+                new Uint32Array(params.array, 84 * count, count),
+                new Uint32Array(params.array, 88 * count, count),
+            ],
         };
     }
 }
@@ -3117,6 +3215,130 @@ class DistributeKernel {
     }
 }
 
+class UpdateChainKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'update_chain module',
+            code: UPDATE_CHAIN_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'update_chain compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const array = new ArrayBuffer(8);
+        const view = {
+            chain_id: new Uint32Array(array, 0, 1),
+            random: new Float32Array(array, 4, 1),
+        };
+        view.chain_id.set([params.chainId]);
+        view.random.set([params.random]);
+    
+        const buffer = params.device.createBuffer({
+            label: 'update_chain uniforms buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(buffer, 0, array);
+    
+        const bindGroup = params.device.createBindGroup({
+            label: 'update_chain uniforms bind group',
+            layout: this.#data.bindGroupLayout.uniform,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    resource: {
+                        buffer,
+                    },
+                },
+            ],
+        });
+
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(1);
+    }
+}
+
+class RestartKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'restart module',
+            code: RESTART_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'restart compute pipeline',
+            layout: this.#data.pipelineLayout.uniform,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        const array = new ArrayBuffer(4);
+        const view = {
+            chain_id: new Uint32Array(array, 0, 1),
+        };
+        view.chain_id.set([params.chainId]);
+    
+        const buffer = params.device.createBuffer({
+            label: 'restart uniforms buffer',
+            size: array.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+    
+        params.device.queue.writeBuffer(buffer, 0, array);
+    
+        const bindGroup = params.device.createBindGroup({
+            label: 'restart uniforms bind group',
+            layout: this.#data.bindGroupLayout.uniform,
+            entries: [
+                {
+                    binding: this.#config.bindGroup.uniform.binding.parameters,
+                    resource: {
+                        buffer,
+                    },
+                },
+            ],
+        });
+
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.setBindGroup(this.#config.bindGroup.uniform.index, bindGroup);
+        params.pass.dispatchWorkgroups(Math.ceil(this.#config.path.count / this.#config.workgroup.size));
+    }
+}
+
 class RenderKernel {
     #config;
     #data;
@@ -3156,6 +3378,7 @@ class RenderKernel {
     }
 
     encode(params) {
+        // TODO: separate pipeline layout for rendering?
         params.pass.setPipeline(this.#pipeline);
         params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
         pass.draw(6);
@@ -3506,6 +3729,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.updateChain = new UpdateChainKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.restart = new RestartKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -3528,6 +3761,8 @@ class Executor {
         this.#kernels.auxiliary.startChain.initialize({ device: params.device });
         this.#kernels.auxiliary.buildPdf.initialize({ device: params.device });
         this.#kernels.auxiliary.distribute.initialize({ device: params.device });
+        this.#kernels.auxiliary.updateChain.initialize({ device: params.device });
+        this.#kernels.auxiliary.restart.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -3640,16 +3875,28 @@ class Executor {
         debug.log();
 
         /*
-        pass = encoder.beginComputePass({
-            label: 'phase 2 compute pass',
-            timestampWrites: {
-                querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
+        const renderPassDescriptor = {
+            label: 'canvas render pass',
+            colorAttachments: [
+                {
+                    view: params.context.getCurrentTexture().createView(),
+                    clearValue: [0, 0, 0, 1],
+                    loadOp: 'clear',
+                    storeOp: 'store',
+                },
+            ],
+        };
 
         for (let iteration = 1; iteration <= 10; iteration++) {
+            pass = encoder.beginComputePass({
+                label: 'phase 2 compute pass',
+                timestampWrites: {
+                    querySet,
+                    beginningOfPassWriteIndex: 0,
+                    endOfPassWriteIndex: 1,
+                },
+            });
+
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
             this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
@@ -3708,17 +3955,26 @@ class Executor {
             for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
                 let chainId = pathLength - this.#config.path.length.min;
                 if (iteration % (pathLength - 1) == 0) {
-                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device });
+                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
                     const random = Math.random();
                     this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
                 }
             }
+
+            // TODO: configure how often to render and how often to submit commands
+            
+            pass.end();
+
+            pass = encoder.beginRenderPass(renderPassDescriptor);
+
+            this.#kernels.render.encode({ pass, device: params.device });
+
+            pass.end();
+
+            commandBuffer = encoder.finish();
+            params.device.queue.submit([commandBuffer]);
         }
-        
-        pass.end();
-        commandBuffer = encoder.finish();
-        params.device.queue.submit([commandBuffer]);
         */
     }
 }

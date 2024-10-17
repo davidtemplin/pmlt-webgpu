@@ -85,6 +85,7 @@ struct Chain {
     max_path_index: array<u32, CHAIN_COUNT>,
     path_count: array<u32, CHAIN_COUNT>,
     offset: array<u32, CHAIN_COUNT>,
+    pixel: array<array<u32, CHAIN_COUNT>, 2>,
 };
 
 struct RandomParameters {
@@ -133,6 +134,10 @@ struct StartChainUniforms {
 struct UpdateChainUniforms {
     chain_id: u32,
     random: f32,
+};
+
+struct RestartUniforms {
+    chain_id: u32,
 };
 
 struct Intersection {

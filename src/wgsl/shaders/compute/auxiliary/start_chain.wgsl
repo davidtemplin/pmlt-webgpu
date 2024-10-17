@@ -10,4 +10,8 @@ fn start_chain() {
     chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
     chain.small_step_count[uniforms.chain_id] = 1;
     chain.b[uniforms.chain_id] = sum;
+    let contribution = get_path_contribution(m);
+    chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
+    set_chain_contribution(uniforms.chain_id, contribution);
+    set_chain_pixel(uniforms.chain_id, get_pixel(m));
 }

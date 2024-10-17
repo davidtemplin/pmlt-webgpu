@@ -1,3 +1,5 @@
+@group(UNIFORM_GROUP) @binding(UNIFORM_BINDING) var<uniform> uniforms: RestartUniforms;
+
 @compute
 @workgroup_size(WORKGROUP_SIZE)
 fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_index) lid: u32) {

@@ -9,7 +9,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(84 * count);
+        const array = new ArrayBuffer(92 * count);
     
         const view = this.getView({ array });
     
@@ -71,6 +71,10 @@ class ChainData {
             max_path_index: new Uint32Array(params.array, 72 * count, count),
             path_count: new Uint32Array(params.array, 76 * count, count),
             offset: new Uint32Array(params.array, 80 * count, count),
+            pixel: [
+                new Uint32Array(params.array, 84 * count, count),
+                new Uint32Array(params.array, 88 * count, count),
+            ],
         };
     }
 }

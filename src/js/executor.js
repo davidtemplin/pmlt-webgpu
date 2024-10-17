@@ -100,6 +100,16 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.updateChain = new UpdateChainKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
+        this.#kernels.auxiliary.restart = new RestartKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -122,6 +132,8 @@ class Executor {
         this.#kernels.auxiliary.startChain.initialize({ device: params.device });
         this.#kernels.auxiliary.buildPdf.initialize({ device: params.device });
         this.#kernels.auxiliary.distribute.initialize({ device: params.device });
+        this.#kernels.auxiliary.updateChain.initialize({ device: params.device });
+        this.#kernels.auxiliary.restart.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -234,15 +246,6 @@ class Executor {
         debug.log();
 
         /*
-        pass = encoder.beginComputePass({
-            label: 'phase 2 compute pass',
-            timestampWrites: {
-                querySet,
-                beginningOfPassWriteIndex: 0,
-                endOfPassWriteIndex: 1,
-            },
-        });
-
         const renderPassDescriptor = {
             label: 'canvas render pass',
             colorAttachments: [
@@ -256,6 +259,15 @@ class Executor {
         };
 
         for (let iteration = 1; iteration <= 10; iteration++) {
+            pass = encoder.beginComputePass({
+                label: 'phase 2 compute pass',
+                timestampWrites: {
+                    querySet,
+                    beginningOfPassWriteIndex: 0,
+                    endOfPassWriteIndex: 1,
+                },
+            });
+
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
             this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });

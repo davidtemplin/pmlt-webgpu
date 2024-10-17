@@ -32,6 +32,7 @@ const LARGE_STEP_PROBABILITY = 0.3;
 const SMALL_STEP_PROBABILITY = 1.0 - LARGE_STEP_PROBABILITY;
 const SMALL_STEP: u32 = 0;
 const LARGE_STEP: u32 = 1;
+const NO_STEP: u32 = 2;
 const CHAIN_COUNT: u32 = MAX_PATH_LENGTH - MIN_PATH_LENGTH + 1;
 const WORKGROUP_SIZE: u32 = ${config.workgroup.size};
 

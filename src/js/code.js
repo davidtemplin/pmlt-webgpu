@@ -22,3 +22,5 @@ const BUILD_PDF_CODE = `#include build_pdf.wgsl`;
 const DISTRIBUTE_CODE = `#include distribute.wgsl`;
 const VERTEX_CODE = `#include vertex.wgsl`;
 const FRAGMENT_CODE = `#include fragment.wgsl`;
+const UPDATE_CHAIN_CODE = `#include update_chain.wgsl`;
+const RESTART_CODE = `#include restart.wgsl`;

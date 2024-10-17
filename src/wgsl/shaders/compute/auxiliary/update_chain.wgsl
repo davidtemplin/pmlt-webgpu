@@ -7,34 +7,34 @@ fn update_chain() {
     let c = get_chain_contribution(uniforms.chain_id);
     let max_path_index = chain.max_path_index[uniforms.chain_id];
     let a = 1.0 - path.cdf[PRIMARY][max_path_index];
-    let step_type = chain.step_type[uniforms.chain_id];
-    let weight = get_contribution_weight(chain_id, a, CURRENT, step_type);
-    let pixel_coordinates = get_chain_pixel_coordinates(uniforms.chain_id);
-    contribute(c * weight, pixel_coordinates.x, pixel_coordinates.y);
+    let weight = get_contribution_weight(uniforms.chain_id, a, CURRENT, NO_STEP);
+    let pixel = get_chain_pixel(uniforms.chain_id);
+    contribute(c * weight, pixel.x, pixel.y);
 
     // Compute normalization factor
-    let sum = path.cdf[PRIMARY][r] + chain.scalar_contribution[chain_id];
+    let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
 
     // Accept or reject
-    if uniforms.random <= path.cdf[PRIMARY][r] / sum {
+    if uniforms.random <= path.cdf[PRIMARY][max_path_index] / sum {
         // Binary search
         let min_path_index = chain.min_path_index[uniforms.chain_id];
         let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
 
         // Update the current contribution
         let contribution = get_path_contribution(m);
-        chain.scalar_contribution[chain_id] = luminance(contribution);
-        set_chain_contribution(contribution);
+        chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
+        set_chain_contribution(uniforms.chain_id, contribution);
+        set_chain_pixel(uniforms.chain_id, get_pixel(m));
 
         // Update the sample space parameters
-        if step_type == LARGE_STEP {
-            set_chain_large_step_index(compute_large_step_index(chain_id, m));
-            chain.small_step_count[chain_id] = 1;
+        if path.step_type[m] == LARGE_STEP {
+            set_chain_large_step_index(uniforms.chain_id, compute_large_step_index(uniforms.chain_id, m));
+            chain.small_step_count[uniforms.chain_id] = 1;
         } else {
-            chain.small_step_count[chain_id] = chain.small_step_count[chain_id] + 1;
+            chain.small_step_count[uniforms.chain_id] = chain.small_step_count[uniforms.chain_id] + 1;
         }
     }
     
     // Increment the iteration
-    chain.iteration[chain_id] += 1;
+    chain.iteration[uniforms.chain_id] += 1;
 }

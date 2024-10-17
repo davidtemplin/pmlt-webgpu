@@ -13,6 +13,15 @@ fn set_chain_large_step_index(chain_id: u32, index: U64) {
     chain.large_step_index[LO][chain_id] = index.lo;
 }
 
+fn set_chain_pixel(chain_id: u32, pixel: vec2u) {
+    chain.pixel[0][chain_id] = pixel.x;
+    chain.pixel[1][chain_id] = pixel.y;
+}
+
+fn get_chain_pixel(chain_id: u32) -> vec2u {
+    return vec2u(chain.pixel[0][chain_id], chain.pixel[1][chain_id]);
+}
+
 fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
     let iteration = chain.iteration[chain_id];
     let numbers_per_iteration = chain.numbers_per_iteration[chain_id];

@@ -1,6 +1,6 @@
 class Config {
     pathLog = {
-        enabled: true,
+        enabled: false,
         targetIndex: 0,
     };
 
