@@ -1,7 +1,9 @@
 fn contribute(contribution: vec3f, x: u32, y: u32) {
-    atomicAdd(&image.pixels[y][x][0], u32(contribution.r * FIXED_POINT_SCALE));
-    atomicAdd(&image.pixels[y][x][1], u32(contribution.g * FIXED_POINT_SCALE));
-    atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
+    if image.write_mode == ENABLED {
+        atomicAdd(&image.pixels[y][x][0], u32(contribution.r * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[y][x][1], u32(contribution.g * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
+    }
 }
 
 fn read_image(x: u32, y: u32) -> vec4f {

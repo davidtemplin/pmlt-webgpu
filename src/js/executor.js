@@ -110,6 +110,11 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.enableImage = new EnableImageKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -134,6 +139,7 @@ class Executor {
         this.#kernels.auxiliary.distribute.initialize({ device: params.device });
         this.#kernels.auxiliary.updateChain.initialize({ device: params.device });
         this.#kernels.auxiliary.restart.initialize({ device: params.device });
+        this.#kernels.auxiliary.enableImage.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -230,6 +236,8 @@ class Executor {
         this.#kernels.auxiliary.distribute.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.enableImage.encode({ pass, device: params.device });
 
         pass.end();
 

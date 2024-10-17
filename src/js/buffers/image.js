@@ -11,7 +11,7 @@ class ImageData {
         const count = this.#config.image.width * this.#config.image.height;
         this.buffer = params.device.createBuffer({
             label: 'image buffer',
-            size: 12 * count,
+            size: 12 * count + 4,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
     }
@@ -30,6 +30,7 @@ class ImageData {
                     new Uint32Array(params.array, 8 * count, count),
                 ],
             ],
+            write_mode: new Uint32Array(params.array, 12 * count, 1),
         };
     }
 }

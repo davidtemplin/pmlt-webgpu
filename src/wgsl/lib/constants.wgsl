@@ -81,3 +81,6 @@ const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
 
 const PRIMARY: u32 = 0;
 const AUXILIARY: u32 = 1;
+
+const DISABLED: u32 = 0;
+const ENABLED: u32 = 1;

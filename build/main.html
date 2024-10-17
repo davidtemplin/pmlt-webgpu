@@ -291,6 +291,10 @@ const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
 const PRIMARY: u32 = 0;
 const AUXILIARY: u32 = 1;
 
+const DISABLED: u32 = 0;
+const ENABLED: u32 = 1;
+
+
 struct Camera {
     u: vec3f,
     v: vec3f,
@@ -398,6 +402,7 @@ struct RandomParameters {
 
 struct Image {
     pixels: array<array<array<atomic<u32>, PIXEL_WIDTH>, PIXEL_HEIGHT>, 3>,
+    write_mode: u32,
 };
 
 struct Queue {
@@ -883,9 +888,11 @@ fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
 }
 
 fn contribute(contribution: vec3f, x: u32, y: u32) {
-    atomicAdd(&image.pixels[y][x][0], u32(contribution.r * FIXED_POINT_SCALE));
-    atomicAdd(&image.pixels[y][x][1], u32(contribution.g * FIXED_POINT_SCALE));
-    atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
+    if image.write_mode == ENABLED {
+        atomicAdd(&image.pixels[y][x][0], u32(contribution.r * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[y][x][1], u32(contribution.g * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[y][x][2], u32(contribution.b * FIXED_POINT_SCALE));
+    }
 }
 
 fn read_image(x: u32, y: u32) -> vec4f {
@@ -2061,6 +2068,15 @@ fn restart(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
     enqueue(i, lid, queue_id);
 }
 `;
+const ENABLE_IMAGE_CODE = `
+${WGSL_LIB_CODE}
+
+@compute
+@workgroup_size(1)
+fn enable_image_main() {
+    image.write_mode = ENABLED;
+}
+`;
 
 class CameraData {
     #config;
@@ -2223,7 +2239,7 @@ class ImageData {
         const count = this.#config.image.width * this.#config.image.height;
         this.buffer = params.device.createBuffer({
             label: 'image buffer',
-            size: 12 * count,
+            size: 12 * count + 4,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
     }
@@ -2242,6 +2258,7 @@ class ImageData {
                     new Uint32Array(params.array, 8 * count, count),
                 ],
             ],
+            write_mode: new Uint32Array(params.array, 12 * count, 1),
         };
     }
 }
@@ -3339,6 +3356,39 @@ class RestartKernel {
     }
 }
 
+class EnableImageKernel {
+    #config;
+    #data;
+    #pipeline;
+
+    constructor(params) {
+        this.#config = params.config;
+        this.#data = params.data;
+    }
+
+    initialize(params) {
+        const module = params.device.createShaderModule({
+            label: 'enable_image module',
+            code: ENABLE_IMAGE_CODE,
+        });
+
+        this.#pipeline = params.device.createComputePipeline({
+            label: 'enable_image compute pipeline',
+            layout: this.#data.pipelineLayout.auxiliary,
+            compute: {
+                module,
+            }
+        });
+    }
+
+    encode(params) {
+        params.pass.setPipeline(this.#pipeline);
+        params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
+        params.pass.setBindGroup(this.#config.bindGroup.auxiliary.index, this.#data.bindGroup.auxiliary);
+        params.pass.dispatchWorkgroups(1);
+    }
+}
+
 class RenderKernel {
     #config;
     #data;
@@ -3739,6 +3789,11 @@ class Executor {
             config: this.#config,
             data: this.#data,
         });
+
+        this.#kernels.auxiliary.enableImage = new EnableImageKernel({
+            config: this.#config,
+            data: this.#data,
+        });
     }
 
     initialize(params) {
@@ -3763,6 +3818,7 @@ class Executor {
         this.#kernels.auxiliary.distribute.initialize({ device: params.device });
         this.#kernels.auxiliary.updateChain.initialize({ device: params.device });
         this.#kernels.auxiliary.restart.initialize({ device: params.device });
+        this.#kernels.auxiliary.enableImage.initialize({ device: params.device });
     }
 
     execute(params) {
@@ -3859,6 +3915,8 @@ class Executor {
         this.#kernels.auxiliary.distribute.encode({ pass, device: params.device });
 
         this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+
+        this.#kernels.auxiliary.enableImage.encode({ pass, device: params.device });
 
         pass.end();
 

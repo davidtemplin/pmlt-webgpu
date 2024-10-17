@@ -24,3 +24,4 @@ const VERTEX_CODE = `#include vertex.wgsl`;
 const FRAGMENT_CODE = `#include fragment.wgsl`;
 const UPDATE_CHAIN_CODE = `#include update_chain.wgsl`;
 const RESTART_CODE = `#include restart.wgsl`;
+const ENABLE_IMAGE_CODE = `#include enable_image.wgsl`;
