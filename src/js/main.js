@@ -44,6 +44,8 @@ async function main() {
     const executor = new Executor({ config, data });
     executor.initialize({ device, presentationFormat });
 
+    document.getElementById("stop-button").onclick = () => executor.stop();
+
     // Execute
     executor.execute({ device, context });
 };
