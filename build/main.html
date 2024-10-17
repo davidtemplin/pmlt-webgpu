@@ -1975,7 +1975,7 @@ const VERTICES = array(
 
 @vertex
 fn vertex_main(input: VertexInput) -> VertexOutput {
-    let output: VertexOutput;
+    var output: VertexOutput;
     let v = VERTICES[input.vertex_index];
     output.position = vec4f(v.x, v.y, 0.0, 1.0);
     return output;
@@ -1986,9 +1986,9 @@ ${WGSL_LIB_CODE}
 
 @fragment
 fn fragment_main(input: VertexOutput) -> FragmentOutput {
-    let value = read_image(input.position.x, input.position.y);
+    let value = read_image(u32(input.position.x), u32(input.position.y)) / 1024.0;
     let color = gamma_correct(tone_map(value));
-    let output: FragmentOutput;
+    var output: FragmentOutput;
     output.color = color;
     return output;
 }
@@ -3428,10 +3428,9 @@ class RenderKernel {
     }
 
     encode(params) {
-        // TODO: separate pipeline layout for rendering?
         params.pass.setPipeline(this.#pipeline);
         params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.draw(6);
+        params.pass.draw(6);
     }
 }
 
@@ -3491,7 +3490,7 @@ class Data {
                 },
                 {
                     binding: this.#config.bindGroup.primary.binding.image,
-                    visibility: GPUShaderStage.COMPUTE,
+                    visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
                     buffer: {
                         type: 'storage',
                     },
@@ -3750,6 +3749,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.render = new RenderKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -3809,6 +3813,7 @@ class Executor {
         this.#kernels.primary.postConnectLightDirect.initialize({ device: params.device });
         this.#kernels.primary.postConnectLightIndirect.initialize({ device: params.device });
         this.#kernels.primary.contribute.initialize({ device: params.device });
+        this.#kernels.primary.render.initialize({ device: params.device, presentationFormat: params.presentationFormat });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -3822,7 +3827,7 @@ class Executor {
     }
 
     execute(params) {
-        const encoder = params.device.createCommandEncoder({
+        let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
         });
 
@@ -3920,19 +3925,13 @@ class Executor {
 
         pass.end();
 
-        const timestamp = new Timestamp();
-        timestamp.prepare({ querySet, device: params.device, encoder });
-
-        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
-        debug.encode({ encoder, device: params.device });
-
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
-        timestamp.log();
-        debug.log();
+        encoder = params.device.createCommandEncoder({
+            label: 'command encoder',
+        });
 
-        /*
         const renderPassDescriptor = {
             label: 'canvas render pass',
             colorAttachments: [
@@ -3945,7 +3944,7 @@ class Executor {
             ],
         };
 
-        for (let iteration = 1; iteration <= 10; iteration++) {
+        for (let iteration = 1; iteration <= 1; iteration++) {
             pass = encoder.beginComputePass({
                 label: 'phase 2 compute pass',
                 timestampWrites: {
@@ -4019,21 +4018,27 @@ class Executor {
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
                 }
             }
-
-            // TODO: configure how often to render and how often to submit commands
             
             pass.end();
 
             pass = encoder.beginRenderPass(renderPassDescriptor);
 
-            this.#kernels.render.encode({ pass, device: params.device });
+            this.#kernels.primary.render.encode({ pass, device: params.device });
 
             pass.end();
-
-            commandBuffer = encoder.finish();
-            params.device.queue.submit([commandBuffer]);
         }
-        */
+
+        const timestamp = new Timestamp();
+        timestamp.prepare({ querySet, device: params.device, encoder });
+
+        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        debug.encode({ encoder, device: params.device });
+
+        commandBuffer = encoder.finish();
+        params.device.queue.submit([commandBuffer]);
+
+        timestamp.log();
+        debug.log();
     }
 }
 
@@ -4200,6 +4205,8 @@ async function main() {
 
     // Create the context for the canvas
     const canvas = document.querySelector('canvas');
+    canvas.width = config.image.width;
+    canvas.height = config.image.height;
     const context = canvas.getContext('webgpu');
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     context.configure({
@@ -4226,6 +4233,6 @@ main();
 
     </script>
     <body>
-        <canvas width="640" height="480"></canvas>
+        <canvas></canvas>
     </body>
 </html>

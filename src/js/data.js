@@ -54,7 +54,7 @@ class Data {
                 },
                 {
                     binding: this.#config.bindGroup.primary.binding.image,
-                    visibility: GPUShaderStage.COMPUTE,
+                    visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
                     buffer: {
                         type: 'storage',
                     },

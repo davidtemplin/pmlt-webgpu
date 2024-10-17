@@ -71,6 +71,11 @@ class Executor {
             data: this.#data,
         });
 
+        this.#kernels.primary.render = new RenderKernel({
+            config: this.#config,
+            data: this.#data,
+        });
+
         this.#kernels.auxiliary.clearQueue = new ClearQueueKernel({
             config: this.#config,
             data: this.#data,
@@ -130,6 +135,7 @@ class Executor {
         this.#kernels.primary.postConnectLightDirect.initialize({ device: params.device });
         this.#kernels.primary.postConnectLightIndirect.initialize({ device: params.device });
         this.#kernels.primary.contribute.initialize({ device: params.device });
+        this.#kernels.primary.render.initialize({ device: params.device, presentationFormat: params.presentationFormat });
 
         this.#kernels.auxiliary.clearQueue.initialize({ device: params.device });
         this.#kernels.auxiliary.dispatch.initialize({ device: params.device });
@@ -143,7 +149,7 @@ class Executor {
     }
 
     execute(params) {
-        const encoder = params.device.createCommandEncoder({
+        let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
         });
 
@@ -241,19 +247,13 @@ class Executor {
 
         pass.end();
 
-        const timestamp = new Timestamp();
-        timestamp.prepare({ querySet, device: params.device, encoder });
-
-        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
-        debug.encode({ encoder, device: params.device });
-
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
-        timestamp.log();
-        debug.log();
+        encoder = params.device.createCommandEncoder({
+            label: 'command encoder',
+        });
 
-        /*
         const renderPassDescriptor = {
             label: 'canvas render pass',
             colorAttachments: [
@@ -266,7 +266,7 @@ class Executor {
             ],
         };
 
-        for (let iteration = 1; iteration <= 10; iteration++) {
+        for (let iteration = 1; iteration <= 1; iteration++) {
             pass = encoder.beginComputePass({
                 label: 'phase 2 compute pass',
                 timestampWrites: {
@@ -340,20 +340,26 @@ class Executor {
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
                 }
             }
-
-            // TODO: configure how often to render and how often to submit commands
             
             pass.end();
 
             pass = encoder.beginRenderPass(renderPassDescriptor);
 
-            this.#kernels.render.encode({ pass, device: params.device });
+            this.#kernels.primary.render.encode({ pass, device: params.device });
 
             pass.end();
-
-            commandBuffer = encoder.finish();
-            params.device.queue.submit([commandBuffer]);
         }
-        */
+
+        const timestamp = new Timestamp();
+        timestamp.prepare({ querySet, device: params.device, encoder });
+
+        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        debug.encode({ encoder, device: params.device });
+
+        commandBuffer = encoder.finish();
+        params.device.queue.submit([commandBuffer]);
+
+        timestamp.log();
+        debug.log();
     }
 }

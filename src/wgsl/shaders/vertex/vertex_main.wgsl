@@ -11,7 +11,7 @@ const VERTICES = array(
 
 @vertex
 fn vertex_main(input: VertexInput) -> VertexOutput {
-    let output: VertexOutput;
+    var output: VertexOutput;
     let v = VERTICES[input.vertex_index];
     output.position = vec4f(v.x, v.y, 0.0, 1.0);
     return output;

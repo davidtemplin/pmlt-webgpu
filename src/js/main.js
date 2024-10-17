@@ -24,6 +24,8 @@ async function main() {
 
     // Create the context for the canvas
     const canvas = document.querySelector('canvas');
+    canvas.width = config.image.width;
+    canvas.height = config.image.height;
     const context = canvas.getContext('webgpu');
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     context.configure({

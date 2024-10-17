@@ -37,9 +37,8 @@ class RenderKernel {
     }
 
     encode(params) {
-        // TODO: separate pipeline layout for rendering?
         params.pass.setPipeline(this.#pipeline);
         params.pass.setBindGroup(this.#config.bindGroup.primary.index, this.#data.bindGroup.primary);
-        pass.draw(6);
+        params.pass.draw(6);
     }
 }
