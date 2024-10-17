@@ -266,7 +266,7 @@ class Executor {
             ],
         };
 
-        for (let iteration = 1; iteration <= 1; iteration++) {
+        for (let iteration = 1; iteration <= 100; iteration++) {
             pass = encoder.beginComputePass({
                 label: 'phase 2 compute pass',
                 timestampWrites: {
@@ -338,6 +338,7 @@ class Executor {
                     const random = Math.random();
                     this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
+                    this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
                 }
             }
             
@@ -353,7 +354,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        const debug = new Debug({ label: 'path', data: this.#data.element.path });
         debug.encode({ encoder, device: params.device });
 
         commandBuffer = encoder.finish();

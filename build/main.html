@@ -1934,9 +1934,9 @@ fn distribute(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
     if i < PATH_COUNT {
         // Compute the chain ID corresponding to the current path
         var chain_id: u32 = 0;
-        for(var i: u32 = 0; i < CHAIN_COUNT; i++) {
-            let m = u32(i >= chain.min_path_index[i] && i <= chain.max_path_index[i]);
-            chain_id += m * i;
+        for(var cid: u32 = 0; cid < CHAIN_COUNT; cid++) {
+            let m = u32(i >= chain.min_path_index[cid] && i <= chain.max_path_index[cid]);
+            chain_id += m * cid;
         }
 
         // Set the properties on the path
@@ -3944,7 +3944,7 @@ class Executor {
             ],
         };
 
-        for (let iteration = 1; iteration <= 1; iteration++) {
+        for (let iteration = 1; iteration <= 100; iteration++) {
             pass = encoder.beginComputePass({
                 label: 'phase 2 compute pass',
                 timestampWrites: {
@@ -4016,6 +4016,7 @@ class Executor {
                     const random = Math.random();
                     this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
                     this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
+                    this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
                 }
             }
             
@@ -4031,7 +4032,7 @@ class Executor {
         const timestamp = new Timestamp();
         timestamp.prepare({ querySet, device: params.device, encoder });
 
-        const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        const debug = new Debug({ label: 'path', data: this.#data.element.path });
         debug.encode({ encoder, device: params.device });
 
         commandBuffer = encoder.finish();

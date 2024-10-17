@@ -11,9 +11,9 @@ fn distribute(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocatio
     if i < PATH_COUNT {
         // Compute the chain ID corresponding to the current path
         var chain_id: u32 = 0;
-        for(var i: u32 = 0; i < CHAIN_COUNT; i++) {
-            let m = u32(i >= chain.min_path_index[i] && i <= chain.max_path_index[i]);
-            chain_id += m * i;
+        for(var cid: u32 = 0; cid < CHAIN_COUNT; cid++) {
+            let m = u32(i >= chain.min_path_index[cid] && i <= chain.max_path_index[cid]);
+            chain_id += m * cid;
         }
 
         // Set the properties on the path
