@@ -104,7 +104,7 @@ struct RandomParameters {
 };
 
 struct Image {
-    pixels: array<array<array<atomic<u32>, PIXEL_WIDTH>, PIXEL_HEIGHT>, 3>,
+    pixels: array<array<array<atomic<u32>, PIXEL_HEIGHT>, PIXEL_WIDTH>, 3>,
     write_mode: u32,
 };
 
