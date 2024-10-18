@@ -1,9 +1,9 @@
 fn contribute(contribution: vec3f, x: u32, y: u32) {
     if image.write_mode == ENABLED {
-        let c = clamp_contribution(contribution);
-        if !is_valid_contribution(c) {
+        if !is_valid_contribution(contribution) {
             return;
         }
+        let c = clamp_contribution(contribution);
         for (var i: u32 = 0; i < 3; i++) {
             var success = false;
             while (!success) {
