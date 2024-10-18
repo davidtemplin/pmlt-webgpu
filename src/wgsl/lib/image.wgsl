@@ -1,8 +1,9 @@
 fn contribute(contribution: vec3f, x: u32, y: u32) {
     if image.write_mode == ENABLED {
-        atomicAdd(&image.pixels[0][x][y], u32(contribution.r * FIXED_POINT_SCALE));
-        atomicAdd(&image.pixels[1][x][y], u32(contribution.g * FIXED_POINT_SCALE));
-        atomicAdd(&image.pixels[2][x][y], u32(contribution.b * FIXED_POINT_SCALE));
+        let c = clamp_contribution(contribution);
+        atomicAdd(&image.pixels[0][x][y], u32(c.r * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[1][x][y], u32(c.g * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[2][x][y], u32(c.b * FIXED_POINT_SCALE));
     }
 }
 
@@ -27,4 +28,11 @@ fn tone_map_f32(value: f32) -> f32 {
 
 fn gamma_correct_f32(value: f32) -> f32 {
     return pow(value, 1.0 / 2.2);
+}
+
+fn clamp_contribution(c: vec3f) -> vec3f {
+    let m = max(c.r, max(c.g, c.b));
+    let scale = MAX_CONTRIBUTION / m;
+    let x = select(1.0, scale, m > MAX_CONTRIBUTION);
+    return c * x;
 }

@@ -283,7 +283,7 @@ const LO: u32 = 1;
 const PROPOSAL: u32 = 0;
 const CURRENT: u32 = 1;
 
-const FIXED_POINT_SCALE: f32 = 1048576.0;
+const FIXED_POINT_SCALE: f32 = f32(2 << 16);
 
 const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
 const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
@@ -293,6 +293,8 @@ const AUXILIARY: u32 = 1;
 
 const DISABLED: u32 = 0;
 const ENABLED: u32 = 1;
+
+const MAX_CONTRIBUTION: f32 = 0.5;
 
 
 struct Camera {
@@ -889,9 +891,10 @@ fn enqueue(global_path_index: u32, local_invocation_index: u32, queue_id: u32) {
 
 fn contribute(contribution: vec3f, x: u32, y: u32) {
     if image.write_mode == ENABLED {
-        atomicAdd(&image.pixels[0][x][y], u32(contribution.r * FIXED_POINT_SCALE));
-        atomicAdd(&image.pixels[1][x][y], u32(contribution.g * FIXED_POINT_SCALE));
-        atomicAdd(&image.pixels[2][x][y], u32(contribution.b * FIXED_POINT_SCALE));
+        let c = clamp_contribution(contribution);
+        atomicAdd(&image.pixels[0][x][y], u32(c.r * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[1][x][y], u32(c.g * FIXED_POINT_SCALE));
+        atomicAdd(&image.pixels[2][x][y], u32(c.b * FIXED_POINT_SCALE));
     }
 }
 
@@ -916,6 +919,13 @@ fn tone_map_f32(value: f32) -> f32 {
 
 fn gamma_correct_f32(value: f32) -> f32 {
     return pow(value, 1.0 / 2.2);
+}
+
+fn clamp_contribution(c: vec3f) -> vec3f {
+    let m = max(c.r, max(c.g, c.b));
+    let scale = MAX_CONTRIBUTION / m;
+    let x = select(1.0, scale, m > MAX_CONTRIBUTION);
+    return c * x;
 }
 
 fn get_chain_contribution(chain_id: u32) -> vec3f {

@@ -74,7 +74,7 @@ const LO: u32 = 1;
 const PROPOSAL: u32 = 0;
 const CURRENT: u32 = 1;
 
-const FIXED_POINT_SCALE: f32 = 1048576.0;
+const FIXED_POINT_SCALE: f32 = f32(2 << 16);
 
 const PATH_LOG_TARGET_INDEX: u32 = ${config.pathLog.targetIndex};
 const PATH_LOG_ENABLED: bool = ${config.pathLog.enabled};
@@ -84,3 +84,5 @@ const AUXILIARY: u32 = 1;
 
 const DISABLED: u32 = 0;
 const ENABLED: u32 = 1;
+
+const MAX_CONTRIBUTION: f32 = 0.5;
