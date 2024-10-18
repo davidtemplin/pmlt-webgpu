@@ -8,6 +8,9 @@ class Executor {
     };
 
     #running = true;
+    #lastTimestamp = 0;
+    #iterationsPerRender = 10;
+    #canvasRenderingFrequency = 10;
 
     constructor(params) {
         this.#config = params.config;
@@ -252,10 +255,13 @@ class Executor {
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
-        requestAnimationFrame(() => this.render({...params, querySet, iteration: 0 }));
+        requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 0, timestamp }));
     }
 
     render(params) {
+        console.log(`elapsed time: ${params.timestamp - this.#lastTimestamp} ms.; total iterations = ${params.iteration * this.#iterationsPerRender}`);
+        this.#lastTimestamp = params.timestamp;
+
         let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
         });
@@ -269,95 +275,100 @@ class Executor {
             },
         });
 
-        this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
+        for (let innerIteration = 0; innerIteration <= this.#iterationsPerRender; innerIteration++) {
+            this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.sampleLight.encode({ pass, device: params.device });
+            this.#kernels.primary.sampleLight.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.light, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.light, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.intersect.encode({ pass, device: params.device });
+            this.#kernels.primary.intersect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.intersect, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.sampleMaterial.encode({ pass, device: params.device });
+            this.#kernels.primary.sampleMaterial.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.material, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.material, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.connect.encode({ pass, device: params.device });
+            this.#kernels.primary.connect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.connect, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
+            this.#kernels.primary.postConnectNull.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.null, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.postConnectCameraDirect.encode({ pass, device: params.device });
+            this.#kernels.primary.postConnectCameraDirect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.direct, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.direct, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.postConnectCameraIndirect.encode({ pass, device: params.device });
+            this.#kernels.primary.postConnectCameraIndirect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.indirect, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.camera.indirect, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.postConnectLightDirect.encode({ pass, device: params.device });
+            this.#kernels.primary.postConnectLightDirect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.direct, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.direct, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.postConnectLightIndirect.encode({ pass, device: params.device });
+            this.#kernels.primary.postConnectLightIndirect.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.indirect, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.postConnect.light.indirect, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        this.#kernels.primary.contribute.encode({ pass, device: params.device });
+            this.#kernels.primary.contribute.encode({ pass, device: params.device });
 
-        this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
-        this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
 
-        for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
-            let chainId = pathLength - this.#config.path.length.min;
-            if (params.iteration % (pathLength - 1) == 0) {
-                this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
-                const random = Math.random();
-                this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
-                this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
-                this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+            for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
+                const chainId = pathLength - this.#config.path.length.min;
+                const totalIterations = params.iteration * this.#iterationsPerRender + innerIteration;
+                if (totalIterations % (pathLength - 1) == 0) {
+                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
+                    const random = Math.random();
+                    this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
+                    this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
+                    this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+                }
             }
         }
 
         pass.end();
 
-        pass = encoder.beginRenderPass({
-            label: 'canvas render pass',
-            colorAttachments: [
-                {
-                    view: params.context.getCurrentTexture().createView(),
-                    clearValue: [0, 0, 0, 1],
-                    loadOp: 'clear',
-                    storeOp: 'store',
-                },
-            ],
-        });
+        if (params.iteration % this.#canvasRenderingFrequency == 0) {
+            pass = encoder.beginRenderPass({
+                label: 'canvas render pass',
+                colorAttachments: [
+                    {
+                        view: params.context.getCurrentTexture().createView(),
+                        clearValue: [0, 0, 0, 1],
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    },
+                ],
+            });
 
-        this.#kernels.primary.render.encode({ pass, device: params.device });
+            this.#kernels.primary.render.encode({ pass, device: params.device });
 
-        pass.end();
+            pass.end();
+        }
 
         const commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
         if (this.#running) {
-            requestAnimationFrame(() => this.render({...params, iteration: params.iteration + 1 }));
+            requestAnimationFrame((timestamp) => this.render({...params, iteration: params.iteration + 1, timestamp }));
         }
     }
 
