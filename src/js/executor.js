@@ -261,9 +261,10 @@ class Executor {
     render(params) {
         if (!this.#startTimestamp) {
             this.#startTimestamp = params.timestamp;
+        } else {
+            const iterationsPerSecond = (params.iteration * this.#iterationsPerRender) * 1000.0 / (params.timestamp - this.#startTimestamp);
+            console.log(`iterations per second = ${iterationsPerSecond}`);
         }
-        const iterationsPerSecond = (params.iteration * this.#iterationsPerRender) * 1000.0 / (params.timestamp - this.#startTimestamp);
-        console.log(`iterations per second = ${iterationsPerSecond}`);
 
         let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
