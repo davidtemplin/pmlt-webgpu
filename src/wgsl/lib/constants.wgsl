@@ -61,6 +61,7 @@ const PIXEL_COUNT: u32 = PIXEL_WIDTH * PIXEL_HEIGHT;
 
 const SIGMA: f32 = 0.01;
 const MAX_F32: f32 = 3.40282346638528859812e+38f;
+const MIN_F32: f32 = 1.175494e-38f;
 
 const CAMERA: u32 = 0;
 const LIGHT: u32 = 1;
