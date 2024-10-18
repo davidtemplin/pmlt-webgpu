@@ -8,9 +8,9 @@ class Executor {
     };
 
     #running = true;
-    #lastTimestamp = 0;
+    #startTimestamp;
     #iterationsPerRender = 10;
-    #canvasRenderingFrequency = 10;
+    #canvasRenderingFrequency = 1;
 
     constructor(params) {
         this.#config = params.config;
@@ -255,12 +255,15 @@ class Executor {
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
-        requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 0, timestamp }));
+        requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 1, timestamp }));
     }
 
     render(params) {
-        console.log(`elapsed time: ${params.timestamp - this.#lastTimestamp} ms.; total iterations = ${params.iteration * this.#iterationsPerRender}`);
-        this.#lastTimestamp = params.timestamp;
+        if (!this.#startTimestamp) {
+            this.#startTimestamp = params.timestamp;
+        }
+        const iterationsPerSecond = (params.iteration * this.#iterationsPerRender) * 1000.0 / (params.timestamp - this.#startTimestamp);
+        console.log(`iterations per second = ${iterationsPerSecond}`);
 
         let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
@@ -275,7 +278,7 @@ class Executor {
             },
         });
 
-        for (let innerIteration = 0; innerIteration <= this.#iterationsPerRender; innerIteration++) {
+        for (let innerIteration = 1; innerIteration <= this.#iterationsPerRender; innerIteration++) {
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
             this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
