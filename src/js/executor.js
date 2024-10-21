@@ -9,7 +9,6 @@ class Executor {
 
     #running = true;
     #startTimestamp;
-    #iterationsPerRender = 10;
     #canvasRenderingFrequency = 1;
 
     constructor(params) {
@@ -267,7 +266,7 @@ class Executor {
         if (!this.#startTimestamp) {
             this.#startTimestamp = params.timestamp;
         } else {
-            const iterationsPerSecond = ((params.iteration - 1) * this.#iterationsPerRender) * 1000.0 / (params.timestamp - this.#startTimestamp);
+            const iterationsPerSecond = ((params.iteration - 1) * (this.#config.path.length.max - this.#config.path.length.min + 1)) * 1000.0 / (params.timestamp - this.#startTimestamp);
             console.log(`iterations per second = ${iterationsPerSecond}`);
         }
 
@@ -284,7 +283,7 @@ class Executor {
             },
         });
 
-        for (let innerIteration = 1; innerIteration <= this.#iterationsPerRender; innerIteration++) {
+        for (let innerIteration = 1; innerIteration <= this.#config.path.length.max - this.#config.path.length.min + 1; innerIteration++) {
             this.#kernels.primary.sampleCamera.encode({ pass, device: params.device });
 
             this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.sample.camera, pass, device: params.device });
@@ -339,18 +338,15 @@ class Executor {
 
             this.#kernels.auxiliary.clearQueue.encode({ queueId: this.#config.queue.index.contribute, pass, device: params.device });
             this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
+        }
 
-            for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
-                const chainId = pathLength - this.#config.path.length.min;
-                const totalIterations = (params.iteration - 1) * this.#iterationsPerRender + innerIteration;
-                if (totalIterations % (pathLength - 1) == 0) {
-                    this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
-                    const random = Math.random();
-                    this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
-                    this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
-                    this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
-                }
-            }
+        for (let pathLength = this.#config.path.length.min; pathLength <= this.#config.path.length.max; pathLength++) {
+            const chainId = pathLength - this.#config.path.length.min;
+            this.#kernels.auxiliary.buildCdf.encode({ chainId, pass, device: params.device }); // TODO: also include path count?
+            const random = Math.random();
+            this.#kernels.auxiliary.updateChain.encode({ chainId, random, pass, device: params.device });
+            this.#kernels.auxiliary.restart.encode({ chainId, pass, device: params.device });
+            this.#kernels.auxiliary.dispatch.encode({ pass, device: params.device });
         }
 
         pass.end();
