@@ -7,7 +7,7 @@ fn update_chain() {
     let c = get_chain_contribution(uniforms.chain_id);
     let max_path_index = chain.max_path_index[uniforms.chain_id];
     let a = 1.0 - path.cdf[PRIMARY][max_path_index];
-    let weight = get_contribution_weight(uniforms.chain_id, a, CURRENT, NO_STEP);
+    let weight = get_current_contribution_weight(uniforms.chain_id, a);
     let pixel = get_chain_pixel(uniforms.chain_id);
     contribute(c * weight, pixel.x, pixel.y);
 

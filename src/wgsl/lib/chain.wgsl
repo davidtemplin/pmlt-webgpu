@@ -29,11 +29,18 @@ fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
     return u64_add(u64_mul(u64_from(iteration), u64_from(numbers_per_iteration)), u64_from(path_offset));
 }
 
-fn get_contribution_weight(chain_id: u32, a: f32, contribution_type: u32, step_type: u32) -> f32 {
+fn get_current_contribution_weight(chain_id: u32, a: f32) -> f32 {
     let path_length = chain_id + MIN_PATH_LENGTH;
     let pdf = chain.pdf[chain_id];
     let sc = chain.scalar_contribution[chain_id];
     let b = chain.b[chain_id];
-    let step_term = f32(contribution_type == PROPOSAL && step_type == LARGE_STEP);
+    return ((f32(path_length) / pdf) * a) / ((sc / b) + LARGE_STEP_PROBABILITY);
+}
+
+fn get_proposal_contribution_weight(chain_id: u32, a: f32, sc: f32, step_type: u32) -> f32 {
+    let step_term = f32(step_type == LARGE_STEP);
+    let b = chain.b[chain_id];
+    let pdf = chain.pdf[chain_id];
+    let path_length = chain_id + MIN_PATH_LENGTH;
     return ((f32(path_length) / pdf) * (a + step_term)) / ((sc / b) + LARGE_STEP_PROBABILITY);
 }

@@ -19,7 +19,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
 
         // Compute the weight
         let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
-        let weight = get_contribution_weight(chain_id, a, PROPOSAL, path.step_type[i]);
+        let weight = get_proposal_contribution_weight(chain_id, a, sc, path.step_type[i]);
 
         // Contribute
         contribute(c * weight, pixel.x, pixel.y);
