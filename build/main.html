@@ -1913,7 +1913,7 @@ fn start_chain() {
     chain.large_step_index[HI][uniforms.chain_id] = 0;
     chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
     chain.small_step_count[uniforms.chain_id] = 1;
-    chain.b[uniforms.chain_id] = sum;
+    chain.b[uniforms.chain_id] = sum / f32(PATH_COUNT);
     let contribution = get_path_contribution(m);
     chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
     set_chain_contribution(uniforms.chain_id, contribution);
@@ -3971,8 +3971,13 @@ class Executor {
 
         pass.end();
 
+        //const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        //debug.encode({ device: params.device, encoder })
+
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
+
+        //debug.log();
 
         requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 1, timestamp }));
     }
@@ -4169,7 +4174,7 @@ class Timestamp {
 
     }
 
-    prepare(params) {
+    encode(params) {
         this.#resolveBuffer = params.device.createBuffer({
             size: params.querySet.count * 8,
             usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,

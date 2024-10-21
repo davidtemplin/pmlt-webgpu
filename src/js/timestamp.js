@@ -6,7 +6,7 @@ class Timestamp {
 
     }
 
-    prepare(params) {
+    encode(params) {
         this.#resolveBuffer = params.device.createBuffer({
             size: params.querySet.count * 8,
             usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,

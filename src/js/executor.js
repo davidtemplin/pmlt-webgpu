@@ -252,8 +252,13 @@ class Executor {
 
         pass.end();
 
+        //const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        //debug.encode({ device: params.device, encoder })
+
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
+
+        //debug.log();
 
         requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 1, timestamp }));
     }
