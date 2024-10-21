@@ -3,6 +3,9 @@ fn contribute(contribution: vec3f, x: u32, y: u32) {
         if !is_valid_contribution(contribution) {
             return;
         }
+        if !is_valid_pixel_coordinate(x, y) {
+            return;
+        }
         let c = clamp_contribution(contribution);
         for (var i: u32 = 0; i < 3; i++) {
             var success = false;
@@ -51,4 +54,8 @@ fn is_valid_number(n: f32) -> bool {
 
 fn is_valid_contribution(c: vec3f) -> bool {
     return is_valid_number(c.r) && is_valid_number(c.g) && is_valid_number(c.b);
+}
+
+fn is_valid_pixel_coordinate(x: u32, y: u32) -> bool {
+    return x >= 0 && x < PIXEL_WIDTH && y >= 0 && y < PIXEL_HEIGHT;
 }
