@@ -406,6 +406,7 @@ struct RandomParameters {
 struct Image {
     pixels: array<array<array<atomic<u32>, PIXEL_HEIGHT>, PIXEL_WIDTH>, 3>,
     write_mode: u32,
+    sample_count: u32,
 };
 
 struct Queue {
@@ -2027,7 +2028,7 @@ ${WGSL_LIB_CODE}
 
 @fragment
 fn fragment_main(input: VertexOutput) -> FragmentOutput {
-    let value = read_image(u32(input.position.x), u32(input.position.y)) / 128.0; // TODO: compute average samples per pixel
+    let value = read_image(u32(input.position.x), u32(input.position.y)) / f32(image.sample_count);
     let color = gamma_correct(tone_map(value));
     var output: FragmentOutput;
     output.color = color;
@@ -2049,6 +2050,7 @@ fn update_chain() {
     let weight = get_current_contribution_weight(uniforms.chain_id, a);
     let pixel = get_chain_pixel(uniforms.chain_id);
     contribute(c * weight, pixel.x, pixel.y);
+    image.sample_count++;
 
     // Compute normalization factor
     let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
@@ -2280,7 +2282,7 @@ class ImageData {
         const count = this.#config.image.width * this.#config.image.height;
         this.buffer = params.device.createBuffer({
             label: 'image buffer',
-            size: 12 * count + 4,
+            size: 12 * count + 8,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
     }
@@ -2300,6 +2302,7 @@ class ImageData {
                 ],
             ],
             write_mode: new Uint32Array(params.array, 12 * count, 1),
+            sample_count: new Uint32Array(params.array, 12 * count + 4, 1),
         };
     }
 }

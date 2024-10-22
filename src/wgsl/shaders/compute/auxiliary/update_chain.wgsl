@@ -10,6 +10,7 @@ fn update_chain() {
     let weight = get_current_contribution_weight(uniforms.chain_id, a);
     let pixel = get_chain_pixel(uniforms.chain_id);
     contribute(c * weight, pixel.x, pixel.y);
+    image.sample_count++;
 
     // Compute normalization factor
     let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
