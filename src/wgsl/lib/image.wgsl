@@ -34,7 +34,7 @@ fn gamma_correct(value: vec4f) -> vec4f {
 }
 
 fn tone_map_f32(value: f32) -> f32 {
-    return 1.0 - exp(-value);
+    return 1.0 - exp(-100.0 * value);
 }
 
 fn gamma_correct_f32(value: f32) -> f32 {
