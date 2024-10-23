@@ -8,7 +8,6 @@ class Executor {
     };
 
     #running = true;
-    #startTimestamp;
     #canvasRenderingFrequency = 1;
 
     constructor(params) {
@@ -263,13 +262,6 @@ class Executor {
     }
 
     render(params) {
-        if (!this.#startTimestamp) {
-            this.#startTimestamp = params.timestamp;
-        } else {
-            const iterationsPerSecond = ((params.iteration - 1) * (this.#config.path.length.max - this.#config.path.length.min + 1)) * 1000.0 / (params.timestamp - this.#startTimestamp);
-            console.log(`iterations per second = ${iterationsPerSecond}`);
-        }
-
         let encoder = params.device.createCommandEncoder({
             label: 'command encoder',
         });
