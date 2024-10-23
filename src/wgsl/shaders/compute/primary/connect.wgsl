@@ -22,7 +22,7 @@ fn connect(@builtin(global_invocation_id) id: vec3u, @builtin(local_invocation_i
         let intersection = intersect(ray);
 
         // Validate
-        let valid = intersection.valid && intersection.sphere_id == path.material_id[LIGHT][i];
+        let valid = intersection.valid && intersection.sphere_id == path.material_id[LIGHT][i] && approx_eq_vec3f(intersection.point, destination, 1e-2);
 
         // Determine queue
         queue_id = choose_u32(technique.camera == 1, POST_CONNECT_CAMERA_DIRECT_QUEUE_ID, queue_id);
