@@ -6,7 +6,7 @@ fn intersect_sphere(center: vec3f, radius: f32, ray: Ray) -> f32 {
         return MAX_F32;
     }
     det = sqrt(det);
-    let threshold = 1e-3;
+    let threshold = 1e-2;
     var t = b - det;
     if t <= threshold {
         t = b + det;
