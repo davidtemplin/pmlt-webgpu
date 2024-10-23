@@ -35,6 +35,9 @@ fn sample_light_main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_i
         set_point(LIGHT, ULTIMATE, i, sample.point);
         set_normal(LIGHT, ULTIMATE, i, sample.normal);
 
+        // Material
+        path.material_id[LIGHT][i] = LIGHT_SPHERE_ID;
+
         // Determine queue
         let technique = get_technique(i);
         queue_id = choose_u32(technique.light == 1, CONNECT_QUEUE_ID, INTERSECT_QUEUE_ID);
