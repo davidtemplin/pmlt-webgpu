@@ -8,6 +8,8 @@ const NUMBERS_PER_VERTEX: u32 = ${config.random.counts.vertex};
 const MIN_PATH_LENGTH: u32 = 2;
 const MAX_PATH_LENGTH: u32 = ${config.path.length.max};
 
+const NUMBERS_PER_CHAIN: u32 = 100;
+
 const QUEUE_COUNT: u32 = ${config.queue.count};
 
 const NULL_QUEUE_ID: u32 = 1000;

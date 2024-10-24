@@ -5,10 +5,7 @@
 fn start_chain() {
     let sum = path.cdf[PRIMARY][PATH_COUNT - 1];
     let m = binary_search(0, PATH_COUNT - 1, sum, uniforms.random);
-    let large_step_index = m * chain.numbers_per_path[uniforms.chain_id];
-    chain.large_step_index[HI][uniforms.chain_id] = 0;
-    chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
-    chain.small_step_count[uniforms.chain_id] = 1;
+    populate_random_numbers(uniforms.chain_id, m);
     chain.b[uniforms.chain_id] = sum / f32(PATH_COUNT);
     let contribution = get_path_contribution(m);
     chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);

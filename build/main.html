@@ -217,6 +217,8 @@ const NUMBERS_PER_VERTEX: u32 = ${config.random.counts.vertex};
 const MIN_PATH_LENGTH: u32 = 2;
 const MAX_PATH_LENGTH: u32 = ${config.path.length.max};
 
+const NUMBERS_PER_CHAIN: u32 = 100;
+
 const QUEUE_COUNT: u32 = ${config.queue.count};
 
 const NULL_QUEUE_ID: u32 = 1000;
@@ -373,8 +375,6 @@ struct Chain {
     numbers_per_iteration: array<u32, CHAIN_COUNT>,
     numbers_per_path: array<u32, CHAIN_COUNT>,
     numbers_per_stream: array<u32, CHAIN_COUNT>,
-    large_step_index: array<array<u32, CHAIN_COUNT>, 2>,
-    small_step_count: array<u32, CHAIN_COUNT>,
     b: array<f32, CHAIN_COUNT>,
     pdf: array<f32, CHAIN_COUNT>,
     min_small_step_index: array<u32, CHAIN_COUNT>,
@@ -386,21 +386,7 @@ struct Chain {
     path_count: array<u32, CHAIN_COUNT>,
     offset: array<u32, CHAIN_COUNT>,
     pixel: array<array<u32, CHAIN_COUNT>, 2>,
-};
-
-struct RandomParameters {
-  step_type: u32,
-  local_path_index: u32,
-  numbers_per_path: u32,
-  stream_index: u32,
-  numbers_per_stream: u32,
-  vertex_index: u32,
-  iteration: u32,
-  numbers_per_iteration: u32,
-  large_step_index: U64,
-  key: U64,
-  small_step_count: u32,
-  offset: u32,
+    numbers: array<array<f32, CHAIN_COUNT>, NUMBERS_PER_CHAIN>,
 };
 
 struct Image {
@@ -532,24 +518,25 @@ var<workgroup> workgroup_global_path_index: array<u32, WORKGROUP_SIZE>;
 
 @group(PATH_LOG_GROUP) @binding(PATH_LOG_BINDING) var<storage, read_write> path_log: PathLog;
 
-fn rand(p: RandomParameters, number_index: u32) -> f32 {
-    let stream_offset = p.stream_index * p.numbers_per_stream 
-      +  p.vertex_index * NUMBERS_PER_VERTEX 
-      + number_index;
-    let path_offset = p.local_path_index * p.numbers_per_path + stream_offset;
-    let index = u64_add(u64_mul(u64_from(p.iteration), u64_from(p.numbers_per_iteration)), u64_from(path_offset + p.offset));
-    let random_number = squares32(index, p.key);
-    if  p.step_type == LARGE_STEP {
+fn rand(chain_id: u32, global_path_index: u32, number_offset: u32) -> f32 {
+    let path_offset = path.index[global_path_index] * chain.numbers_per_path[chain_id];
+    let index = u64_add(u64_mul(u64_from(chain.iteration[chain_id]), u64_from(chain.numbers_per_iteration[chain_id])), u64_from(path_offset + chain.offset[chain_id] + number_offset));
+    let random_number = squares32(index, U64(chain.key[HI][chain_id], chain.key[LO][chain_id]));
+    if  path.step_type[global_path_index] == LARGE_STEP {
         return random_number;
     } else {
-        let index = u64_add(p.large_step_index, u64_from(stream_offset));
-        let value = squares32(index, p.key);
+        let value = chain.numbers[number_offset][chain_id];
         let perturbation = SIGMA
-          * sqrt(f32(p.small_step_count)) 
           * sqrt(2.0) 
           * erf_inv(2.0 * random_number - 1.0);
         return value + perturbation;
     }
+}
+
+fn populate_random_numbers(chain_id: u32, global_path_index: u32) {
+  for (var i: u32 = 0; i < chain.numbers_per_path[chain_id]; i++) {
+    chain.numbers[i][chain_id] = rand(chain_id, global_path_index, i);
+  }
 }
 
 fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
@@ -561,46 +548,26 @@ fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
   return vertex_index;
 }
 
-fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomParameters {
-  let path_length = path.length[global_path_index];
-  let chain_index = path_length - MIN_PATH_LENGTH;
-  let step_type = path.step_type[global_path_index];
-  let local_path_index = path.index[global_path_index];
-  let vertex_index = get_vertex_index(global_path_index, stream_index);
-  return RandomParameters(
-    step_type, 
-    local_path_index, 
-    chain.numbers_per_path[chain_index], 
-    stream_index, 
-    chain.numbers_per_stream[chain_index], 
-    vertex_index, 
-    chain.iteration[chain_index], 
-    chain.numbers_per_iteration[chain_index], 
-    U64(chain.large_step_index[HI][chain_index], chain.large_step_index[LO][chain_index]),
-    U64(chain.key[HI][chain_index], chain.key[LO][chain_index]),
-    chain.small_step_count[chain_index],
-    chain.offset[chain_index],
-  );
-}
-
 fn rand_1(global_path_index: u32, stream_index: u32) -> f32 {
-  let p = get_random_parameters(global_path_index, stream_index);
-  return rand(p, 0);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  return rand(chain_id, global_path_index, stream_index * chain.numbers_per_stream[chain_id]);
 }
 
 fn rand_2(global_path_index: u32, stream_index: u32) -> vec2f {
-  let p = get_random_parameters(global_path_index, stream_index);
-  let r1 = rand(p, 0);
-  let r2 = rand(p, 1);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let r1 = rand(chain_id, global_path_index, i);
+  let r2 = rand(chain_id, global_path_index, i + 1);
   return vec2f(r1, r2);
 }
 
 fn rand_4(global_path_index: u32, stream_index: u32) -> vec4f {
-  let p = get_random_parameters(global_path_index, stream_index);
-  let r1 = rand(p, 0);
-  let r2 = rand(p, 1);
-  let r3 = rand(p, 2);
-  let r4 = rand(p, 3);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let r1 = rand(chain_id, global_path_index, i);
+  let r2 = rand(chain_id, global_path_index, i + 1);
+  let r3 = rand(chain_id, global_path_index, i + 2);
+  let r4 = rand(chain_id, global_path_index, i + 3);
   return vec4f(r1, r2, r3, r4);
 }
 
@@ -963,11 +930,6 @@ fn set_chain_contribution(chain_id: u32, c: vec3f) {
     chain.contribution[2][chain_id] = c.b;
 }
 
-fn set_chain_large_step_index(chain_id: u32, index: U64) {
-    chain.large_step_index[HI][chain_id] = index.hi;
-    chain.large_step_index[LO][chain_id] = index.lo;
-}
-
 fn set_chain_pixel(chain_id: u32, pixel: vec2u) {
     chain.pixel[0][chain_id] = pixel.x;
     chain.pixel[1][chain_id] = pixel.y;
@@ -975,13 +937,6 @@ fn set_chain_pixel(chain_id: u32, pixel: vec2u) {
 
 fn get_chain_pixel(chain_id: u32) -> vec2u {
     return vec2u(chain.pixel[0][chain_id], chain.pixel[1][chain_id]);
-}
-
-fn compute_large_step_index(chain_id: u32, i: u32) -> U64 {
-    let iteration = chain.iteration[chain_id];
-    let numbers_per_iteration = chain.numbers_per_iteration[chain_id];
-    let path_offset = i * chain.numbers_per_path[chain_id];
-    return u64_add(u64_mul(u64_from(iteration), u64_from(numbers_per_iteration)), u64_from(path_offset));
 }
 
 fn get_current_contribution_weight(chain_id: u32, a: f32) -> f32 {
@@ -1913,10 +1868,7 @@ ${WGSL_LIB_CODE}
 fn start_chain() {
     let sum = path.cdf[PRIMARY][PATH_COUNT - 1];
     let m = binary_search(0, PATH_COUNT - 1, sum, uniforms.random);
-    let large_step_index = m * chain.numbers_per_path[uniforms.chain_id];
-    chain.large_step_index[HI][uniforms.chain_id] = 0;
-    chain.large_step_index[LO][uniforms.chain_id] = large_step_index;
-    chain.small_step_count[uniforms.chain_id] = 1;
+    populate_random_numbers(uniforms.chain_id, m);
     chain.b[uniforms.chain_id] = sum / f32(PATH_COUNT);
     let contribution = get_path_contribution(m);
     chain.scalar_contribution[uniforms.chain_id] = luminance(contribution);
@@ -1936,7 +1888,7 @@ fn build_pdf() {
     }
 
     for (var i: u32 = 0; i < CHAIN_COUNT; i++) {
-        chain.pdf[i] = 1.0 / f32(CHAIN_COUNT);//chain.b[i] / sum;
+        chain.pdf[i] = chain.b[i] / sum;
     }
 
     // Compute the bounds of each chain
@@ -2071,12 +2023,7 @@ fn update_chain() {
         set_chain_pixel(uniforms.chain_id, get_pixel(m));
 
         // Update the sample space parameters
-        if path.step_type[m] == LARGE_STEP {
-            set_chain_large_step_index(uniforms.chain_id, compute_large_step_index(uniforms.chain_id, m));
-            chain.small_step_count[uniforms.chain_id] = 1;
-        } else {
-            chain.small_step_count[uniforms.chain_id] = chain.small_step_count[uniforms.chain_id] + 1;
-        }
+        populate_random_numbers(uniforms.chain_id, m);
     }
     
     // Increment the iteration
@@ -2176,7 +2123,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(92 * count);
+        const array = new ArrayBuffer(80 * count + (count * 4 * 100));
     
         const view = this.getView({ array });
     
@@ -2192,8 +2139,6 @@ class ChainData {
             view.numbers_per_iteration.set([numbersPerIteration], i);
             view.numbers_per_path.set([numbersPerPath], i);
             view.numbers_per_stream.set([numbersPerStream], i);
-            view.large_step_index[0].set([0], i);
-            view.large_step_index[1].set([0], i);
             view.min_path_index.set([0], i);
             view.path_count.set([this.#config.path.count], i);
             view.offset.set([0], i);
@@ -2214,34 +2159,32 @@ class ChainData {
             key: [
                 new Uint32Array(params.array, 0, count),
                 new Uint32Array(params.array, 4 * count, count),
-            ],
-            iteration: new Uint32Array(params.array, 8 * count, count),
-            numbers_per_iteration: new Uint32Array(params.array, 12 * count, count),
-            numbers_per_path: new Uint32Array(params.array, 16 * count, count),
-            numbers_per_stream: new Uint32Array(params.array, 20 * count, count),
-            large_step_index: [
-                new Uint32Array(params.array, 24 * count, count),
-                new Uint32Array(params.array, 28 * count, count),
-            ],
-            small_step_count: new Uint32Array(params.array, 32 * count, count),
-            b: new Float32Array(params.array, 36 * count, count),
-            pdf: new Float32Array(params.array, 40 * count, count),
-            min_small_step_index: new Uint32Array(params.array, 44 * count, count),
-            max_small_step_index: new Uint32Array(params.array, 48 * count, count),
-            contribution: [
-                new Float32Array(params.array, 52 * count, count),
-                new Float32Array(params.array, 56 * count, count),
-                new Float32Array(params.array, 60 * count, count),
-            ],
-            scalar_contribution: new Float32Array(params.array, 64 * count, count),
-            min_path_index: new Uint32Array(params.array, 68 * count, count),
-            max_path_index: new Uint32Array(params.array, 72 * count, count),
-            path_count: new Uint32Array(params.array, 76 * count, count),
-            offset: new Uint32Array(params.array, 80 * count, count),
-            pixel: [
-                new Uint32Array(params.array, 84 * count, count),
-                new Uint32Array(params.array, 88 * count, count),
-            ],
+              ],
+              iteration: new Uint32Array(params.array, 8 * count, count),
+              numbers_per_iteration: new Uint32Array(params.array, 12 * count, count),
+              numbers_per_path: new Uint32Array(params.array, 16 * count, count),
+              numbers_per_stream: new Uint32Array(params.array, 20 * count, count),
+              b: new Float32Array(params.array, 24 * count, count),
+              pdf: new Float32Array(params.array, 28 * count, count),
+              min_small_step_index: new Uint32Array(params.array, 32 * count, count),
+              max_small_step_index: new Uint32Array(params.array, 36 * count, count),
+              contribution: [
+                new Float32Array(params.array, 40 * count, count),
+                new Float32Array(params.array, 44 * count, count),
+                new Float32Array(params.array, 48 * count, count),
+              ],
+              scalar_contribution: new Float32Array(params.array, 52 * count, count),
+              min_path_index: new Uint32Array(params.array, 56 * count, count),
+              max_path_index: new Uint32Array(params.array, 60 * count, count),
+              path_count: new Uint32Array(params.array, 64 * count, count),
+              offset: new Uint32Array(params.array, 68 * count, count),
+              pixel: [
+                new Uint32Array(params.array, 72 * count, count),
+                new Uint32Array(params.array, 76 * count, count),
+              ],
+              numbers: [
+                new Float32Array(params.array, 80 * count, count * 100),
+              ],
         };
     }
 }

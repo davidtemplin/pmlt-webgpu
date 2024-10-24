@@ -73,8 +73,6 @@ struct Chain {
     numbers_per_iteration: array<u32, CHAIN_COUNT>,
     numbers_per_path: array<u32, CHAIN_COUNT>,
     numbers_per_stream: array<u32, CHAIN_COUNT>,
-    large_step_index: array<array<u32, CHAIN_COUNT>, 2>,
-    small_step_count: array<u32, CHAIN_COUNT>,
     b: array<f32, CHAIN_COUNT>,
     pdf: array<f32, CHAIN_COUNT>,
     min_small_step_index: array<u32, CHAIN_COUNT>,
@@ -86,21 +84,7 @@ struct Chain {
     path_count: array<u32, CHAIN_COUNT>,
     offset: array<u32, CHAIN_COUNT>,
     pixel: array<array<u32, CHAIN_COUNT>, 2>,
-};
-
-struct RandomParameters {
-  step_type: u32,
-  local_path_index: u32,
-  numbers_per_path: u32,
-  stream_index: u32,
-  numbers_per_stream: u32,
-  vertex_index: u32,
-  iteration: u32,
-  numbers_per_iteration: u32,
-  large_step_index: U64,
-  key: U64,
-  small_step_count: u32,
-  offset: u32,
+    numbers: array<array<f32, CHAIN_COUNT>, NUMBERS_PER_CHAIN>,
 };
 
 struct Image {

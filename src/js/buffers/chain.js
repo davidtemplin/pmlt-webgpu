@@ -9,7 +9,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(92 * count);
+        const array = new ArrayBuffer(80 * count + (count * 4 * 100));
     
         const view = this.getView({ array });
     
@@ -25,8 +25,6 @@ class ChainData {
             view.numbers_per_iteration.set([numbersPerIteration], i);
             view.numbers_per_path.set([numbersPerPath], i);
             view.numbers_per_stream.set([numbersPerStream], i);
-            view.large_step_index[0].set([0], i);
-            view.large_step_index[1].set([0], i);
             view.min_path_index.set([0], i);
             view.path_count.set([this.#config.path.count], i);
             view.offset.set([0], i);
@@ -47,34 +45,32 @@ class ChainData {
             key: [
                 new Uint32Array(params.array, 0, count),
                 new Uint32Array(params.array, 4 * count, count),
-            ],
-            iteration: new Uint32Array(params.array, 8 * count, count),
-            numbers_per_iteration: new Uint32Array(params.array, 12 * count, count),
-            numbers_per_path: new Uint32Array(params.array, 16 * count, count),
-            numbers_per_stream: new Uint32Array(params.array, 20 * count, count),
-            large_step_index: [
-                new Uint32Array(params.array, 24 * count, count),
-                new Uint32Array(params.array, 28 * count, count),
-            ],
-            small_step_count: new Uint32Array(params.array, 32 * count, count),
-            b: new Float32Array(params.array, 36 * count, count),
-            pdf: new Float32Array(params.array, 40 * count, count),
-            min_small_step_index: new Uint32Array(params.array, 44 * count, count),
-            max_small_step_index: new Uint32Array(params.array, 48 * count, count),
-            contribution: [
-                new Float32Array(params.array, 52 * count, count),
-                new Float32Array(params.array, 56 * count, count),
-                new Float32Array(params.array, 60 * count, count),
-            ],
-            scalar_contribution: new Float32Array(params.array, 64 * count, count),
-            min_path_index: new Uint32Array(params.array, 68 * count, count),
-            max_path_index: new Uint32Array(params.array, 72 * count, count),
-            path_count: new Uint32Array(params.array, 76 * count, count),
-            offset: new Uint32Array(params.array, 80 * count, count),
-            pixel: [
-                new Uint32Array(params.array, 84 * count, count),
-                new Uint32Array(params.array, 88 * count, count),
-            ],
+              ],
+              iteration: new Uint32Array(params.array, 8 * count, count),
+              numbers_per_iteration: new Uint32Array(params.array, 12 * count, count),
+              numbers_per_path: new Uint32Array(params.array, 16 * count, count),
+              numbers_per_stream: new Uint32Array(params.array, 20 * count, count),
+              b: new Float32Array(params.array, 24 * count, count),
+              pdf: new Float32Array(params.array, 28 * count, count),
+              min_small_step_index: new Uint32Array(params.array, 32 * count, count),
+              max_small_step_index: new Uint32Array(params.array, 36 * count, count),
+              contribution: [
+                new Float32Array(params.array, 40 * count, count),
+                new Float32Array(params.array, 44 * count, count),
+                new Float32Array(params.array, 48 * count, count),
+              ],
+              scalar_contribution: new Float32Array(params.array, 52 * count, count),
+              min_path_index: new Uint32Array(params.array, 56 * count, count),
+              max_path_index: new Uint32Array(params.array, 60 * count, count),
+              path_count: new Uint32Array(params.array, 64 * count, count),
+              offset: new Uint32Array(params.array, 68 * count, count),
+              pixel: [
+                new Uint32Array(params.array, 72 * count, count),
+                new Uint32Array(params.array, 76 * count, count),
+              ],
+              numbers: [
+                new Float32Array(params.array, 80 * count, count * 100),
+              ],
         };
     }
 }

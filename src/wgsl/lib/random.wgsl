@@ -1,21 +1,22 @@
-fn rand(p: RandomParameters, number_index: u32) -> f32 {
-    let stream_offset = p.stream_index * p.numbers_per_stream 
-      +  p.vertex_index * NUMBERS_PER_VERTEX 
-      + number_index;
-    let path_offset = p.local_path_index * p.numbers_per_path + stream_offset;
-    let index = u64_add(u64_mul(u64_from(p.iteration), u64_from(p.numbers_per_iteration)), u64_from(path_offset + p.offset));
-    let random_number = squares32(index, p.key);
-    if  p.step_type == LARGE_STEP {
+fn rand(chain_id: u32, global_path_index: u32, number_offset: u32) -> f32 {
+    let path_offset = path.index[global_path_index] * chain.numbers_per_path[chain_id];
+    let index = u64_add(u64_mul(u64_from(chain.iteration[chain_id]), u64_from(chain.numbers_per_iteration[chain_id])), u64_from(path_offset + chain.offset[chain_id] + number_offset));
+    let random_number = squares32(index, U64(chain.key[HI][chain_id], chain.key[LO][chain_id]));
+    if  path.step_type[global_path_index] == LARGE_STEP {
         return random_number;
     } else {
-        let index = u64_add(p.large_step_index, u64_from(stream_offset));
-        let value = squares32(index, p.key);
+        let value = chain.numbers[number_offset][chain_id];
         let perturbation = SIGMA
-          * sqrt(f32(p.small_step_count)) 
           * sqrt(2.0) 
           * erf_inv(2.0 * random_number - 1.0);
         return value + perturbation;
     }
+}
+
+fn populate_random_numbers(chain_id: u32, global_path_index: u32) {
+  for (var i: u32 = 0; i < chain.numbers_per_path[chain_id]; i++) {
+    chain.numbers[i][chain_id] = rand(chain_id, global_path_index, i);
+  }
 }
 
 fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
@@ -27,46 +28,26 @@ fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
   return vertex_index;
 }
 
-fn get_random_parameters(global_path_index: u32, stream_index: u32) -> RandomParameters {
-  let path_length = path.length[global_path_index];
-  let chain_index = path_length - MIN_PATH_LENGTH;
-  let step_type = path.step_type[global_path_index];
-  let local_path_index = path.index[global_path_index];
-  let vertex_index = get_vertex_index(global_path_index, stream_index);
-  return RandomParameters(
-    step_type, 
-    local_path_index, 
-    chain.numbers_per_path[chain_index], 
-    stream_index, 
-    chain.numbers_per_stream[chain_index], 
-    vertex_index, 
-    chain.iteration[chain_index], 
-    chain.numbers_per_iteration[chain_index], 
-    U64(chain.large_step_index[HI][chain_index], chain.large_step_index[LO][chain_index]),
-    U64(chain.key[HI][chain_index], chain.key[LO][chain_index]),
-    chain.small_step_count[chain_index],
-    chain.offset[chain_index],
-  );
-}
-
 fn rand_1(global_path_index: u32, stream_index: u32) -> f32 {
-  let p = get_random_parameters(global_path_index, stream_index);
-  return rand(p, 0);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  return rand(chain_id, global_path_index, stream_index * chain.numbers_per_stream[chain_id]);
 }
 
 fn rand_2(global_path_index: u32, stream_index: u32) -> vec2f {
-  let p = get_random_parameters(global_path_index, stream_index);
-  let r1 = rand(p, 0);
-  let r2 = rand(p, 1);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let r1 = rand(chain_id, global_path_index, i);
+  let r2 = rand(chain_id, global_path_index, i + 1);
   return vec2f(r1, r2);
 }
 
 fn rand_4(global_path_index: u32, stream_index: u32) -> vec4f {
-  let p = get_random_parameters(global_path_index, stream_index);
-  let r1 = rand(p, 0);
-  let r2 = rand(p, 1);
-  let r3 = rand(p, 2);
-  let r4 = rand(p, 3);
+  let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
+  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let r1 = rand(chain_id, global_path_index, i);
+  let r2 = rand(chain_id, global_path_index, i + 1);
+  let r3 = rand(chain_id, global_path_index, i + 2);
+  let r4 = rand(chain_id, global_path_index, i + 3);
   return vec4f(r1, r2, r3, r4);
 }
 

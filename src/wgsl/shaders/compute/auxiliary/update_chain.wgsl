@@ -28,12 +28,7 @@ fn update_chain() {
         set_chain_pixel(uniforms.chain_id, get_pixel(m));
 
         // Update the sample space parameters
-        if path.step_type[m] == LARGE_STEP {
-            set_chain_large_step_index(uniforms.chain_id, compute_large_step_index(uniforms.chain_id, m));
-            chain.small_step_count[uniforms.chain_id] = 1;
-        } else {
-            chain.small_step_count[uniforms.chain_id] = chain.small_step_count[uniforms.chain_id] + 1;
-        }
+        populate_random_numbers(uniforms.chain_id, m);
     }
     
     // Increment the iteration
