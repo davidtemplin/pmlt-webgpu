@@ -9,7 +9,7 @@ class ChainData {
 
     initialize(params) {
         const count = this.#config.path.length.max - 1;
-        const array = new ArrayBuffer(80 * count + (count * 4 * 100));
+        const array = new ArrayBuffer(80 * count + (count * 4 * this.#config.random.counts.path.max));
     
         const view = this.getView({ array });
     
@@ -69,7 +69,7 @@ class ChainData {
                 new Uint32Array(params.array, 76 * count, count),
               ],
               numbers: [
-                new Float32Array(params.array, 80 * count, count * 100),
+                new Float32Array(params.array, 80 * count, count * this.#config.random.counts.path.max),
               ],
         };
     }

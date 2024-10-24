@@ -34,6 +34,9 @@ class Config {
     random = {
         counts: {
             vertex: 4,
+            path: {
+                max: 100,
+            },
         },
     };
 
