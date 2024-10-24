@@ -532,7 +532,8 @@ fn rand(chain_id: u32, global_path_index: u32, number_offset: u32) -> f32 {
         let perturbation = SIGMA
           * sqrt(2.0) 
           * erf_inv(2.0 * random_number - 1.0);
-        return value + perturbation;
+        let result = value + perturbation;
+        return result - floor(result);
     }
 }
 
