@@ -7,12 +7,12 @@ fn evaluate_material(material_id: u32, wo: vec3f, n: vec3f, wi: vec3f) -> Materi
 }
 
 fn sample_matte_material(material_id: u32, wo: vec3f, n: vec3f, u: vec2f) -> MaterialSample {
-    var wi = cosine_sample_hemisphere(n, u[0], u[1]);
-    wi = choose_f32(same_hemisphere(n, wo, wi), 1.0, -1.0) * wi;
+    let wi = cosine_sample_hemisphere(n, u[0], u[1]);
     let pdf_fwd = matte_material_directional_pdf(wo, n, wi);
     let pdf_rev = matte_material_directional_pdf(wi, n, wo);
     let throughput = get_sphere_color(material_id) / PI;
-    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, true);
+    let valid = same_hemisphere(n, wo, wi);
+    return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, valid);
 }
 
 fn evaluate_matte_material(material_id: u32, wo: vec3f, n: vec3f, wi: vec3f) -> MaterialEvaluation {
