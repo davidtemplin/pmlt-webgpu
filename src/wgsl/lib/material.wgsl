@@ -11,7 +11,7 @@ fn sample_matte_material(material_id: u32, wo: vec3f, n: vec3f, u: vec2f) -> Mat
     wi = choose_f32(same_hemisphere(n, wo, wi), 1.0, -1.0) * wi;
     let pdf_fwd = matte_material_directional_pdf(wo, n, wi);
     let pdf_rev = matte_material_directional_pdf(wi, n, wo);
-    let throughput = get_sphere_color(material_id) / PI;
+    let throughput = get_sphere_color(material_id) * matte_material_reflectance(wo, n, wi);
     return MaterialSample(wi, pdf_fwd, pdf_rev, throughput, true);
 }
 
