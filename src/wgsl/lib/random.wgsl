@@ -20,23 +20,24 @@ fn populate_random_numbers(chain_id: u32, global_path_index: u32) {
   }
 }
 
-fn get_vertex_index(global_path_index: u32, stream_index: u32) -> u32 {
+fn get_number_offset(chain_id: u32, global_path_index: u32, stream_index: u32) -> u32 {
   let technique = get_technique(global_path_index);
   let path_vertex_index = path.vertex_index[global_path_index];
   let vertex_index: u32 = 0;
   choose_u32(stream_index == CAMERA_STREAM_INDEX, path_vertex_index, vertex_index);
   choose_u32(stream_index == LIGHT_STREAM_INDEX, path_vertex_index - technique.camera, vertex_index);
-  return vertex_index;
+  return stream_index * chain.numbers_per_stream[chain_id] + vertex_index;
 }
 
 fn rand_1(global_path_index: u32, stream_index: u32) -> f32 {
   let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
-  return rand(chain_id, global_path_index, stream_index * chain.numbers_per_stream[chain_id]);
+  let i = get_number_offset(chain_id, global_path_index, stream_index);
+  return rand(chain_id, global_path_index, i);
 }
 
 fn rand_2(global_path_index: u32, stream_index: u32) -> vec2f {
   let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
-  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let i = get_number_offset(chain_id, global_path_index, stream_index);
   let r1 = rand(chain_id, global_path_index, i);
   let r2 = rand(chain_id, global_path_index, i + 1);
   return vec2f(r1, r2);
@@ -44,7 +45,7 @@ fn rand_2(global_path_index: u32, stream_index: u32) -> vec2f {
 
 fn rand_4(global_path_index: u32, stream_index: u32) -> vec4f {
   let chain_id = path.length[global_path_index] - MIN_PATH_LENGTH;
-  let i = stream_index * chain.numbers_per_stream[chain_id];
+  let i = get_number_offset(chain_id, global_path_index, stream_index);
   let r1 = rand(chain_id, global_path_index, i);
   let r2 = rand(chain_id, global_path_index, i + 1);
   let r3 = rand(chain_id, global_path_index, i + 2);
