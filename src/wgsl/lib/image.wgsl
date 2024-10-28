@@ -34,11 +34,11 @@ fn gamma_correct(value: vec4f) -> vec4f {
 }
 
 fn tone_map_f32(value: f32) -> f32 {
-    return 1.0 - exp(-100.0 * value);
+    return 1.0 - exp(-TONE_MAPPING_SCALE * value);
 }
 
 fn gamma_correct_f32(value: f32) -> f32 {
-    return pow(value, 1.0 / 2.2);
+    return pow(value, 1.0 / GAMMA);
 }
 
 fn clamp_contribution(c: vec3f) -> vec3f {

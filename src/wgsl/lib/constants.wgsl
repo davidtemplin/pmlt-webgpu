@@ -89,3 +89,6 @@ const DISABLED: u32 = 0;
 const ENABLED: u32 = 1;
 
 const MAX_CONTRIBUTION: f32 = 0.5;
+
+const GAMMA: f32 = 2.2;
+const TONE_MAPPING_SCALE: f32 = 100.0;
