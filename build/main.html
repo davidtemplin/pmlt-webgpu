@@ -603,7 +603,7 @@ fn squares32(ctr: U64, key: U64) -> f32 {
 }
 
 fn squares32_bitcast(u: u32) -> f32 {
-  return bitcast<f32>((u >> 9) | 0x3f800000) - 1.0;
+  return bitcast<f32>((u >> 9) | (127 << 23)) - 1.0;
 }
 
 fn squares32_round(a: U64, b: U64) -> U64 {
@@ -3936,13 +3936,13 @@ class Executor {
 
         pass.end();
 
-        const debug = new Debug({ label: 'path log', data: this.#data.element.pathLog });
-        debug.encode({ device: params.device, encoder })
+        //const debug = new Debug({ label: 'chain', data: this.#data.element.chain });
+        //debug.encode({ device: params.device, encoder })
 
         let commandBuffer = encoder.finish();
         params.device.queue.submit([commandBuffer]);
 
-        debug.log();
+        //debug.log();
 
         requestAnimationFrame((timestamp) => this.render({...params, querySet, iteration: 1, timestamp }));
     }

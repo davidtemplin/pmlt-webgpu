@@ -77,7 +77,7 @@ fn squares32(ctr: U64, key: U64) -> f32 {
 }
 
 fn squares32_bitcast(u: u32) -> f32 {
-  return bitcast<f32>((u >> 9) | 0x3f800000) - 1.0;
+  return bitcast<f32>((u >> 9) | (127 << 23)) - 1.0;
 }
 
 fn squares32_round(a: U64, b: U64) -> U64 {
