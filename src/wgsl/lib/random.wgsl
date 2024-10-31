@@ -1,7 +1,9 @@
 fn rand(chain_id: u32, global_path_index: u32, number_offset: u32) -> f32 {
-    let path_offset = path.index[global_path_index] * chain.numbers_per_path[chain_id];
-    let index = u64_add(u64_mul(u64_from(chain.iteration[chain_id]), u64_from(chain.numbers_per_iteration[chain_id])), u64_from(path_offset + chain.offset[chain_id] + number_offset));
-    let random_number = squares32(index, U64(chain.key[HI][chain_id], chain.key[LO][chain_id]));
+    let offset = chain.offset[chain_id] + path.index[global_path_index] * chain.numbers_per_path[chain_id] + number_offset;
+    let iteration_offset = u64_mul(u64_from(chain.iteration[chain_id]), u64_from(chain.numbers_per_iteration[chain_id]));
+    let index = u64_add(iteration_offset, u64_from(offset));
+    let key = U64(chain.key[HI][chain_id], chain.key[LO][chain_id]);
+    let random_number = squares32(index, key);
     if  path.step_type[global_path_index] == LARGE_STEP {
         return random_number;
     } else {
@@ -21,12 +23,16 @@ fn populate_random_numbers(chain_id: u32, global_path_index: u32) {
 }
 
 fn get_vertex_offset(chain_id: u32, global_path_index: u32, stream_index: u32) -> u32 {
-  let technique = get_technique(global_path_index);
-  let path_vertex_index = path.vertex_index[global_path_index];
-  let vertex_index: u32 = 0;
-  choose_u32(stream_index == CAMERA_STREAM_INDEX, path_vertex_index, vertex_index);
-  choose_u32(stream_index == LIGHT_STREAM_INDEX, path_vertex_index - technique.camera, vertex_index);
-  return stream_index * chain.numbers_per_stream[chain_id] + vertex_index * NUMBERS_PER_VERTEX;
+  if stream_index == TECHNIQUE_STREAM_INDEX {
+      return stream_index * chain.numbers_per_stream[chain_id];
+  } else if stream_index == CAMERA_STREAM_INDEX {
+      let vertex_index = path.vertex_index[global_path_index];
+      return stream_index * chain.numbers_per_stream[chain_id] + vertex_index * NUMBERS_PER_VERTEX;
+  } else {
+      let technique = get_technique(global_path_index);
+      let vertex_index = path.vertex_index[global_path_index] - technique.camera;
+      return stream_index * chain.numbers_per_stream[chain_id] + vertex_index * NUMBERS_PER_VERTEX;
+  }
 }
 
 fn rand_1(global_path_index: u32, stream_index: u32) -> f32 {
@@ -59,13 +65,13 @@ fn u64_from(lo: u32) -> U64 {
 
 fn squares32(ctr: U64, key: U64) -> f32 {
   var x = u64_mul(ctr, key);
-  var y = x;
-  var z = u64_add(y, key);
+  let y = u64_copy(x);
+  let z = u64_add(y, key);
 
   x = squares32_round(x, y);
   x = squares32_round(x, z);
   x = squares32_round(x, y);
-  x = squares32_round(x, z);
+  x = u64_add(u64_sqr(x), z);
 
   return squares32_bitcast(x.hi);
 }
@@ -96,6 +102,10 @@ fn u64_sqr(a: U64) -> U64 {
 
 fn u64_swp(a: U64) -> U64 {
   return U64(a.lo, a.hi);
+}
+
+fn u64_copy(a: U64) -> U64 {
+  return U64(a.hi, a.lo);
 }
 
 fn u32_mul_hi(a: u32, b: u32) -> u32 {
