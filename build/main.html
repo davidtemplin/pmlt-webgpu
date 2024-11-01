@@ -1778,10 +1778,10 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         // Compute the final contribution
         let c = get_path_contribution(i);
         let sc = luminance(c);
-        path.cdf[PRIMARY][i] = sc;
+        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
+        path.cdf[PRIMARY][i] = choose_f32(image.write_mode == ENABLED, a, sc);
 
         // Compute the weight
-        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
         let weight = get_proposal_contribution_weight(chain_id, a, sc, path.step_type[i]);
 
         // Contribute
@@ -2025,14 +2025,11 @@ fn update_chain() {
     contribute(c * weight, pixel.x, pixel.y);
     image.sample_count++;
 
-    // Compute normalization factor
-    let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
-
     // Accept or reject
-    if uniforms.random <= path.cdf[PRIMARY][max_path_index] / sum {
+    if uniforms.random <= path.cdf[PRIMARY][max_path_index] {
         // Binary search
         let min_path_index = chain.min_path_index[uniforms.chain_id];
-        let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
+        let m = binary_search(min_path_index, max_path_index, 1.0, uniforms.random);
 
         // Update the current contribution
         let contribution = get_path_contribution(m);

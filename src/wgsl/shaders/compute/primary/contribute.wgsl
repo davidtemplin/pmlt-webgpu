@@ -15,10 +15,10 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         // Compute the final contribution
         let c = get_path_contribution(i);
         let sc = luminance(c);
-        path.cdf[PRIMARY][i] = sc;
+        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
+        path.cdf[PRIMARY][i] = choose_f32(image.write_mode == ENABLED, a, sc); // Phase 1, CDF is power distribution, Phase 2, CDF is acceptance probability
 
         // Compute the weight
-        let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
         let weight = get_proposal_contribution_weight(chain_id, a, sc, path.step_type[i]);
 
         // Contribute

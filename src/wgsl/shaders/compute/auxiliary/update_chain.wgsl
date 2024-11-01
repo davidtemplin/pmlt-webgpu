@@ -12,14 +12,11 @@ fn update_chain() {
     contribute(c * weight, pixel.x, pixel.y);
     image.sample_count++;
 
-    // Compute normalization factor
-    let sum = path.cdf[PRIMARY][max_path_index] + chain.scalar_contribution[uniforms.chain_id];
-
     // Accept or reject
-    if uniforms.random <= path.cdf[PRIMARY][max_path_index] / sum {
+    if uniforms.random <= path.cdf[PRIMARY][max_path_index] {
         // Binary search
         let min_path_index = chain.min_path_index[uniforms.chain_id];
-        let m = binary_search(min_path_index, max_path_index, sum, uniforms.random);
+        let m = binary_search(min_path_index, max_path_index, 1.0, uniforms.random);
 
         // Update the current contribution
         let contribution = get_path_contribution(m);
