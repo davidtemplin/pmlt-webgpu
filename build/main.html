@@ -603,7 +603,7 @@ fn squares32(ctr: U64, key: U64) -> f32 {
 }
 
 fn squares32_bitcast(u: u32) -> f32 {
-  return bitcast<f32>((u >> 9) | (127 << 23)) - 1.0;
+  return bitcast<f32>((u & 0x7FFFFF) | (127 << 23)) - 1.0;
 }
 
 fn squares32_round(a: U64, b: U64) -> U64 {
@@ -1779,7 +1779,7 @@ fn contribute_main(@builtin(global_invocation_id) gid: vec3u) {
         let c = get_path_contribution(i);
         let sc = luminance(c);
         let a = min(1.0, sc / chain.scalar_contribution[chain_id]) / f32(chain.path_count[chain_id]);
-        path.cdf[PRIMARY][i] = choose_f32(image.write_mode == ENABLED, a, sc);
+        path.cdf[PRIMARY][i] = choose_f32(image.write_mode == ENABLED, a, sc); // Phase 1, CDF is power distribution, Phase 2, CDF is acceptance probability
 
         // Compute the weight
         let weight = get_proposal_contribution_weight(chain_id, a, sc, path.step_type[i]);
